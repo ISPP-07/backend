@@ -51,6 +51,6 @@ class Patient(Base, table=True):
         back_populates='patient'
     )
     first_appointment_date: date
-    appointments: list['Appointment'] = Relationship(
-        back_populates='patient',
-    )
+    # appointment_history: list[AppointmentHistory] = Relationship(
+    #     back_populates='patient_id',
+    # )
