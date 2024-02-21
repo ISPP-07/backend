@@ -101,16 +101,17 @@ class Base(SQLModel):
         await session.commit()
         return db_obj
 
+    @classmethod
     @validate_table
-    async def update(self: Self, session: AsyncSession, **kwargs: Any) -> Self:
-        obj_data = jsonable_encoder(self)
+    async def update(cls: Type[Self], session: AsyncSession, **kwargs: Any) -> Self:
+        obj_data = jsonable_encoder(cls)
         for field in obj_data:
             if field in kwargs:
-                setattr(self, field, kwargs[field])
-        session.add(self)
+                setattr(cls, field, kwargs[field])
+        session.add(cls)
         await session.commit()
-        await session.refresh(self)
-        return self
+        await session.refresh(cls)
+        return cls
 
     @classmethod
     @validate_table
