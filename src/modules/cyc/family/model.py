@@ -54,9 +54,7 @@ class Family(Base, table=True):
     referred_organization: str
     next_renewal_date: date
     derecognition_state: DerecognitionStatus
-    observations: list[FamilyObservation] = Relationship(
-        back_populates='family_id',
-    )
+    observations: list[FamilyObservation] = Relationship()
     # delivery_history: list[DeliveryHistory] = Relationship(
     #     back_populates='family_id',
     # )
