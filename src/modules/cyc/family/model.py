@@ -42,6 +42,7 @@ class FamilyObservation(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     observation_text: str
     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
+    family: Optional['Family'] = Relationship(back_populates='observations')
 
 
 class Family(Base, table=True):
@@ -55,7 +56,7 @@ class Family(Base, table=True):
     next_renewal_date: date
     derecognition_state: DerecognitionStatus
     observations: list[FamilyObservation] = Relationship(
-        back_populates='family_id',
+        back_populates='family'
     )
     # delivery_history: list[DeliveryHistory] = Relationship(
     #     back_populates='family_id',
