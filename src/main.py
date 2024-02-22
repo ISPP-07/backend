@@ -4,11 +4,12 @@ from starlette.middleware.cors import CORSMiddleware
 from src.core.utils.dynamic_router import Routers
 from src.modules.shared.shared import router_urls as core_urls
 from src.modules.cyc.cyc import router_urls as cyc_urls
+from src.modules.acat.acat import router_urls as acat_urls
 
 from src.core.config import settings
 
 
-URLS_ENDPOINTS = core_urls + cyc_urls
+URLS_ENDPOINTS = core_urls + cyc_urls + acat_urls
 
 
 app = FastAPI(**settings.fastapi_kwargs)
