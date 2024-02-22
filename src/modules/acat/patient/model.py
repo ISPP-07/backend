@@ -31,6 +31,7 @@ class PatientObservation(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     observation_text: str
     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
+    patient: Optional['Patient'] = Relationship(back_populates="observations")
 
 
 class Patient(Base, table=True):
@@ -48,7 +49,7 @@ class Patient(Base, table=True):
     contact_phone: str
     age: int
     observations: list[PatientObservation] = Relationship(
-        back_populates='patient_id',
+        back_populates='patient'
     )
     first_appointment_date: date
     # appointment_history: list[AppointmentHistory] = Relationship(
