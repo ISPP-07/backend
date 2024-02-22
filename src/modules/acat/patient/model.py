@@ -47,9 +47,7 @@ class Patient(Base, table=True):
     dni: str
     contact_phone: str
     age: int
-    observations: list[PatientObservation] = Relationship(
-        back_populates='patient_id',
-    )
+    observations: list[PatientObservation] = Relationship()
     first_appointment_date: date
     # appointment_history: list[AppointmentHistory] = Relationship(
     #     back_populates='patient_id',
