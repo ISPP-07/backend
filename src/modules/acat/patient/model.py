@@ -14,9 +14,21 @@ class Sex(str, Enum):
     FEMALE = 'Female'
 
 
-class AppointmentHistory(Base, table=True):
+# class AppointmentHistory(Base, table=True):
+#     id: Optional[int] = Field(default=None, primary_key=True)
+#     technician_id: Optional[int] = Field(
+#         default=None,
+#         foreign_key='user.id',
+#     )
+#     technician: Optional['User'] = Relationship()
+#     technician_name: Optional[str]
+#     appointment_date: date
+#     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
+
+
+class PatientObservation(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    appointment_date: date
+    observation_text: str
     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
 
 
@@ -34,14 +46,10 @@ class Patient(Base, table=True):
     dni: str
     contact_phone: str
     age: int
-    observations: str
-    first_appointment_date: date
-    attending_technician_id: Optional[int] = Field(
-        default=None,
-        foreign_key='user.id',
-    )
-    attending_technician: Optional['User'] = Relationship()
-    attending_technician_name: Optional[str]
-    appointment_history: list[AppointmentHistory] = Relationship(
+    observations: list[PatientObservation] = Relationship(
         back_populates='patient_id',
     )
+    first_appointment_date: date
+    # appointment_history: list[AppointmentHistory] = Relationship(
+    #     back_populates='patient_id',
+    # )

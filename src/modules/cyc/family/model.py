@@ -1,8 +1,14 @@
 from typing import Optional
+from enum import Enum
 from datetime import date
 from sqlmodel import Field, Relationship
 
 from src.core.database.base_crud import Base
+
+
+class DerecognitionStatus(str, Enum):
+    ACTIVE = 'Active'
+    SUSPENDED = 'Suspended'
 
 
 class AgeRange(Base, table=True):
@@ -24,13 +30,13 @@ class FamilyAgeRangeLink(Base, table=True):
     )
 
 
-class DeliveryHistory(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    delivery_date: date
-    family_id: Optional[int] = Field(default=None, foreign_key='family.id')
+# class DeliveryHistory(Base, table=True):
+#     id: Optional[int] = Field(default=None, primary_key=True)
+#     delivery_date: date
+#     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
 
 
-class Observation(Base, table=True):
+class FamilyObservation(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     observation_text: str
     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
@@ -45,9 +51,10 @@ class Family(Base, table=True):
     number_of_people: int
     referred_organization: str
     next_renewal_date: date
-    observations: list[Observation] = Relationship(
+    derecognition_state: DerecognitionStatus
+    observations: list[FamilyObservation] = Relationship(
         back_populates='family_id',
     )
-    delivery_history: list[DeliveryHistory] = Relationship(
-        back_populates='family_id',
-    )
+    # delivery_history: list[DeliveryHistory] = Relationship(
+    #     back_populates='family_id',
+    # )
