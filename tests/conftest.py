@@ -37,10 +37,10 @@ async def connection(engine: AsyncEngine):
 
 @pytest_asyncio.fixture
 async def session(connection):
-    AsyncSessionLocal = sessionmaker(
+    async_session_local = sessionmaker(
         bind=connection, class_=AsyncSession, expire_on_commit=False
     )
-    async with AsyncSessionLocal() as session:
+    async with async_session_local() as session:
         yield session
 
 
