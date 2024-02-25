@@ -9,11 +9,10 @@ services:
       - "5432:5432"
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ../.env
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=1234
       - PGDATA=/var/lib/postgresql/data/pgdata
 
 volumes:
