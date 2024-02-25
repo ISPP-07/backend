@@ -19,6 +19,7 @@ psycopg = {extras = ["binary", "pool"], version = "*"}
 [dev-packages]
 pytest = "*"
 pytest-asyncio = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.11"

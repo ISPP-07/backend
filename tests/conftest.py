@@ -1,20 +1,22 @@
+import os
 from fastapi.testclient import TestClient
 
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio.engine import AsyncEngine
-from sqlmodel import SQLModel
-from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
+from sqlmodel.ext.asyncio.session import AsyncSession
+from dotenv import load_dotenv, find_dotenv
 
 from src.core.database.base_crud import Base
 from src.core.deps import get_db
 
 from src.main import app
 
+env_path = find_dotenv(filename='.env.test')
+load_dotenv(env_path)
 
-# Use a separate test database configuration
-TEST_DATABASE_URL = "postgresql+psycopg://postgres:1234@localhost/test_app"
+TEST_DATABASE_URL = os.getenv('TEST_DATABASE_URL')
 
 
 @pytest_asyncio.fixture(scope="session")

@@ -1,8 +1,8 @@
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 import secrets
 from pydantic_settings import BaseSettings
 from pydantic import AnyHttpUrl, PostgresDsn, validator
-from typing import Any, Dict, List, Optional, Union
 from fastapi.responses import JSONResponse
 
 APP_DIR = Path(__file__).resolve().parent
