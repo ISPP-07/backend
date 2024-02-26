@@ -12,6 +12,10 @@ class Settings(BaseSettings):
 
     APP_DIR: Path = APP_DIR
 
+    CYC_NGO: bool
+
+    ACAT_NGO: bool
+
     STAGING: bool
 
     PROJECT_NAME: str
