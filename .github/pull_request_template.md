@@ -14,7 +14,7 @@
 - @reviewer1
 - @reviewer2
 
-## Tester
+## Tester (if applicable)
 - @tester1
 
 ## Screenshots (if applicable)
