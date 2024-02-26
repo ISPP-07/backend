@@ -1,5 +1,3 @@
-import asyncio
-import sys
 from sqlalchemy.pool import NullPool, QueuePool
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
