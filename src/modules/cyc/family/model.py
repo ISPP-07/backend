@@ -3,7 +3,7 @@ from typing import Optional, Dict, Literal
 from enum import Enum
 from datetime import date
 from sqlmodel import Field, Relationship
-from pydantic import PositiveInt, PastDatetime, FutureDatetime
+from pydantic import PositiveInt
 
 from src.core.database.base_crud import Base
 
@@ -38,28 +38,6 @@ class DerecognitionStatus(str, Enum):
     SUSPENDED = 'Suspended'
 
 
-class Person(Base):
-    date_birth: PastDatetime
-    family_id: Optional[int] = Field(default=None, foreign_key='family.id')
-    family: 'Family' = Relationship(back_populates='persons')
-
-    def age(self) -> int:
-        return calculate_age(self.date_birth)
-
-    def age_rank(self) -> str:
-        return get_age_rank(self.age)
-
-
-class Adult(Person, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    dni: str
-
-
-class Child(Person, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-
 # This class is commented because the implementation of its functionalities will not be done in this sprint.
 # class DeliveryHistory(Base, table=True):
 #     id: Optional[int] = Field(default=None, primary_key=True)
@@ -80,7 +58,7 @@ class Product(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     quantity: PositiveInt
-    exp_date: Optional[FutureDatetime]
+    exp_date: Optional[date]
     warehouse_id: Optional[int] = Field(
         default=None, foreign_key='warehouse.id'
     )
@@ -93,14 +71,30 @@ class Warehouse(Base, table=True):
     products: list[Product] = Relationship(back_populates='warehouse')
 
 
+class Person(Base, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    date_birth: date
+    type: str
+    name: Optional[str]
+    dni: Optional[str]
+    family_id: Optional[int] = Field(default=None, foreign_key='family.id')
+    family: 'Family' = Relationship(back_populates='persons')
+
+    def age(self) -> int:
+        return calculate_age(self.date_birth)
+
+    def age_rank(self) -> str:
+        return get_age_rank(self.age)
+
+
 class Family(Base, table=True):
-    id: int = Field(default=None, primary_key=True,)
+    id: int = Field(default=None, primary_key=True)
     name: str
     phone: str
     address: str
     number_of_people: int
     referred_organization: str
-    next_renewal_date: FutureDatetime
+    next_renewal_date: date
     derecognition_state: DerecognitionStatus
     observations: list[FamilyObservation] = Relationship(
         back_populates='family'
