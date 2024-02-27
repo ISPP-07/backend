@@ -1,30 +1,38 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from datetime import date
 from enum import Enum
 from sqlmodel import Field, String, Relationship
 
 from src.core.database.base_crud import Base
 
-if TYPE_CHECKING:
-    from src.modules.shared.user.model import User
+
+class Technician(Base, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    user_id: Optional[int] = Field(
+        default=None,
+        foreign_key='user.id',
+    )
+    appointments: list['AppointmentHistory'] = Relationship(
+        back_populates='technician'
+    )
 
 
 class Sex(str, Enum):
     MALE = 'Male'
     FEMALE = 'Female'
 
-# This class is commented because the implementation of its functionalities will not be done in this sprint.
 
-# class AppointmentHistory(Base, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     technician_id: Optional[int] = Field(
-#         default=None,
-#         foreign_key='user.id',
-#     )
-#     technician: Optional['User'] = Relationship()
-#     technician_name: Optional[str]
-#     appointment_date: date
-#     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
+class AppointmentHistory(Base, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    technician_id: Optional[int] = Field(
+        default=None,
+        foreign_key='technician.id',
+    )
+    technician: Technician = Relationship(back_populates='appointments')
+    appointment_date: date
+    patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
+    patient: 'Patient' = Relationship(back_populates='appointment_history')
 
 
 class PatientObservation(Base, table=True):
@@ -52,6 +60,6 @@ class Patient(Base, table=True):
         back_populates='patient'
     )
     first_appointment_date: date
-    # appointment_history: list[AppointmentHistory] = Relationship(
-    #     back_populates='patient_id',
-    # )
+    appointment_history: list[AppointmentHistory] = Relationship(
+        back_populates='patient',
+    )
