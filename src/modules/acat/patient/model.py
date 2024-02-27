@@ -13,7 +13,7 @@ class Technician(Base, table=True):
         default=None,
         foreign_key='user.id',
     )
-    appointments: list['AppointmentHistory'] = Relationship(
+    appointments: list['Appointment'] = Relationship(
         back_populates='technician'
     )
 
@@ -23,7 +23,7 @@ class Sex(str, Enum):
     FEMALE = 'Female'
 
 
-class AppointmentHistory(Base, table=True):
+class Appointment(Base, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     technician_id: Optional[int] = Field(
         default=None,
@@ -32,7 +32,7 @@ class AppointmentHistory(Base, table=True):
     technician: Technician = Relationship(back_populates='appointments')
     appointment_date: date
     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
-    patient: 'Patient' = Relationship(back_populates='appointment_history')
+    patient: 'Patient' = Relationship(back_populates='appointments')
 
 
 class PatientObservation(Base, table=True):
@@ -60,6 +60,6 @@ class Patient(Base, table=True):
         back_populates='patient'
     )
     first_appointment_date: date
-    appointment_history: list[AppointmentHistory] = Relationship(
+    appointments: list[Appointment] = Relationship(
         back_populates='patient',
     )
