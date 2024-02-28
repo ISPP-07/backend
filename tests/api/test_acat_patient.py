@@ -33,8 +33,8 @@ async def test_create_patient(client: TestClient):
     assert response_data["alias"] == patient_data["alias"]
 
 @pytest.mark.asyncio
-async def test_get_patient_details(client: TestClient, session: AsyncSession): 
-    
+async def test_get_patient_details(client: TestClient): 
+
     patient_data = {
         "id": 1,
         "registration_date": "2024-02-26",
@@ -52,9 +52,15 @@ async def test_get_patient_details(client: TestClient, session: AsyncSession):
         "first_appointment_date": "2024-02-26"
     }
 
-    Patient.create(session, **patient_data)
-
-    url = f'{settings.API_STR}acat/patient/details/{patient_data["id"]}'
-    response = client.get(url)
+    url_get = f'{settings.API_STR}acat/patient/details/{patient_data["id"]}'
+    url_post = f'{settings.API_STR}acat/patient'
+    
+    client.post(url_post, json=patient_data)
+    response = client.get(url_get)
+    
     assert response.status_code == 200
+    
+    response_data = response.json()
+    assert response_data["name"] == patient_data["name"]
+    assert response_data["alias"] == patient_data["alias"]
     
