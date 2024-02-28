@@ -1,8 +1,8 @@
 from pathlib import Path
+from typing import Any, List, Optional, Union
 import secrets
 from pydantic_settings import BaseSettings
 from pydantic import AnyHttpUrl, PostgresDsn, ValidationInfo, field_validator
-from typing import Any, List, Optional, Union
 from fastapi.responses import JSONResponse
 
 APP_DIR = Path(__file__).resolve().parent
@@ -11,6 +11,10 @@ APP_DIR = Path(__file__).resolve().parent
 class Settings(BaseSettings):
 
     APP_DIR: Path = APP_DIR
+
+    CYC_NGO: bool
+
+    ACAT_NGO: bool
 
     STAGING: bool
 
