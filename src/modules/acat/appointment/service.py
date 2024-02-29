@@ -9,7 +9,9 @@ async def get_appointment_list_details_service(session):
     Args:session: SessionDep
     Returns: List[Appointment]
     '''
-    return await Appointment.get_multi(session)
+
+    return await Appointment.get_multi(session, load_strategy={Appointment.technician: "selectin",
+                                                               Appointment.patient: "selectin"})
 
 
 # El codigo de abajo intenta traer los objetos en vez de los ids usando sqlalchemy
