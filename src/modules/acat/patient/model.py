@@ -5,8 +5,8 @@ from sqlmodel import Field, String, Relationship
 
 from src.core.database.base_crud import Base
 
-if TYPE_CHECKING:
-    from src.modules.acat.appointment.model import Appointment
+# if TYPE_CHECKING:
+from src.modules.acat.appointment.model import Appointment
 
 
 class Technician(Base, table=True):
@@ -51,6 +51,6 @@ class Patient(Base, table=True):
         back_populates='patient'
     )
     first_appointment_date: date
-    # appointment_history: list[AppointmentHistory] = Relationship(
-    #     back_populates='patient_id',
-    # )
+    appointments: list['Appointment'] = Relationship(
+        back_populates='patient',
+    )
