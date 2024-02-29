@@ -6,10 +6,11 @@ from src.modules.cyc.product.model import Product, Warehouse
 router = APIRouter()
 
 
-@router.post('/create')
-async def create_product(session: SessionDep, product: Product, status_code=status.HTTP_201_CREATED) -> Product:
+@router.post('/', status_code=status.HTTP_201_CREATED)
+async def create_product(session: SessionDep, product: Product) -> Product:
     return await create_product_controller(session, product)
 
-@router.post('/create_warehouse')
-async def create_warehouse(session: SessionDep, warehouse: Warehouse, status_code=status.HTTP_201_CREATED) -> Warehouse:
+
+@router.post('/warehouse', status_code=status.HTTP_201_CREATED)
+async def create_warehouse(session: SessionDep, warehouse: Warehouse) -> Warehouse:
     return await create_warehouse_controller(session, warehouse)
