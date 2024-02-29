@@ -6,25 +6,24 @@ from sqlmodel import Field, String, Relationship
 from src.core.database.base_crud import Base
 
 if TYPE_CHECKING:
-    from src.modules.shared.user.model import User
+    from src.modules.acat.appointment.model import Appointment
+
+
+class Technician(Base, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    user_id: Optional[int] = Field(
+        default=None,
+        foreign_key='user.id',
+    )
+    appointments: list['Appointment'] = Relationship(
+        back_populates='technician'
+    )
 
 
 class Sex(str, Enum):
     MALE = 'Male'
     FEMALE = 'Female'
-
-# This class is commented because the implementation of its functionalities will not be done in this sprint.
-
-# class AppointmentHistory(Base, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     technician_id: Optional[int] = Field(
-#         default=None,
-#         foreign_key='user.id',
-#     )
-#     technician: Optional['User'] = Relationship()
-#     technician_name: Optional[str]
-#     appointment_date: date
-#     patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
 
 
 class PatientObservation(Base, table=True):
@@ -52,6 +51,6 @@ class Patient(Base, table=True):
         back_populates='patient'
     )
     first_appointment_date: date
-    # appointment_history: list[AppointmentHistory] = Relationship(
-    #     back_populates='patient_id',
-    # )
+    appointments: list['Appointment'] = Relationship(
+        back_populates='patient',
+    )
