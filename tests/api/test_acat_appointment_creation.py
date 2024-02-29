@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from src.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.modules.acat.patient.model import Patient
+from src.modules.acat.patient.model import Patient, Technician
 
 
 @pytest.mark.asyncio
@@ -24,11 +24,18 @@ async def test_create_appointment(client: TestClient, session: AsyncSession):
             "age": 32,
             "first_appointment_date": "2024-02-29"
         }
+    
+    technician_data = {
+        "name": "John Doe",
+        "user_id": 1
+    }
 
     await Patient.create(session, **patient_data)
+    await Technician.create(session, **technician_data)
 
     appointment_data = {
             "id": 0,
+            "technician_id": 1,
             "appointment_date": "2024-02-29",
             "patient_id": 1
         }
