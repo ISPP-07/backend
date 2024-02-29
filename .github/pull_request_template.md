@@ -14,6 +14,9 @@
 - @reviewer1
 - @reviewer2
 
+## Tester (if applicable)
+- @tester1
+
 ## Screenshots (if applicable)
 [Add screenshots or GIFs to visually demonstrate the changes, if applicable]
 
