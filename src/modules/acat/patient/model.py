@@ -5,8 +5,8 @@ from sqlmodel import Field, String, Relationship
 
 from src.core.database.base_crud import Base
 
-if TYPE_CHECKING:
-    from src.modules.acat.appointment.model import Appointment
+# if TYPE_CHECKING:
+from src.modules.acat.appointment.model import Appointment
 
 
 class Technician(Base, table=True):
