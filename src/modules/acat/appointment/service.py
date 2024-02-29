@@ -22,9 +22,9 @@ async def update_patient_appointments(session, patient: Patient, appointment: Ap
 
 async def create_appointment_service(session, appointment: Appointment):
     technician = await get_technician_by_id(session, appointment.technician_id)
-    await update_technician_appointments(session, technician, appointment)
+    update_technician_appointments(session, technician, appointment)
     patient = await get_patient_by_id(session, appointment.patient_id)
-    await update_patient_appointments(session, patient, appointment)
+    update_patient_appointments(session, patient, appointment)
     obj = await Appointment.create(session, **appointment.model_dump())
 
     return obj.model_dump()
