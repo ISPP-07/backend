@@ -1,5 +1,4 @@
 from src.modules.acat.appointment.model import Appointment
-from typing import Any
 
 from src.modules.acat.appointment.service import create_appointment_service
 
