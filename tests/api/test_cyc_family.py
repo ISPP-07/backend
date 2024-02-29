@@ -36,7 +36,7 @@ async def create_families(session) -> list[Family]:
 
 
 def test_get_families(client: TestClient, create_families: list[Family]):
-    url = f'{settings.API_STR}cyc/family/list'
+    url = f'{settings.API_STR}cyc/family/'
     response = client.get(url)
     assert response.status_code == 200
     result = response.json()
