@@ -8,7 +8,7 @@ from src.modules.acat.appointment.model import Appointment
 
 router = APIRouter()
 
-@router.post('/', status_code=status.HTTP_201_CREATED)
-async def create_appointment(session: SessionDep, appointment: Appointment)->Any:
-    return await create_appointment_controller(session, appointment)
 
+@router.post('/', status_code=status.HTTP_201_CREATED)
+async def create_appointment(session: SessionDep, appointment: Appointment) -> Any:
+    return await create_appointment_controller(session, appointment)
