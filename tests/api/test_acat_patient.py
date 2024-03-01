@@ -1,7 +1,7 @@
 import pytest
-from src.modules.acat.patient.model import Patient
 from fastapi.testclient import TestClient
 from src.core.config import settings
+
 
 @pytest.mark.asyncio
 async def test_create_patient(client: TestClient):
