@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from src.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.acat.patient.model import Patient, Technician
+from src.modules.shared.user.model import User
 
 
 @pytest.mark.asyncio
@@ -30,6 +31,14 @@ async def test_create_appointment(client: TestClient, session: AsyncSession):
         "user_id": 1
     }
 
+    user_data = {
+        "username": "john_doe",
+        "password": "password",
+        "email": "hola@hola.com"
+    }
+
+
+    await User.create(session, **user_data)
     await Patient.create(session, **patient_data)
     await Technician.create(session, **technician_data)
 
@@ -46,4 +55,5 @@ async def test_create_appointment(client: TestClient, session: AsyncSession):
     response_data = response.json()
     assert response_data["appointment_date"] == appointment_data["appointment_date"]
     assert response_data["patient_id"] == appointment_data["patient_id"]
+    assert response_data["technician_id"] == appointment_data["technician_id"]
         
