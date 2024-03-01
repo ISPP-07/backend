@@ -61,6 +61,7 @@ class Person(Base, table=True):
     type: PersonType
     name: Optional[str]
     dni: Optional[str]
+    # family_header: Optional[bool] = Field(default=False)
     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
     family: 'Family' = Relationship(back_populates='persons')
 
