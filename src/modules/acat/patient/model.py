@@ -2,7 +2,6 @@ from typing import Optional, TYPE_CHECKING
 from datetime import date
 from enum import Enum
 from sqlmodel import Field, String, Relationship
-
 from src.core.database.base_crud import Base
 
 if TYPE_CHECKING:
