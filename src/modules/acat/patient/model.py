@@ -4,8 +4,10 @@ from enum import Enum
 from sqlmodel import Field, String, Relationship
 from src.core.database.base_crud import Base
 
-if TYPE_CHECKING:
-    from src.modules.acat.appointment.model import Appointment
+
+# if TYPE_CHECKING:
+from src.modules.acat.appointment.model import Appointment
+from src.modules.shared.user.model import User
 
 
 class Technician(Base, table=True):
@@ -15,6 +17,9 @@ class Technician(Base, table=True):
         default=None,
         foreign_key='user.id',
     )
+
+    user: Optional[User] = Relationship()
+
     appointments: list['Appointment'] = Relationship(
         back_populates='technician'
     )

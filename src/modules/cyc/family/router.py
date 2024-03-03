@@ -1,6 +1,5 @@
-from typing import List
-from fastapi import APIRouter
-from fastapi import status
+from typing import Any, List
+from fastapi import APIRouter, status
 from src.core.deps import SessionDep
 from src.modules.cyc.family.controller import get_families_controller, create_family_controller
 from src.modules.cyc.family.model import Family
