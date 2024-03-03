@@ -7,9 +7,7 @@ from src.modules.cyc.family.model import Family
 
 
 @pytest.mark.asyncio
-async def create_family_test(client: TestClient) -> Family:
-    create_family_url = f'{settings.API_STR}acat/family/'
-
+async def create_family(session) -> Family:
     person1_data = {
         "date_birth": "2005-01-01",
         "type": "Child",
@@ -38,19 +36,15 @@ async def create_family_test(client: TestClient) -> Family:
             person2_data
         ]
     }
-    response = client.post(create_family_url, json=family_data)
-    assert response.status_code == 201
-    response_data = response.json()
-    return response_data
+    family = await Family.create(session, **family_data)
+    return family
 
 
-@pytest.mark.asyncio
-async def test_get_family_details(client: TestClient):
-    family = await create_family_test(client)
-    family_id = family["id"]
+def test_get_family_details(client: TestClient, create_family: Family):
+    family_id = create_family["id"]
     url = (f'{settings.API_STR}'
            f'cyc/family/details/' + str(family_id))
 
     response = client.get(url)
     assert response.status_code == 200
-    assert response.json() == family
+    assert response.json() == create_family.model_dump()
