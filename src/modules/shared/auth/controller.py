@@ -7,3 +7,6 @@ def root_controller():
 
 def hello_controller():
     return service.hello_service()
+
+async def login_controller(session, form_data):
+    return await service.login_service(session, form_data)

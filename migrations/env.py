@@ -8,7 +8,6 @@ from alembic import context
 from sqlmodel import SQLModel
 
 from src.core.config import settings
-from src.core.database.base_crud import Base
 from src.core.utils.dynamic_model_metadata import find_and_import_models
 
 
@@ -16,7 +15,7 @@ from src.core.utils.dynamic_model_metadata import find_and_import_models
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option(
-    "sqlalchemy.url", 
+    "sqlalchemy.url",
     settings.SQLALCHEMY_DATABASE_URI.unicode_string()
 )
 
