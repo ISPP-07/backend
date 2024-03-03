@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import secrets
+from fastapi import Depends
 from pydantic_settings import BaseSettings
 from pydantic import AnyHttpUrl, PostgresDsn, validator
 from fastapi.responses import JSONResponse
+
 
 APP_DIR = Path(__file__).resolve().parent
 
@@ -17,7 +19,16 @@ class Settings(BaseSettings):
     PROJECT_NAME: str
 
     API_STR: str
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int  = 30  # 30 minutes
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
+    JWT_SECRET_KEY: str = secrets.token_urlsafe(32)
+    JWT_REFRESH_SECRET_KEY: str = secrets.token_urlsafe(32)
+
+    FIRST_SUPERUSER_USERNAME: str
+    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER_EMAIL: str
 
     SERVER_HOST: str
     SERVER_PORT: int
@@ -60,6 +71,8 @@ class Settings(BaseSettings):
         Returns:
             dict: This can be unpacked as **kwargs to pass to FastAPI app.
         """
+
+        print(self.STAGING)
 
         fastapi_kwargs = {
             "title": self.PROJECT_NAME,

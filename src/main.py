@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from typing import List
+from fastapi import Depends, FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from src.core.deps import get_current_user
 
 from src.core.utils.dynamic_router import Routers
 from src.modules.shared.shared import router_urls as core_urls
@@ -11,8 +13,9 @@ from src.core.config import settings
 
 URLS_ENDPOINTS = core_urls + cyc_urls + acat_urls
 
+dependencies: List[Depends] = [Depends(get_current_user)] if settings.STAGING else []
 
-app = FastAPI(**settings.fastapi_kwargs)
+app = FastAPI(**settings.fastapi_kwargs, dependencies=dependencies)
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
