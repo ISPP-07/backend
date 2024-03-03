@@ -17,6 +17,7 @@ def root():
 async def create_family(session: SessionDep, family: Family) -> Any:
     return await create_family_controller(session, family)
 
-@router.get('/details/{family_id}', status_code=status.HTTP_200_OK)
+
+@router.get('/{family_id}', status_code=status.HTTP_200_OK)
 async def get_family_details(session: SessionDep, family_id: int) -> Any:
     return await get_family_details_controller(session, family_id)

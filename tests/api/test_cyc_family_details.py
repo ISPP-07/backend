@@ -43,7 +43,7 @@ async def create_family(session) -> Family:
 def test_get_family_details(client: TestClient, create_family: Family):
     family_id = create_family["id"]
     url = (f'{settings.API_STR}'
-           f'cyc/family/details/' + str(family_id))
+           f'cyc/family/' + str(family_id))
 
     response = client.get(url)
     assert response.status_code == 200
