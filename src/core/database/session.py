@@ -5,6 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 import asyncio
 import sys
 
+
 from src.core.config import settings
 
 DB_POOL_SIZE = 83
