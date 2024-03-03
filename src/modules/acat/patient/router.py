@@ -11,7 +11,7 @@ router = APIRouter()
 def root():
     return 'Hello acat patient router!'
 
-@router.post('/')
-async def create_patient(session: SessionDep, patient: Patient) -> Any:
-    return await create_patient_controller(session, patient)
 
+@router.post('/')
+async def create_patient(session: SessionDep, patient: Patient) -> Patient:
+    return await create_patient_controller(session, patient)
