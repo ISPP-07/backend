@@ -11,19 +11,19 @@ async def create_patients(session) -> list[Patient]:
     result = []
     patients_data = [
         {
-            "registration_date": "2023-02-29",
+            "registration_date": "2023-02-28",
             "dossier_number": "1",
             "name": "Paciente 1",
             "alias": "P1",
             "first_surname": "AAA",
             "second_surname": "BBB",
-            "birth_date": "2023-02-29",
+            "birth_date": "2023-02-28",
             "sex": "Male",
             "address": "Calle 1",
             "dni": "12343456M",
             "contact_phone": "123123123",
             "age": 1,
-            "first_appointment_date": "2023-02-29"
+            "first_appointment_date": "2023-02-28"
         },
         {
             "registration_date": "2024-02-29",
@@ -48,7 +48,7 @@ async def create_patients(session) -> list[Patient]:
 
 
 def test_get_patients(client: TestClient, create_patients: list[Patient]):
-    url = f'{settings.API_STR}cyc/patient/list'
+    url = f'{settings.API_STR}acat/patient'
     response = client.get(url)
     assert response.status_code == 200
     result = response.json()
