@@ -13,7 +13,8 @@ class Sex(str, Enum):
     MALE = 'Male'
     FEMALE = 'Female'
 
-# This class is commented because the implementation of its functionalities will not be done in this sprint.
+# This class is commented because the implementation of its
+# functionalities will not be done in this sprint.
 
 # class AppointmentHistory(Base, table=True):
 #     id: Optional[int] = Field(default=None, primary_key=True)

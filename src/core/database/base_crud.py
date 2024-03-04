@@ -30,11 +30,13 @@ class InvalidTable(RuntimeError):
 
 
 def is_table(cls: Type[Self]) -> bool:
-    # Check if the class has a '__tablename__' attribute which is a common indicator of SQLAlchemy table models
+    # Check if the class has a '__tablename__' attribute which is a common
+    # indicator of SQLAlchemy table models
     if hasattr(cls, '__tablename__'):
         return True
     # Optionally, check for other SQLAlchemy table indicators as needed
-    # e.g., checking if '__table__' or specific SQLAlchemy base class is present
+    # e.g., checking if '__table__' or specific SQLAlchemy base class is
+    # present
     return False
 
 
@@ -45,8 +47,7 @@ def validate_table(func):
         if not is_table(cls):
             raise InvalidTable(
                 f'"{cls.__name__}" is not a table. '
-                "Add the class parameter `table=True` or don't use with this object."
-            )
+                "Add the class parameter `table=True` or don't use with this object.")
         return func(self, *args, **kwargs)
 
     return wrapper
