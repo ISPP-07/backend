@@ -8,7 +8,7 @@ from alembic import context
 from sqlmodel import SQLModel
 
 from src.core.config import settings
-from src.core.database.base_crud import Base
+from src.core.utils.dynamic_model_metadata import find_and_import_models
 
 
 # this is the Alembic Config object, which provides
@@ -29,6 +29,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
+find_and_import_models()
 
 target_metadata = SQLModel.metadata
 
