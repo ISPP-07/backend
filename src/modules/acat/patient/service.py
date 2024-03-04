@@ -17,5 +17,5 @@ async def get_patients_service(session):
 
 
 async def get_patient_details_service(session, patient_id: int):
-   obj = await Patient.get(session, id=patient_id)
-   return obj
+    obj = await Patient.get(session, id=patient_id)
+    return obj
