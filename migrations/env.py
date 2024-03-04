@@ -8,15 +8,16 @@ from alembic import context
 from sqlmodel import SQLModel
 
 from src.core.config import settings
-from src.core.database.base_crud import Base
-from src.core.utils.dynamic_model_metadata import find_and_import_models
+import src.model_registry
 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option(
-    "sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI.unicode_string())
+    "sqlalchemy.url",
+    settings.SQLALCHEMY_DATABASE_URI.unicode_string()
+)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -27,8 +28,6 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-
-find_and_import_models()
 
 target_metadata = SQLModel.metadata
 

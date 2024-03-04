@@ -1,10 +1,6 @@
-from typing import Any
 from fastapi import APIRouter
 
-from src.core.deps import SessionDep
-
-from src.modules.shared.root.controller import *
-from src.modules.shared.root.model import Potato, Potatoes
+from src.modules.shared.root import controller
 
 router = APIRouter(
     tags=['core'],
@@ -12,15 +8,5 @@ router = APIRouter(
 
 
 @router.get('/')
-def root():
-    return root_controller()
-
-
-@router.get('/potato/{potato_id}')
-async def get_potato(session: SessionDep, potato_id: int) -> Any:
-    return await get_potato_controller(session, potato_id)
-
-
-@router.post('/potato')
-async def create_potato(session: SessionDep, potato: Potato) -> Any:
-    return await create_potato_controller(session, potato)
+def root() -> str:
+    return controller.root_controller()

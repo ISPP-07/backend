@@ -12,13 +12,18 @@ sqlalchemy = "*"
 pydantic = "*"
 requests = "*"
 pydantic-settings = "*"
-pytest = "*"
-httpx = "*"
-pytest-asyncio = "*"
 asyncio = "*"
+httpx = "*"
 psycopg = {extras = ["binary", "pool"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+python-multipart = "*"
+bcrypt = "*"
+gunicorn = "*"
 
 [dev-packages]
+pytest = "*"
+pytest-asyncio = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.11"

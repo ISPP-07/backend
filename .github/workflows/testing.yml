@@ -1,0 +1,63 @@
+name: Backend testing
+
+on:
+  pull_request:
+    types:
+      - labeled
+    branches:
+      - develop
+      - main
+  workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+
+
+jobs:
+  build:
+    if: ${{ github.event.label.name == 'ready' }}
+    strategy:
+      matrix:
+        pyversion: ['3.11']
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16.1
+        env:
+          POSTGRES_USER: postgreuser
+          POSTGRES_PASSWORD: 123
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{matrix.pyversion}}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{matrix.pyversion}}
+    - name: psycopg prerequisites
+      run: sudo apt-get install libpq-dev
+    - name: Install pipenv
+      run: pip install pipenv
+    - name: Env setup
+      run: |
+        cp example.env .env 
+        cp .env.test.example .env.test
+    - name: Prepare dependencies
+      run: |
+        pipenv install --dev
+        pipenv install codacy-coverage
+        pipenv install coverage
+    - name: Run tests
+      if: ${{ github.base_ref == 'develop' || github.base_ref == 'main'}}
+      run: |
+        pipenv run coverage run --branch --source=. -m pytest
+        pipenv run coverage xml 
+    - name: Codacy Coverage Reporter
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
