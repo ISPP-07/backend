@@ -15,6 +15,9 @@ pydantic-settings = "*"
 asyncio = "*"
 httpx = "*"
 psycopg = {extras = ["binary", "pool"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+python-multipart = "*"
+bcrypt = "*"
 
 [dev-packages]
 pytest = "*"
