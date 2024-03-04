@@ -29,13 +29,13 @@ def hello():
 @router.post('/login', response_model=TokenSchema)
 async def login(session: SessionDep, form_data: OAuth2PasswordRequestForm = Depends()) -> TokenSchema:
     user = await controller.login_controller(session, form_data)
-    
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect email or password"
         )
-    
+
     return {
         "access_token": create_access_token(user.id),
         "refresh_token": create_refresh_token(user.id),
@@ -46,12 +46,15 @@ async def login(session: SessionDep, form_data: OAuth2PasswordRequestForm = Depe
 async def test_token(user: User = Depends(get_current_user)) -> UserOut:
     return user
 
+
 @router.post('/refresh', summary="Refresh token", response_model=TokenSchema)
 async def refresh_token(session: SessionDep, refresh_token: str = Body(...)) -> TokenSchema:
     try:
         payload = jwt.decode(
-            refresh_token, settings.JWT_REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+            refresh_token,
+            settings.JWT_REFRESH_SECRET_KEY,
+            algorithms=[
+                settings.ALGORITHM])
         token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise HTTPException(
