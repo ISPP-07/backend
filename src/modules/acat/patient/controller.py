@@ -7,3 +7,6 @@ def create_patient_controller(session, patient: Patient):
 
 def get_patients_controller(session):
     return service.get_patients_service(session)
+  
+def get_patient_details_controller(session, patient_id: int):
+    return service.get_patient_details_service(session, patient_id)

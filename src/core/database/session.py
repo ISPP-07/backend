@@ -1,3 +1,5 @@
+import asyncio
+import sys
 from sqlalchemy.pool import NullPool, QueuePool
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -14,7 +16,6 @@ POOL_SIZE = max(DB_POOL_SIZE // WEB_CONCURRENCY, 5)
 if "win" in sys.platform:
     # Set event loop policy for Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 connect_args = {"check_same_thread": False}
 
 engine = create_async_engine(

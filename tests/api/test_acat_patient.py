@@ -5,34 +5,6 @@ from src.core.config import settings
 from src.modules.acat.patient.model import Patient
 
 
-@pytest.mark.asyncio
-async def test_create_patient(client: TestClient):
-    url = f'{settings.API_STR}acat/patient/'
-
-    patient_data = {
-        "id": 0,
-        "registration_date": "2024-02-26",
-        "dossier_number": "string",
-        "name": "string",
-        "alias": "string",
-        "first_surname": "string",
-        "second_surname": "string",
-        "birth_date": "2024-02-26",
-        "sex": "Male",
-        "address": "string",
-        "dni": "string",
-        "contact_phone": "string",
-        "age": 0,
-        "first_appointment_date": "2024-02-26"
-    }
-
-    response = client.post(url, json=patient_data)
-
-    assert response.status_code == 200
-    response_data = response.json()
-    assert response_data["name"] == patient_data["name"]
-    assert response_data["alias"] == patient_data["alias"]
-
 @pytest_asyncio.fixture
 async def create_patients(session) -> list[Patient]:
     result = []
@@ -72,6 +44,35 @@ async def create_patients(session) -> list[Patient]:
         patient = await Patient.create(session, **patient_data)
         result.append(patient)
     return result
+  
+  
+@pytest.mark.asyncio
+async def test_create_patient(client: TestClient):
+    url = f'{settings.API_STR}acat/patient/'
+
+    patient_data = {
+        "id": 0,
+        "registration_date": "2024-02-26",
+        "dossier_number": "string",
+        "name": "string",
+        "alias": "string",
+        "first_surname": "string",
+        "second_surname": "string",
+        "birth_date": "2024-02-26",
+        "sex": "Male",
+        "address": "string",
+        "dni": "string",
+        "contact_phone": "string",
+        "age": 0,
+        "first_appointment_date": "2024-02-26"
+    }
+
+    response = client.post(url, json=patient_data)
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["name"] == patient_data["name"]
+    assert response_data["alias"] == patient_data["alias"]
 
 
 def test_get_patients(client: TestClient, create_patients: list[Patient]):
@@ -82,3 +83,36 @@ def test_get_patients(client: TestClient, create_patients: list[Patient]):
     assert isinstance(result, list)
     assert len(result) == 2
     assert result == [patient.model_dump() for patient in create_patients]
+    
+
+@pytest.mark.asyncio
+async def test_get_patient_details(client: TestClient): 
+
+    patient_data = {
+        "id": 1,
+        "registration_date": "2024-02-26",
+        "dossier_number": "string",
+        "name": "string",
+        "alias": "string",
+        "first_surname": "string",
+        "second_surname": "string",
+        "birth_date": "2024-02-26",
+        "sex": "Male",
+        "address": "string",
+        "dni": "string",
+        "contact_phone": "string",
+        "age": 0,
+        "first_appointment_date": "2024-02-26"
+    }
+
+    url_get = f'{settings.API_STR}acat/patient/details/{patient_data["id"]}'
+    url_post = f'{settings.API_STR}acat/patient'
+
+    client.post(url_post, json=patient_data)
+    response = client.get(url_get)
+
+    assert response.status_code == 200
+
+    response_data = response.json()
+    assert response_data["name"] == patient_data["name"]
+    assert response_data["alias"] == patient_data["alias"]
