@@ -14,8 +14,7 @@ async def create_products(session) -> list[Product]:
         "quantity": 1,
         "exp_date": "2024-03-02",
         "warehouse_id": 1
-    }
-    ,{
+    }, {
         "id": 2,
         "name": "string",
         "quantity": 1,

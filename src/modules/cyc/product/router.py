@@ -12,7 +12,7 @@ router = APIRouter()
 async def get_products(session: SessionDep) -> List[Product]:
     return await get_products_controller(session)
 
-  
+
 @router.post('/', status_code=status.HTTP_201_CREATED)
 async def create_product(session: SessionDep, product: Product) -> Product:
     return await create_product_controller(session, product)

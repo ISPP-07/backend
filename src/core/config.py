@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     API_STR: str
 
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int  = 30  # 30 minutes
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # 30 minutes
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     JWT_SECRET_KEY: str = secrets.token_urlsafe(32)
     JWT_REFRESH_SECRET_KEY: str = secrets.token_urlsafe(32)
 
@@ -41,7 +41,8 @@ class Settings(BaseSettings):
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    def assemble_cors_origins(
+            cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
@@ -57,7 +58,10 @@ class Settings(BaseSettings):
 
     @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], values: ValidationInfo) -> Any:
+    def assemble_db_connection(
+            cls,
+            v: Optional[str],
+            values: ValidationInfo) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
