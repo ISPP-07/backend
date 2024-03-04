@@ -9,7 +9,7 @@ async def create_user_service(session, user_in: UserCreate):
 
     if len(user_check) > 0:
         return None
-    
+
     hashed_password = get_hashed_password(user_in.password)
     user = await User.create(session, username=user_in.username, email=user_in.email, hashed_password=hashed_password)
     return user

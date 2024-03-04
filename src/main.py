@@ -17,7 +17,8 @@ if settings.ACAT_NGO:
     from src.modules.acat.acat import router_urls as acat_urls
     urls_endpoints += acat_urls
 
-dependencies: List[Depends] = [Depends(get_current_user)] if settings.STAGING else []
+dependencies: List[Depends] = [
+    Depends(get_current_user)] if settings.STAGING else []
 
 app = FastAPI(**settings.fastapi_kwargs, dependencies=dependencies)
 

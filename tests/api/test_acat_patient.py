@@ -44,8 +44,8 @@ async def create_patients(session) -> list[Patient]:
         patient = await Patient.create(session, **patient_data)
         result.append(patient)
     return result
-  
-  
+
+
 @pytest.mark.asyncio
 async def test_create_patient(client: TestClient):
     url = f'{settings.API_STR}acat/patient/'
@@ -83,10 +83,10 @@ def test_get_patients(client: TestClient, create_patients: list[Patient]):
     assert isinstance(result, list)
     assert len(result) == 2
     assert result == [patient.model_dump() for patient in create_patients]
-    
+
 
 @pytest.mark.asyncio
-async def test_get_patient_details(client: TestClient): 
+async def test_get_patient_details(client: TestClient):
 
     patient_data = {
         "id": 1,

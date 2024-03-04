@@ -22,7 +22,7 @@ engine = create_async_engine(
     str(settings.SQLALCHEMY_DATABASE_URI),
     echo=False,
     future=True,
-    #pool_size=POOL_SIZE,
+    # pool_size=POOL_SIZE,
     # max_overflow=64,
     poolclass=QueuePool,  # Asincio pytest works with NullPool
 )

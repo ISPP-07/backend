@@ -9,9 +9,10 @@ def root_service():
 def hello_service():
     return 'Hello service !!'
 
+
 async def login_service(session, form_data):
-    user = await User.get(session, username = form_data.username)
+    user = await User.get(session, username=form_data.username)
     if user and verify_password(form_data.password, user.hashed_password):
         return user
-    
+
     return None
