@@ -11,11 +11,6 @@ from src.core.deps import SessionDep
 router = APIRouter()
 
 
-@router.get('/')
-def root():
-    return 'Hello acat patient router!'
-
-
 @router.post('/')
 async def create_patient(session: SessionDep, patient: Patient) -> Patient:
     return await controller.create_patient_controller(session, patient)
@@ -27,6 +22,6 @@ async def get_patients(session: SessionDep) -> List:
     return await controller.get_patients_controller(session)
 
 
- @router.get('/details/{patient_id}')
+@router.get('/details/{patient_id}')
 async def get_patient_details(session: SessionDep, patient_id: int) -> Any:
     return await controller.get_patient_details_controller(session, patient_id)

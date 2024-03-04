@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+import pytest_asyncio
 
 from src.core.config import settings
 from src.modules.acat.patient.model import Patient
@@ -75,6 +76,7 @@ async def test_create_patient(client: TestClient):
     assert response_data["alias"] == patient_data["alias"]
 
 
+@pytest.mark.asyncio
 def test_get_patients(client: TestClient, create_patients: list[Patient]):
     url = f'{settings.API_STR}acat/patient'
     response = client.get(url)
@@ -86,33 +88,16 @@ def test_get_patients(client: TestClient, create_patients: list[Patient]):
 
 
 @pytest.mark.asyncio
-async def test_get_patient_details(client: TestClient):
+async def test_get_patient_details(client: TestClient, create_patients: list[Patient]):
 
-    patient_data = {
-        "id": 1,
-        "registration_date": "2024-02-26",
-        "dossier_number": "string",
-        "name": "string",
-        "alias": "string",
-        "first_surname": "string",
-        "second_surname": "string",
-        "birth_date": "2024-02-26",
-        "sex": "Male",
-        "address": "string",
-        "dni": "string",
-        "contact_phone": "string",
-        "age": 0,
-        "first_appointment_date": "2024-02-26"
-    }
+    patient = create_patients.pop()
 
-    url_get = f'{settings.API_STR}acat/patient/details/{patient_data["id"]}'
-    url_post = f'{settings.API_STR}acat/patient'
+    url_get = f'{settings.API_STR}acat/patient/details/{patient.id}'
 
-    client.post(url_post, json=patient_data)
     response = client.get(url_get)
 
     assert response.status_code == 200
 
     response_data = response.json()
-    assert response_data["name"] == patient_data["name"]
-    assert response_data["alias"] == patient_data["alias"]
+    assert response_data["name"] == patient.name
+    assert response_data["alias"] == patient.alias
