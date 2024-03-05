@@ -27,7 +27,7 @@ class BaseMongo(BaseModel):
         db: AsyncIOMotorDatabase,
         query: dict,
         **kwargs: Any,
-    ) -> Self:
+    ) -> Self | None:
         collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
         result = await collection.find_one(cls.prepare_query(query), **kwargs)
         return cls.from_mongo(result)
@@ -36,9 +36,11 @@ class BaseMongo(BaseModel):
     async def get_multi(
         cls: Type[Self],
         db: AsyncIOMotorDatabase,
-        query: dict,
+        query: dict | None,
         **kwargs: Any,
     ) -> list[Self]:
+        if query is None:
+            query = {}
         collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
         cursor = collection.find(cls.prepare_query(query), **kwargs)
         result = await cursor.to_list(length=None)

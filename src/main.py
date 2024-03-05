@@ -11,9 +11,9 @@ from src.modules.shared.shared import router_urls as core_urls
 
 urls_endpoints = core_urls
 
-# if settings.CYC_NGO:
-#     from src.modules.cyc.cyc import router_urls as cyc_urls
-#     urls_endpoints += cyc_urls
+if settings.CYC_NGO:
+    from src.modules.cyc.cyc import router_urls as cyc_urls
+    urls_endpoints += cyc_urls
 # if settings.ACAT_NGO:
 #     from src.modules.acat.acat import router_urls as acat_urls
 #     urls_endpoints += acat_urls
@@ -37,23 +37,23 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 
-@app.middleware('http')
-async def create_and_commit_mongo_session(request: Request, call_next):
-    """ 
-    Esta funcionalidad solo funciona si se configura un db de mongodb con replica sets.
-    """
-    client_db = get_client()
-    async with await client_db.start_session() as s:
-        async with s.start_transaction():
-            try:
-                request.state.mongo_session = s
-                response = await call_next(request)
-                await s.commit_transaction()
-                return response
-            except HTTPException:
-                await s.abort_transaction()
-            finally:
-                await s.end_session()
+# @app.middleware('http')
+# async def create_and_commit_mongo_session(request: Request, call_next):
+#     """
+#     Esta funcionalidad solo funciona si se configura un db de mongodb con replica sets.
+#     """
+#     client_db = get_client()
+#     async with await client_db.start_session() as s:
+#         async with s.start_transaction():
+#             try:
+#                 request.state.mongo_session = s
+#                 response = await call_next(request)
+#                 await s.commit_transaction()
+#                 return response
+#             except HTTPException:
+#                 await s.abort_transaction()
+#             finally:
+#                 await s.end_session()
 
 
 Routers(

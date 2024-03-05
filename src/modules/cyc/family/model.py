@@ -1,10 +1,11 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal
 from enum import Enum
+from uuid import UUID
 from datetime import date
-from sqlmodel import Field, Relationship
+from pydantic import PastDate, FutureDate, PositiveInt
 
-from src.core.database.base_crud import Base
+from src.core.database.base_crud import BaseMongo
 
 AGE_RANGES: Dict[
     Literal['baby', 'child', 'adult', 'senior', 'old'],
@@ -32,12 +33,12 @@ def get_age_rank(age: int) -> str:
     raise ValueError('Age cannot be negative')
 
 
-class DerecognitionStatus(str, Enum):
+class DerecognitionStatus(Enum):
     ACTIVE = 'Active'
     SUSPENDED = 'Suspended'
 
 
-class PersonType(str, Enum):
+class PersonType(Enum):
     CHILD = 'Child'
     ADULT = 'Adult'
 
@@ -48,22 +49,14 @@ class PersonType(str, Enum):
 #     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
 
 
-class FamilyObservation(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    observation_text: str
-    family_id: Optional[int] = Field(default=None, foreign_key='family.id')
-    family: 'Family' = Relationship(back_populates='observations')
-
-
-class Person(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    date_birth: date
+class Person(BaseMongo, table=True):
+    id: UUID
+    date_birth: PastDate
     type: PersonType
     name: Optional[str]
-    dni: Optional[str]
-    # family_header: Optional[bool] = Field(default=False)
-    family_id: Optional[int] = Field(default=None, foreign_key='family.id')
-    family: 'Family' = Relationship(back_populates='persons')
+    nid: Optional[str]
+    family_head: bool = False
+    family_id: UUID
 
     def age(self) -> int:
         return calculate_age(self.date_birth)
@@ -72,19 +65,20 @@ class Person(Base, table=True):
         return get_age_rank(self.age)
 
 
-class Family(Base, table=True):
-    id: int = Field(default=None, primary_key=True)
+class Family(BaseMongo):
+    id: UUID
     name: str
     phone: str
     address: str
-    number_of_people: int
+    number_of_people: PositiveInt
     referred_organization: str
-    next_renewal_date: date
+    next_renewal_date: FutureDate
     derecognition_state: DerecognitionStatus
-    observations: list[FamilyObservation] = Relationship(
-        back_populates='family'
-    )
-    persons: list[Person] = Relationship(back_populates='family')
+    observation: str
     # delivery_history: list[DeliveryHistory] = Relationship(
     #     back_populates='family_id',
     # )
+
+
+class FamilyWithMembers(Family):
+    members: list[Person]
