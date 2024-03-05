@@ -1,7 +1,7 @@
-
+from src.core.deps import DataBaseDep
+from src.modules.shared.user.model import UserCreate, UserOut
 from src.modules.shared.user import service
-from src.modules.shared.user.schema import UserCreate
 
 
-async def create_user_controller(session, user: UserCreate):
-    return await service.create_user_service(session, user)
+async def create_user_controller(db: DataBaseDep, session, user: UserCreate) -> UserOut:
+    return await service.create_user_service(db, session, user)

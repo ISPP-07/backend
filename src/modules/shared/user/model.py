@@ -1,11 +1,24 @@
-from typing import Optional
-from sqlmodel import Field
+from uuid import UUID
+from pydantic import EmailStr, BaseModel
 
-from src.core.database.base_crud import Base
+from src.core.database.base_crud import BaseMongo
 
 
-class User(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class User(BaseMongo):
+    id: UUID
     username: str
+    password: str
     hashed_password: str
-    email: str
+    email: EmailStr
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+
+
+class UserOut(BaseModel):
+    id: UUID
+    username: str
+    email: EmailStr

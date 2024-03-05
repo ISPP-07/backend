@@ -1,125 +1,134 @@
-from __future__ import annotations
+from typing import TypeVar, Type, Any
+from uuid import uuid4
+from pydantic import BaseModel
+from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 
-import inspect
-from functools import wraps
-from typing import Any, Callable, Dict, List, Literal, Type, TypeVar
+from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.utils.helpers import check_all_keys
 
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Query, noload, raiseload, selectinload, subqueryload
-from sqlalchemy.sql.elements import BinaryExpression
-from sqlmodel import SQLModel, select
-from sqlmodel.ext.asyncio.session import AsyncSession
-
-Self = TypeVar("Self", bound="Base")
-LoadStrategy = Literal["subquery", "selectin",
-                       "raise", "raise_on_sql", "noload"]
-load_strategy_map: Dict[LoadStrategy, Callable[..., Any]] = {
-    "subquery": subqueryload,
-    "selectin": selectinload,
-    "raise": raiseload,
-    "raise_on_sql": raiseload,
-    "noload": noload,
-}
+Self = TypeVar('Self', bound='BaseMongo')
 
 
-class InvalidTable(RuntimeError):
-    """Raised when calling a method coupled to SQLAlchemy operations.
+class BaseMongo(BaseModel):
 
-    It should be called only by SQLModel objects that are tables.
-    """
-
-
-def is_table(cls: Type[Self]) -> bool:
-    # Check if the class has a '__tablename__' attribute which is a common
-    # indicator of SQLAlchemy table models
-    if hasattr(cls, '__tablename__'):
-        return True
-    # Optionally, check for other SQLAlchemy table indicators as needed
-    # e.g., checking if '__table__' or specific SQLAlchemy base class is
-    # present
-    return False
-
-
-def validate_table(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        cls = self if inspect.isclass(self) else self.__class__
-        if not is_table(cls):
-            raise InvalidTable(
-                f'"{cls.__name__}" is not a table. '
-                "Add the class parameter `table=True` or don't use with this object.")
-        return func(self, *args, **kwargs)
-
-    return wrapper
-
-
-def _prepare_query(
-    cls: Type[Self], load_strategy: Dict[str, LoadStrategy] | None
-) -> Query:
-    load_strategy = load_strategy or {}
-    query = select(cls)
-    for key, strategy in load_strategy.items():
-        query = query.options(load_strategy_map[strategy](key))
-    return query
-
-
-class Base(SQLModel):
     @classmethod
-    @validate_table
+    def _get_collection_name(cls):
+        return cls.__name__
+
+    @staticmethod
+    def prepare_query(query: dict):
+        if check_all_keys(query, 'id'):
+            query['_id'] = query.pop('id')
+        return query
+
+    @classmethod
     async def get(
         cls: Type[Self],
-        session: AsyncSession,
-        *args: BinaryExpression,
-        load_strategy: Dict[str, LoadStrategy] | None = None,
+        db: AsyncIOMotorDatabase,
+        query: dict,
         **kwargs: Any,
     ) -> Self:
-        query = _prepare_query(cls, load_strategy)
-        result = await session.execute(query.filter(*args).filter_by(**kwargs))
-        return result.scalars().first()
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        result = await collection.find_one(cls.prepare_query(query), **kwargs)
+        return cls.from_mongo(result)
 
     @classmethod
-    @validate_table
     async def get_multi(
         cls: Type[Self],
-        session: AsyncSession,
-        *args: BinaryExpression,
-        load_strategy: Dict[str, LoadStrategy] | None = None,
-        offset: int = 0,
-        limit: int = 100,
+        db: AsyncIOMotorDatabase,
+        query: dict,
         **kwargs: Any,
-    ) -> List[Self]:
-        query = _prepare_query(cls, load_strategy)
-        result = await session.execute(
-            query.filter(*args).filter_by(**kwargs).offset(offset).limit(limit)
-        )
-        return result.scalars().all()
+    ) -> list[Self]:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        cursor = collection.find(cls.prepare_query(query), **kwargs)
+        result = await cursor.to_list(length=None)
+        return [cls.from_mongo(document) for document in result]
 
     @classmethod
-    @validate_table
-    async def create(cls: Type[Self], session: AsyncSession, **kwargs: Any) -> Self:
-        db_obj = cls(**kwargs)
-        session.add(db_obj)
-        await session.commit()
-        return db_obj
+    async def create(
+        cls: Type[Self],
+        db: AsyncIOMotorDatabase,
+        obj_to_create: dict,
+        **kwargs: Any,
+    ) -> InsertOneResultMongo:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if 'id' in obj_to_create:
+            obj_to_create.pop('id')
+        if '_id' in obj_to_create:
+            obj_to_create.pop('_id')
+        obj = cls(**obj_to_create, id=uuid4())
+        return await collection.insert_one(obj.mongo(), **kwargs)
 
     @classmethod
-    @validate_table
-    async def update(cls: Type[Self], session: AsyncSession, **kwargs: Any) -> Self:
-        obj_data = jsonable_encoder(cls)
-        for field in obj_data:
-            if field in kwargs:
-                setattr(cls, field, kwargs[field])
-        session.add(cls)
-        await session.commit()
-        await session.refresh(cls)
-        return cls
-
-    @classmethod
-    @validate_table
-    async def delete(
-        cls: Type[Self], session: AsyncSession, *args: BinaryExpression, **kwargs: Any
+    async def update(
+        cls: Type[Self],
+        db: AsyncIOMotorDatabase,
+        query: dict,
+        data_to_update: dict,
+        **kwargs: Any,
     ) -> Self:
-        db_obj = await cls.get(session, *args, **kwargs)
-        await session.delete(db_obj)
-        await session.commit()
-        return db_obj
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if '_id' in data_to_update:
+            raise ValueError('Id cannot be updated')
+        update = {'$set': data_to_update}
+        result = await collection.find_one_and_update(
+            cls.prepare_query(query),
+            update,
+            return_document=True,
+            **kwargs
+        )
+        if result is None:
+            raise ValueError('Document not found')
+        return cls.from_mongo(result)
+
+    @classmethod
+    async def delete(
+        cls: Type[Self],
+        db: AsyncIOMotorDatabase,
+        query: dict,
+        many: bool = False,
+        **kwargs: Any,
+    ) -> DeleteResultMongo:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if many:
+            result = await collection.delete_many(cls.prepare_query(query), **kwargs)
+        else:
+            result = await collection.delete_one(cls.prepare_query(query), **kwargs)
+        return result
+
+    @classmethod
+    async def count(
+        cls: Type[Self],
+        db: AsyncIOMotorDatabase,
+        query: dict,
+        **kwargs: Any,
+    ):
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        result = await collection.count_documents(cls.prepare_query(query), **kwargs)
+        return result
+
+    @classmethod
+    def get_collection(cls: Type[Self], db: AsyncIOMotorDatabase) -> AsyncIOMotorCollection:
+        return db[cls._get_collection_name()]
+
+    @classmethod
+    def from_mongo(cls: Type[Self], data: dict):
+        if not data:
+            return data
+        id = data.pop('_id', None)
+        return cls(**dict(data, id=id))
+
+    def mongo(self, **kwargs):
+        exclude_unset = kwargs.pop('exclude_unset', True)
+        by_alias = kwargs.pop('by_alias', True)
+
+        parsed = self.model_dump(
+            exclude_unset=exclude_unset,
+            by_alias=by_alias,
+            **kwargs,
+        )
+
+        if '_id' not in parsed and 'id' in parsed:
+            parsed['_id'] = parsed.pop('id')
+
+        return parsed

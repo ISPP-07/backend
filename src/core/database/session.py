@@ -1,36 +1,34 @@
 import asyncio
 import sys
-from sqlalchemy.pool import NullPool, QueuePool
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel.ext.asyncio.session import AsyncSession
-import asyncio
-import sys
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from src.core.config import settings
 
-DB_POOL_SIZE = 83
-WEB_CONCURRENCY = 9
-POOL_SIZE = max(DB_POOL_SIZE // WEB_CONCURRENCY, 5)
-
-if "win" in sys.platform:
+if 'win' in sys.platform:
     # Set event loop policy for Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-connect_args = {"check_same_thread": False}
 
-engine = create_async_engine(
-    str(settings.SQLALCHEMY_DATABASE_URI),
-    echo=False,
-    future=True,
-    # pool_size=POOL_SIZE,
-    # max_overflow=64,
-    poolclass=QueuePool,  # Asincio pytest works with NullPool
-)
+_client_db: AsyncIOMotorClient = None  # pylint: disable=C0103
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+
+async def connect_and_init_db():
+    global _client_db  # pylint: disable=W0603
+    try:
+        _client_db = AsyncIOMotorClient(
+            str(settings.MONGO_DATABASE_URI),
+            uuidRepresentation='standard',
+        )
+    except Exception as e:
+        raise e
+
+
+async def close_db_connection():
+    global _client_db  # pylint: disable=W0603
+    if _client_db is None:
+        return
+    _client_db.close()
+    _client_db = None
+
+
+def get_client() -> AsyncIOMotorClient:
+    return _client_db

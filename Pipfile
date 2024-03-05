@@ -9,7 +9,6 @@ uvicorn = "*"
 sqlmodel = "*"
 alembic = "*"
 sqlalchemy = "*"
-pydantic = "*"
 requests = "*"
 pydantic-settings = "*"
 asyncio = "*"
@@ -19,11 +18,16 @@ python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
 bcrypt = "*"
 gunicorn = "*"
+motor = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 pytest = "*"
 pytest-asyncio = "*"
 python-dotenv = "*"
+pylint = "*"
+pylint-pydantic = "*"
+motor-types = "*"
 
 [requires]
 python_version = "3.11"

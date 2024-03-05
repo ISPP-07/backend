@@ -1,7 +1,6 @@
-import os
-import bcrypt
 from datetime import datetime, timedelta
 from typing import Union, Any
+import bcrypt
 from jose import jwt
 
 from src.core.config import settings
