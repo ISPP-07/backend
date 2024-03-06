@@ -1,14 +1,12 @@
-from uuid import UUID
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, UUID4
 
 from src.core.database.base_crud import BaseMongo
 
 
 class User(BaseMongo):
-    id: UUID
+    id: UUID4
     username: str
     password: str
-    hashed_password: str
     email: EmailStr
 
 
@@ -19,6 +17,6 @@ class UserCreate(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: UUID
+    id: UUID4
     username: str
     email: EmailStr

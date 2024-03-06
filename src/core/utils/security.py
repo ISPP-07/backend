@@ -7,12 +7,13 @@ from src.core.config import settings
 
 
 def create_access_token(
-        subject: Union[str, Any], expires_delta: int = None) -> str:
+    subject: Union[str, Any],
+    expires_delta: int = None
+) -> str:
     if expires_delta is not None:
         expires_delta = datetime.utcnow() + expires_delta
     else:
         expires_delta = datetime.utcnow() + timedelta(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-
     to_encode = {"exp": expires_delta, "sub": str(subject), "type": "access"}
     encoded_jwt = jwt.encode(
         to_encode,
@@ -22,7 +23,9 @@ def create_access_token(
 
 
 def create_refresh_token(
-        subject: Union[str, Any], expires_delta: int = None) -> str:
+    subject: Union[str, Any],
+    expires_delta: int = None
+) -> str:
     if expires_delta is not None:
         expires_delta = datetime.utcnow() + expires_delta
     else:

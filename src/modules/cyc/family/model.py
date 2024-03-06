@@ -1,9 +1,8 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal
 from enum import Enum
-from uuid import UUID
 from datetime import date
-from pydantic import PastDate, FutureDate, PositiveInt
+from pydantic import PastDate, FutureDate, PositiveInt, UUID4, BaseModel
 
 from src.core.database.base_crud import BaseMongo
 
@@ -49,14 +48,13 @@ class PersonType(Enum):
 #     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
 
 
-class Person(BaseMongo, table=True):
-    id: UUID
+# VALIDAR: NID, type (lo podriamos rellenar nosotros segun la edad)
+class Person(BaseModel):
     date_birth: PastDate
     type: PersonType
     name: Optional[str]
     nid: Optional[str]
     family_head: bool = False
-    family_id: UUID
 
     def age(self) -> int:
         return calculate_age(self.date_birth)
@@ -65,20 +63,29 @@ class Person(BaseMongo, table=True):
         return get_age_rank(self.age)
 
 
+# VALIDAR number_of_people == len(members), phone
 class Family(BaseMongo):
-    id: UUID
+    id: UUID4
     name: str
     phone: str
     address: str
     number_of_people: PositiveInt
-    referred_organization: str
-    next_renewal_date: FutureDate
-    derecognition_state: DerecognitionStatus
-    observation: str
+    referred_organization: Optional[str]
+    next_renewal_date: Optional[FutureDate]
+    derecognition_state: DerecognitionStatus = DerecognitionStatus.ACTIVE
+    observation: Optional[str]
+    members: list[Person]
     # delivery_history: list[DeliveryHistory] = Relationship(
     #     back_populates='family_id',
     # )
 
 
-class FamilyWithMembers(Family):
+class FamilyCreate(BaseModel):
+    name: str
+    phone: str
+    address: str
+    number_of_people: PositiveInt
+    referred_organization: Optional[str]
+    next_renewal_date: Optional[FutureDate]
+    observation: Optional[str]
     members: list[Person]

@@ -1,4 +1,4 @@
-from src.core.security import verify_password
+from src.core.utils.security import verify_password
 from src.modules.shared.user.model import User
 
 
@@ -6,13 +6,8 @@ def root_service():
     return 'Hello core auth router!'
 
 
-def hello_service():
-    return 'Hello service !!'
-
-
-async def login_service(session, form_data):
-    user = await User.get(session, username=form_data.username)
-    if user and verify_password(form_data.password, user.hashed_password):
-        return user
-
-    return None
+async def login_service(db, form_data) -> User | None:
+    user = await User.get(db, query={'username': form_data.username})
+    if not (user and verify_password(form_data.password, user.password)):
+        return None
+    return user

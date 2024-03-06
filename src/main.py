@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 
+# from src.core.utils.helpers import parse_arguments
 from src.core.utils.dynamic_router import Routers
 from src.core.config import settings
-from src.core.database.session import get_client, connect_and_init_db, close_db_connection
+from src.core.database.session import connect_and_init_db, close_db_connection
 from src.core.deps import get_current_user
 from src.modules.shared.shared import router_urls as core_urls
 
@@ -71,4 +72,12 @@ def root():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host=settings.SERVER_HOST, port=settings.SERVER_PORT)
+    # args = parse_arguments()
+    # reload_option = args.reload
+
+    uvicorn.run(
+        app,
+        host=settings.SERVER_HOST,
+        port=settings.SERVER_PORT,
+        # reload=reload_option
+    )

@@ -10,7 +10,7 @@ from jose import jwt
 from src.core.database.session import get_client
 from src.core.config import settings
 
-from src.modules.shared.auth.schema import TokenPayload
+from src.modules.shared.auth.model import TokenPayload
 from src.modules.shared.user.model import User
 
 
@@ -49,7 +49,6 @@ async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
 
-    # REVISAR SI ESTO FUNCIONA
     user = await User.get(db, {'id': token_data.sub})
 
     if user is None:

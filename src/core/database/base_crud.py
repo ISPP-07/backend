@@ -1,10 +1,11 @@
+import copy
 from typing import TypeVar, Type, Any
 from uuid import uuid4
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 
 from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
-from src.core.utils.helpers import check_all_keys
+from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
 
 Self = TypeVar('Self', bound='BaseMongo')
 
@@ -59,6 +60,7 @@ class BaseMongo(BaseModel):
         if '_id' in obj_to_create:
             obj_to_create.pop('_id')
         obj = cls(**obj_to_create, id=uuid4())
+        print('Nuevo objecto: ', obj)
         return await collection.insert_one(obj.mongo(), **kwargs)
 
     @classmethod
@@ -68,10 +70,16 @@ class BaseMongo(BaseModel):
         query: dict,
         data_to_update: dict,
         **kwargs: Any,
-    ) -> Self:
+    ) -> Self | None:
         collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if 'id' in data_to_update:
+            data_to_update.pop('id')
         if '_id' in data_to_update:
-            raise ValueError('Id cannot be updated')
+            data_to_update.pop('_id')
+        for key, value in copy.deepcopy(data_to_update).items():
+            if value is None:
+                data_to_update.pop(key)
+        change_invalid_types_mongo(data_to_update)
         update = {'$set': data_to_update}
         result = await collection.find_one_and_update(
             cls.prepare_query(query),
@@ -79,8 +87,6 @@ class BaseMongo(BaseModel):
             return_document=True,
             **kwargs
         )
-        if result is None:
-            raise ValueError('Document not found')
         return cls.from_mongo(result)
 
     @classmethod
@@ -114,7 +120,7 @@ class BaseMongo(BaseModel):
         return db[cls._get_collection_name()]
 
     @classmethod
-    def from_mongo(cls: Type[Self], data: dict):
+    def from_mongo(cls: Type[Self], data: dict | None):
         if not data:
             return data
         id = data.pop('_id', None)
@@ -123,14 +129,12 @@ class BaseMongo(BaseModel):
     def mongo(self, **kwargs):
         exclude_unset = kwargs.pop('exclude_unset', True)
         by_alias = kwargs.pop('by_alias', True)
-
         parsed = self.model_dump(
             exclude_unset=exclude_unset,
             by_alias=by_alias,
             **kwargs,
         )
-
         if '_id' not in parsed and 'id' in parsed:
             parsed['_id'] = parsed.pop('id')
-
+        change_invalid_types_mongo(parsed)
         return parsed

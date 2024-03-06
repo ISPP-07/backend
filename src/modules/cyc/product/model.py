@@ -1,24 +1,38 @@
 from typing import Optional
-from uuid import UUID
-from pydantic import PositiveInt, FutureDate
+from pydantic import PositiveInt, FutureDate, UUID4, BaseModel
 
 from src.core.database.base_crud import BaseMongo
 
-# HAY QUE HACER UNA RELACION *-*
 
-
-class Product(BaseMongo, table=True):
-    id: UUID
+class Product(BaseMongo):
+    id: UUID4
     name: str
     quantity: PositiveInt
     exp_date: Optional[FutureDate]
-    # warehouse_id: Optional[int] = Field(
-    #     default=None, foreign_key='warehouse.id'
-    # )
-    # warehouse: 'Warehouse' = Relationship(back_populates='products')
+    warehouses_id: list[UUID4]
+
+
+class ProductCreate(BaseModel):
+    name: str
+    quantity: PositiveInt
+    exp_date: Optional[FutureDate]
+    warehouses_id: list[UUID4]
+
+
+# WAREHOUSES TIENE QUE TENER LA LISTA CON TODAS LAS NUEVAS WAREHOUSES
+class ProductUpdate(BaseModel):
+    name: Optional[str]
+    quantity: Optional[PositiveInt]
+    exp_date: Optional[FutureDate]
+    warehouses_id: Optional[list[UUID4]]
 
 
 class Warehouse(BaseMongo):
-    id: UUID
+    id: UUID4
     name: str
-    # products: list[Product] = Relationship(back_populates='warehouse')
+    products_id: list[UUID4]
+
+
+class WarehouseCreate(BaseModel):
+    name: str
+    products_id: list[UUID4]
