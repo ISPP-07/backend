@@ -3,6 +3,11 @@ from typing import Any
 from datetime import date, datetime
 from enum import Enum
 
+NID_LETERS = [
+    'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X',
+    'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E'
+]
+
 
 def check_all_keys(data: dict, key: Any) -> bool:
     result = False
@@ -42,6 +47,15 @@ def change_invalid_types_mongo(data: dict) -> None:
                     change_invalid_types_mongo(v)
         if isinstance(value, dict):
             change_invalid_types_mongo(value)
+
+
+def check_nid(nid: str):
+    if len(nid) != 9 or not nid[:7].isdigit():
+        return False
+    mod = int(nid[:7]) % 23
+    if nid[-1] != NID_LETERS[mod]:
+        return False
+    return True
 
 
 def parse_arguments():

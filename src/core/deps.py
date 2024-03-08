@@ -22,7 +22,7 @@ reusable_oauth = OAuth2PasswordBearer(
 
 async def get_db() -> AsyncGenerator[AsyncIOMotorDatabase, None]:
     client_db = get_client()
-    db = client_db[settings.MONGO_DB]
+    db = client_db.get_database(settings.MONGO_DB)
     yield db
 
 DataBaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_db)]

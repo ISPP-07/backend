@@ -1,10 +1,19 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal
 from enum import Enum
-from datetime import date
-from pydantic import PastDate, FutureDate, PositiveInt, UUID4, BaseModel
+from datetime import date, datetime
+from pydantic import (
+    PastDate,
+    FutureDate,
+    PositiveInt,
+    UUID4,
+    BaseModel,
+    model_validator,
+    ValidationError
+)
 
 from src.core.database.base_crud import BaseMongo
+from src.core.utils.helpers import check_nid
 
 AGE_RANGES: Dict[
     Literal['baby', 'child', 'adult', 'senior', 'old'],
@@ -41,6 +50,11 @@ class PersonType(Enum):
     CHILD = 'Child'
     ADULT = 'Adult'
 
+
+class Gender(Enum):
+    MEN = 'Men'
+    WOMEN = 'Women'
+
 # This class is commented because the implementation of its functionalities will not be done in this sprint.
 # class DeliveryHistory(Base, table=True):
 #     id: Optional[int] = Field(default=None, primary_key=True)
@@ -48,13 +62,46 @@ class PersonType(Enum):
 #     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
 
 
-# VALIDAR: NID, type (lo podriamos rellenar nosotros segun la edad)
+# VALIDAR: NID, type (lo podriamos rellenar nosotros segun la edad), validar que solo haya un family_head
 class Person(BaseModel):
     date_birth: PastDate
-    type: PersonType
+    type: Optional[PersonType] = None
     name: Optional[str]
+    surname: Optional[str]
+    nationality: Optional[str]
     nid: Optional[str]
-    family_head: bool = False
+    family_head: Optional[bool] = False
+    gender: Optional[Gender]
+    functional_diversity: bool
+    food_intolerances: list[str]
+    homeless: Optional[bool] = False
+
+    # @model_validator(mode='before')
+    # @classmethod
+    # def validate_person(cls, values: dict):
+    #     if calculate_age(datetime.strptime(values['date_birth'], "%Y-%m-%d")) < 18:
+    #         values['type'] = PersonType.CHILD
+    #     else:
+    #         values['type'] = PersonType.ADULT
+    #     if values['type'] == PersonType.ADULT:
+    #         if not check_nid(values['nid']):
+    #             raise ValidationError({'field': 'nid', 'msg': 'Invalid NID'})
+    #         if all(values[field] is None for field in ['name', 'surname', 'nid']):
+    #             raise ValidationError(
+    #                 'Name, surname and nid are mandatory for adults'
+    #             )
+    #     else:
+    #         if values['nid'] is not None:
+    #             if not check_nid(values['nid']):
+    #                 raise ValidationError({
+    #                     'field': 'nid',
+    #                     'msg': 'Invalid NID'
+    #                 })
+    #         if values['family_head']:
+    #             raise ValidationError({
+    #                 'field': 'family_head',
+    #                 'msg': 'A child cannot be the family head'
+    #             })
 
     def age(self) -> int:
         return calculate_age(self.date_birth)
@@ -63,7 +110,7 @@ class Person(BaseModel):
         return get_age_rank(self.age)
 
 
-# VALIDAR number_of_people == len(members), phone
+# VALIDAR number_of_people == len(members), phone, que solo haya un family head
 class Family(BaseMongo):
     id: UUID4
     name: str

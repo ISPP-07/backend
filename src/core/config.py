@@ -80,8 +80,6 @@ class Settings(BaseSettings):
             dict: This can be unpacked as **kwargs to pass to FastAPI app.
         """
 
-        print(self.STAGING)
-
         fastapi_kwargs = {
             "title": self.PROJECT_NAME,
             "openapi_url": f"{self.API_STR}/openapi.json",

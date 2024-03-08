@@ -60,7 +60,6 @@ class BaseMongo(BaseModel):
         if '_id' in obj_to_create:
             obj_to_create.pop('_id')
         obj = cls(**obj_to_create, id=uuid4())
-        print('Nuevo objecto: ', obj)
         return await collection.insert_one(obj.mongo(), **kwargs)
 
     @classmethod
