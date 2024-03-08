@@ -38,12 +38,12 @@ async def create_product_controller(db: DataBaseDep, product: ProductCreate) -> 
     for item in product.warehouses:
         warehouse = await service.get_warehouse_service(
             db,
-            query={'id': item.warehouses_id}
+            query={'id': item.warehouse_id}
         )
         if warehouse is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f'Warehouse {item.warehouses_id} not found'
+                detail=f'Warehouse {item.warehouse_id} not found'
             )
         if any(p.name == product.name for p in warehouse.products):
             raise HTTPException(
@@ -87,38 +87,43 @@ async def update_product_controller(
         product_update: ProductUpdate
 ) -> list[ProductOut]:
     result = []
-    warehouses = await service.get_warehouses_service(
-        db,
-        query={'id': {'$in': product_update.warehouses_id}}
-    )
-    for warehouse in warehouses:
+    for item in product_update.warehouses:
+        warehouse = await service.get_warehouse_service(db, {'id': item.warehouse_id})
+        if warehouse is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Warehouse {item.warehouse_id} not found'
+            )
         if product_update.name not in (p.name for p in warehouse.products):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f'Product not found in warehouse {warehouse.name}'
             )
-        products = list(filter(
+        new_products = list(filter(
             lambda p: p.name != product_update.name,
             warehouse.products
         )) + [Product(
             name=product_update.name,
-            quantity=product_update.quantity,
+            quantity=item.quantity,
             exp_date=product_update.exp_date
         )]
-        await service.update_warehouse_service(
+        print('products: ', new_products)
+        r = await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
             warehouse_update=WarehouseUpdate(
-                name=None,
-                products=products
+                products=new_products
             )
         )
+        print('updated result: ', r)
+        print(item.quantity)
         result.append(ProductOut(
             warehouse_id=warehouse.id,
             name=product_update.name,
-            quantity=product_update.quantity,
+            quantity=item.quantity,
             exp_date=product_update.exp_date
         ))
+    print(result)
     return result
 
 

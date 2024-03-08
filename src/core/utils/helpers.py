@@ -52,7 +52,7 @@ def change_invalid_types_mongo(data: dict) -> None:
 def check_nid(nid: str):
     if len(nid) != 9 or not nid[:7].isdigit():
         return False
-    mod = int(nid[:7]) % 23
+    mod = int(nid[:8]) % 23
     if nid[-1] != NID_LETERS[mod]:
         return False
     return True
