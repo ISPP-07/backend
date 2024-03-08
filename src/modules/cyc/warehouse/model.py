@@ -14,8 +14,15 @@ class ProductOut(Product):
     warehouse_id: UUID4
 
 
-class ProductCreate(Product):
-    warehouses_id: list[UUID4]
+class WarehouseProductCreate(BaseModel):
+    warehouses_id: UUID4
+    quantity: PositiveInt
+
+
+class ProductCreate(BaseModel):
+    name: str
+    exp_date: Optional[FutureDate]
+    warehouses: list[WarehouseProductCreate]
 
 
 class ProductUpdate(Product):

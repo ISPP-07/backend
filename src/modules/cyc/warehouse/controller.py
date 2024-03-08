@@ -35,11 +35,16 @@ async def get_warehouses_controller(db: DataBaseDep) -> list[Warehouse]:
 
 async def create_product_controller(db: DataBaseDep, product: ProductCreate) -> list[ProductOut]:
     result = []
-    warehouses = await service.get_warehouses_service(
-        db,
-        query={'id': {'$in': product.warehouses_id}}
-    )
-    for warehouse in warehouses:
+    for item in product.warehouses:
+        warehouse = await service.get_warehouse_service(
+            db,
+            query={'id': item.warehouses_id}
+        )
+        if warehouse is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Warehouse {item.warehouses_id} not found'
+            )
         if any(p.name == product.name for p in warehouse.products):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -52,14 +57,14 @@ async def create_product_controller(db: DataBaseDep, product: ProductCreate) -> 
             warehouse_update=WarehouseUpdate(
                 name=None,
                 products=warehouse.products + [Product(
-                    name=product.name, quantity=product.quantity, exp_date=product.exp_date
+                    name=product.name, quantity=item.quantity, exp_date=product.exp_date
                 )]
             )
         )
         result.append(ProductOut(
             warehouse_id=warehouse.id,
             name=product.name,
-            quantity=product.quantity,
+            quantity=item.quantity,
             exp_date=product.exp_date
         ))
     return result
