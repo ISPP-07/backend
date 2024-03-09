@@ -1,9 +1,4 @@
-from sqlmodel import select, func
-from sqlalchemy.orm import aliased, joinedload
-
-from src.modules.acat.patient.model import Patient, PatientObservation
-from src.modules.acat.appointment.model import Appointment
-from src.modules.acat.patient.model import Technician
+from src.modules.acat.patient.model import Patient
 
 
 async def create_patient_service(session, patient: Patient):
@@ -12,10 +7,10 @@ async def create_patient_service(session, patient: Patient):
 
 
 async def get_patients_service(session):
-    obj = await Patient.get_multi(session)
+    obj = await Patient.get_multi(session, query=None)
     return obj
 
 
 async def get_patient_details_service(session, patient_id: int):
-    obj = await Patient.get(session, id=patient_id)
+    obj = await Patient.get(session, id=patient_id, query=None)
     return obj
