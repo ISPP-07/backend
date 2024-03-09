@@ -8,6 +8,7 @@ from src.modules.acat.intervention.model import Intervention, InterventionCreate
 router = APIRouter()
 
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=Intervention)
+@router.post('/', status_code=status.HTTP_201_CREATED,
+             response_model=Intervention)
 async def create_intervention(db: DataBaseDep, intervention: InterventionCreate) -> Any:
     return await create_intervention_controller(db, intervention)

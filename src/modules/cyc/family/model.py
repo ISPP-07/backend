@@ -139,7 +139,10 @@ class Family(BaseMongo):
     # )
 
 
-# VALIDAR number_of_people == len(members), phone, que solo haya un family head, number_of_people se puede calcular de len(members), SI NOS DICEN CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR EL CAMPO Y AÑADIRLO NOSOTROS
+# VALIDAR number_of_people == len(members), phone, que solo haya un family
+# head, number_of_people se puede calcular de len(members), SI NOS DICEN
+# CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR EL CAMPO Y AÑADIRLO
+# NOSOTROS
 class FamilyCreate(BaseModel):
     name: str
     phone: str

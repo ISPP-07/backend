@@ -19,6 +19,8 @@ async def create_family(db: DataBaseDep, family: FamilyCreate):
     return await controller.create_family_controller(db, family)
 
 
-@router.get('/{family_id}', status_code=status.HTTP_200_OK, response_model=Family)
+@router.get('/{family_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=Family)
 async def get_family_details(db: DataBaseDep, family_id: UUID4):
     return await controller.get_family_details_controller(db, family_id)

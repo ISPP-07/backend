@@ -88,7 +88,8 @@
 
 
 # @pytest.mark.asyncio
-# async def test_get_patient_details(client: TestClient, create_patients: list[Patient]):
+# async def test_get_patient_details(client: TestClient, create_patients:
+# list[Patient]):
 
 #     patient = create_patients.pop()
 
