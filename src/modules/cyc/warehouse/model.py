@@ -8,7 +8,7 @@ from src.core.database.base_crud import BaseMongo
 
 class Product(BaseModel):
     id: UUID4 = uuid4()
-    name: str = None
+    name: str
     quantity: PositiveInt
     exp_date: Optional[FutureDate] = None
 
@@ -18,24 +18,27 @@ class ProductOut(Product):
 
 
 class WarehouseProductCreate(BaseModel):
-    warehouse_id: UUID4
+    name: str
+    exp_date: Optional[FutureDate] = None
     quantity: PositiveInt
+    warehouse_id: UUID4
 
 
-class WarehouseProductUpdate(WarehouseProductCreate):
-    product_id: UUID4 = None
+class WarehouseProductUpdate(BaseModel):
+    name: Optional[str] = None
+    exp_date: Optional[FutureDate] = None
+    quantity: Optional[PositiveInt] = None
+    update_exp_date: bool = False
+    warehouse_id: UUID4
+    product_id: UUID4
 
 
 class ProductCreate(BaseModel):
-    name: str
-    exp_date: Optional[FutureDate] = None
-    warehouses: list[WarehouseProductCreate]
+    products: list[WarehouseProductCreate]
 
 
 class ProductUpdate(BaseModel):
-    name: str = None
-    exp_date: Optional[FutureDate] = None
-    warehouses: list[WarehouseProductUpdate] = []
+    products: list[WarehouseProductUpdate]
 
 
 class Warehouse(BaseMongo):
