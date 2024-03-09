@@ -27,8 +27,8 @@ class Intervention(BaseMongo):
 
 class InterventionCreate(BaseModel):
     date: date
-    reason: Optional[str]
-    typology: Optional[str]
-    observations: Optional[str]
+    reason: Optional[str] = None
+    typology: Optional[str] = None
+    observations: Optional[str] = None
     patient_id: UUID4
     technician_id: UUID4

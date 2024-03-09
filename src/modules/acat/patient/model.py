@@ -29,11 +29,11 @@ class Patient(BaseMongo):
 class PatientCreate(BaseModel):
     name: str
     first_surname: str
-    second_surname: Optional[str]
+    second_surname: Optional[str] = None
     dni: str
     birth_date: date
-    gender: Optional[Gender]
-    address: Optional[str]
-    contact_phone: Optional[str]
+    gender: Optional[Gender] = None
+    address: Optional[str] = None
+    contact_phone: Optional[str] = None
     dossier_number: str
-    observations: Optional[str]
+    observations: Optional[str] = None
