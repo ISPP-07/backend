@@ -12,7 +12,7 @@ class Technician(BaseMongo):
 
 class TechnicianCreate(BaseModel):
     name: str
-    user_id: Optional[UUID4]
+    user_id: Optional[UUID4] = None
 
 
 class Intervention(BaseMongo):
