@@ -1,13 +1,11 @@
 import copy
-from typing import TypeVar, Type, Any
+from typing import Any, Self
 from uuid import uuid4
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 
 from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
 from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
-
-Self = TypeVar('Self', bound='BaseMongo')
 
 
 class BaseMongo(BaseModel):
@@ -24,7 +22,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def get(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         query: dict,
         **kwargs: Any,
@@ -35,7 +33,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def get_multi(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         query: dict | None,
         **kwargs: Any,
@@ -49,7 +47,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def create(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         obj_to_create: dict,
         **kwargs: Any,
@@ -64,7 +62,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def update(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         query: dict,
         data_to_update: dict,
@@ -90,7 +88,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def delete(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         query: dict,
         many: bool = False,
@@ -105,7 +103,7 @@ class BaseMongo(BaseModel):
 
     @classmethod
     async def count(
-        cls: Type[Self],
+        cls: Self,
         db: AsyncIOMotorDatabase,
         query: dict,
         **kwargs: Any,
@@ -116,12 +114,13 @@ class BaseMongo(BaseModel):
 
     @classmethod
     def get_collection(
-            cls: Type[Self],
-            db: AsyncIOMotorDatabase) -> AsyncIOMotorCollection:
+            cls: Self,
+            db: AsyncIOMotorDatabase
+    ) -> AsyncIOMotorCollection:
         return db[cls._get_collection_name()]
 
     @classmethod
-    def from_mongo(cls: Type[Self], data: dict | None):
+    def from_mongo(cls: Self, data: dict | None):
         if not data:
             return data
         id = data.pop('_id', None)

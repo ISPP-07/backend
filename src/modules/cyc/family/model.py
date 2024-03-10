@@ -1,7 +1,7 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal, Self
 from enum import Enum
-from datetime import date, datetime
+from datetime import date
 
 from fastapi import HTTPException, status
 from pydantic import (
@@ -76,44 +76,44 @@ class Person(BaseModel):
     food_intolerances: list[str] = []
     homeless: Optional[bool] = False
 
-    # HABRIA QUE CHECKEAR SI date_birth cumple el formato "%Y-%m-%d"
-    # @model_validator(mode='before')
-    # def validate_person(self, values: dict):
-    #     if calculate_age(datetime.strptime(values['date_birth'], "%Y-%m-%d")) < 18:
-    #         values['type'] = PersonType.CHILD
-    #     else:
-    #         values['type'] = PersonType.ADULT
-    #     if values['type'] == PersonType.ADULT:
-    #         if not check_nid(values['nid']):
-    #             raise HTTPException(
-    #                 status_code=status.HTTP_400_BAD_REQUEST,
-    #                 detail={'field': 'nid', 'msg': 'Invalid NID'}
-    #             )
-    #         if all(values[field] is None for field in ['name', 'surname', 'nid']):
-    #             raise HTTPException(
-    #                 status_code=status.HTTP_400_BAD_REQUEST,
-    #                 detail='Name, surname and nid are mandatory for adults'
-    #             )
-    #         return self
-    #     else:
-    #         if values['nid'] is not None:
-    #             if not check_nid(values['nid']):
-    #                 raise HTTPException(
-    #                     status_code=status.HTTP_400_BAD_REQUEST,
-    #                     detail={
-    #                         'field': 'nid',
-    #                         'msg': 'Invalid NID'
-    #                     }
-    #                 )
-    #         if values['family_head']:
-    #             raise HTTPException(
-    #                 status_code=status.HTTP_400_BAD_REQUEST,
-    #                 detail={
-    #                     'field': 'family_head',
-    #                     'msg': 'A child cannot be the family head'
-    #                 }
-    #             )
-    #         return self
+    @model_validator(mode='after')
+    @classmethod
+    def validate_person(cls, data: Self):
+        if calculate_age(data.date_birth) < 18:
+            data.type = PersonType.CHILD
+        else:
+            data.type = PersonType.ADULT
+        if data.type == PersonType.ADULT:
+            if not check_nid(data.nid):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={'field': 'nid', 'msg': 'Invalid NID'}
+                )
+            if all(data.__dict__[field] is None for field in ['name', 'surname', 'nid']):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Name, surname and nid are mandatory for adults'
+                )
+            return data
+        else:
+            if data.nid is not None:
+                if not check_nid(data.nid):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            'field': 'nid',
+                            'msg': 'Invalid NID'
+                        }
+                    )
+            if data.family_head:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        'field': 'family_head',
+                        'msg': 'A child cannot be the family head'
+                    }
+                )
+            return data
 
     def age(self) -> int:
         return calculate_age(self.date_birth)
@@ -127,16 +127,30 @@ class Family(BaseMongo):
     name: str
     phone: str
     address: str
-    number_of_people: PositiveInt
     referred_organization: Optional[str]
     next_renewal_date: Optional[FutureDate]
     derecognition_state: DerecognitionStatus = DerecognitionStatus.ACTIVE
     observation: Optional[str]
-    members: list[Person]
+    number_of_people: PositiveInt = None
     informed: bool = False
+    members: list[Person]
     # delivery_history: list[DeliveryHistory] = Relationship(
     #     back_populates='family_id',
     # )
+
+    @model_validator(mode='after')
+    @classmethod
+    def validate_family(cls, data: Self):
+        if len(data.members) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    'field': 'members',
+                    'msg': 'A family must have at least one member'
+                }
+            )
+        data.number_of_people = len(data.members)
+        return data
 
 
 # VALIDAR number_of_people == len(members), phone, que solo haya un family
@@ -147,7 +161,6 @@ class FamilyCreate(BaseModel):
     name: str
     phone: str
     address: str
-    number_of_people: PositiveInt
     referred_organization: Optional[str] = None
     next_renewal_date: Optional[FutureDate] = None
     observation: Optional[str] = None

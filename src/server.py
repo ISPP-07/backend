@@ -19,7 +19,8 @@ if settings.CYC_NGO:
 #     urls_endpoints += acat_urls
 
 dependencies: List[Depends] = [
-    Depends(get_current_user)] if settings.STAGING else []
+    Depends(get_current_user)
+] if settings.STAGING else []
 
 app = FastAPI(**settings.fastapi_kwargs, dependencies=dependencies)
 
@@ -29,8 +30,9 @@ app.add_event_handler('shutdown', close_db_connection)
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin)
-                       for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=[
+            str(origin) for origin in settings.BACKEND_CORS_ORIGINS
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

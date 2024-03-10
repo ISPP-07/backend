@@ -54,4 +54,4 @@ class WarehouseCreate(BaseModel):
 
 class WarehouseUpdate(BaseModel):
     name: Optional[str] = None
-    products: list[Product] = []
+    products: list[Product] = None
