@@ -115,7 +115,9 @@ class BaseMongo(BaseModel):
         return result
 
     @classmethod
-    def get_collection(cls: Type[Self], db: AsyncIOMotorDatabase) -> AsyncIOMotorCollection:
+    def get_collection(
+            cls: Type[Self],
+            db: AsyncIOMotorDatabase) -> AsyncIOMotorCollection:
         return db[cls._get_collection_name()]
 
     @classmethod

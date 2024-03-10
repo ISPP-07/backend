@@ -16,7 +16,9 @@ def root():
     return controller.root_controller()
 
 
-@router.post('/login', status_code=status.HTTP_200_OK, response_model=TokenSchema)
+@router.post('/login',
+             status_code=status.HTTP_200_OK,
+             response_model=TokenSchema)
 async def login(
     db: DataBaseDep,
     form_data: OAuth2PasswordRequestForm = Depends()
