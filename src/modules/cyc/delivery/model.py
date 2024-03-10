@@ -1,5 +1,7 @@
 from typing import Optional
+
 from pydantic import BaseModel, UUID4, PositiveInt, FutureDatetime
+
 from src.core.database.base_crud import BaseMongo
 from src.modules.cyc.warehouse.model import Product
 

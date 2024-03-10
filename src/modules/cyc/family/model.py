@@ -70,7 +70,7 @@ class Person(BaseModel):
     surname: Optional[str]
     nationality: Optional[str]
     nid: Optional[str]
-    family_head: Optional[bool] = False
+    family_head: bool = False
     gender: Optional[Gender]
     functional_diversity: Optional[bool] = False
     food_intolerances: list[str] = []
@@ -149,14 +149,24 @@ class Family(BaseMongo):
                     'msg': 'A family must have at least one member'
                 }
             )
+        check_family_head = list(filter(
+            lambda p: p.family_head,
+            data.members
+        ))
+        if len(check_family_head) != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    'field': 'members',
+                    'msg': 'A family can only have one head of household'
+                }
+            )
         data.number_of_people = len(data.members)
         return data
 
 
-# VALIDAR number_of_people == len(members), phone, que solo haya un family
-# head, number_of_people se puede calcular de len(members), SI NOS DICEN
-# CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR EL CAMPO Y AÑADIRLO
-# NOSOTROS
+# VALIDAR phone, SI NOS DICEN CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR
+# EL CAMPO Y AÑADIRLO NOSOTROS
 class FamilyCreate(BaseModel):
     name: str
     phone: str

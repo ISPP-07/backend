@@ -1,59 +1,59 @@
-from datetime import datetime
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 import pytest_asyncio
+from pymongo.database import Database
 
 from src.core.config import settings
 
 
 @pytest_asyncio.fixture
-async def insert_families_mongo(app_client: TestClient):
+async def insert_families_mongo(mongo_db: Database):
     result = []
-    families = [{
-        "name": "familia Pedro TEST",
-        "phone": "66666666",
-        "address": "San Marcos",
-        "number_of_people": 1,
-        "referred_organization": None,
-        "next_renewal_date": "2025-03-08",
-        "observation": None,
-        "members": [{
-            "date_birth": "2003-03-08",
-            "type": "Adult",
-            "name": "Pepe",
-            "surname": "Cast",
-            "nationality": "Spain",
-            "nid": "07344702C",
-            "family_head": True,
-            "gender": "Men",
-            "functional_diversity": True,
-            "food_intolerances": [],
-            "homeless": False
-        }]}]
-    url_post_families = f'{settings.API_STR}cyc/family/'
+    families = [
+        {
+            "_id": uuid4(),
+            "name": "familia Pedro TEST",
+            "phone": "66666666",
+            "address": "San Marcos",
+            "referred_organization": None,
+            "next_renewal_date": "2025-03-08",
+            "observation": None,
+            "number_of_people": 1,
+            "informed": False,
+            "members": [
+                {
+                    "date_birth": "2003-03-08",
+                    "type": "Adult",
+                    "name": "Pepe",
+                    "surname": "Cast",
+                    "nationality": "Spain",
+                    "nid": "07344702C",
+                    "family_head": True,
+                    "gender": "Men",
+                    "functional_diversity": True,
+                    "food_intolerances": [],
+                    "homeless": False
+                }
+            ]
+        }
+    ]
     for family in families:
-        response = app_client.post(url_post_families, json=family)
-        result.append(response.json())
+        mongo_db['Family'].insert_one(family)
+        result.append(family)
     yield result
 
 
 def test_get_families(app_client: TestClient, insert_families_mongo):
     url = f'{settings.API_STR}cyc/family/'
     response = app_client.get(url=url)
-    print('me ha dado respuest')
     assert response.status_code == 200
     result = response.json()
-    print('----------------------------')
-    for item in result:
-        print(item)
-    print('----------------------------')
     assert True
     assert isinstance(result, list)
     assert len(result) == 1
     for item, family in zip(result, insert_families_mongo):
-        print('item', item)
-        print('family', family)
-        assert item['id'] == family['id']  # pylint: disable=W0212
+        assert item['id'] == str(family['_id'])  # pylint: disable=W0212
         assert item['name'] == family['name']
         assert item['number_of_people'] == family['number_of_people']
         assert len(item['members']) == len(family['members'])

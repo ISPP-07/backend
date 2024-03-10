@@ -29,6 +29,7 @@ pylint = "*"
 pylint-pydantic = "*"
 motor-types = "*"
 pytest-motor = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.11"
