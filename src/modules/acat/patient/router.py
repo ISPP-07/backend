@@ -19,6 +19,8 @@ async def create_patient(db: DataBaseDep, patient: PatientCreate):
     return await controller.create_patient_controller(db, patient)
 
 
-@router.get('/{patient_id}', status_code=status.HTTP_200_OK, response_model=PatientOut)
+@router.get('/{patient_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=PatientOut)
 async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
     return await controller.get_patient_details_controller(db, patient_id)

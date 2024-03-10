@@ -89,7 +89,11 @@ class Person(BaseModel):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={'field': 'nid', 'msg': 'Invalid NID'}
                 )
-            if all(data.__dict__[field] is None for field in ['name', 'surname', 'nid']):
+            if all(
+                data.__dict__[field] is None for field in [
+                    'name',
+                    'surname',
+                    'nid']):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail='Name, surname and nid are mandatory for adults'
