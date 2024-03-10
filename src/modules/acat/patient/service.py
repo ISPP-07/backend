@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status
 
-from src.modules.acat.patient.model import Patient, PatientCreate
+from src.modules.acat.patient.model import Patient, PatientCreate, PatientOut
 from src.core.deps import DataBaseDep
 from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.utils.helpers import generate_alias
 
 
 async def get_patients_service(db: DataBaseDep) -> list[Patient]:
@@ -28,25 +29,14 @@ async def create_patient_service(db: DataBaseDep, patient: PatientCreate) -> Ins
     return result
 
 
-async def get_patient_service(db: DataBaseDep, query: dict) -> Patient | None:
+async def get_patient_service(db: DataBaseDep, query: dict) -> PatientOut | None:
     patient = await Patient.get(db, query)
 
+    if not patient:
+        return None
+
     # Add age to the patient
-    if patient:
-        patient_dict = patient.dict()
-        patient_dict['age'] = patient.age()
+    patient_dict = patient.dict()
+    patient_dict['age'] = patient.age()
 
-        return patient_dict
-
-    return None
-
-
-# Auxiliary function to generate the alias
-def generate_alias(name: str, first_surname: str, second_surname: str) -> str:
-    name_split = name.split()
-    number_of_names = len(name_split)
-    if number_of_names > 1:
-        alias = f"{name_split[0][0]}{name_split[1][0]}{first_surname[:2]}{second_surname[:2]}"
-    else:
-        alias = f"{name[:2]}{first_surname[:2]}{second_surname[:2]}"
-    return alias.lower()
+    return PatientOut(**patient_dict)

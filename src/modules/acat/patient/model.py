@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import date
 from enum import Enum
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, PastDate
 from src.core.database.base_crud import BaseMongo
 
 
@@ -24,7 +24,7 @@ class Patient(BaseMongo):
     second_surname: Optional[str]
     alias: str  # Must be auto-generated using the name and surnames
     dni: str
-    birth_date: date
+    birth_date: PastDate
     gender: Optional[Gender]
     address: Optional[str]
     contact_phone: Optional[str]
@@ -41,7 +41,7 @@ class PatientCreate(BaseModel):
     first_surname: str
     second_surname: Optional[str] = None
     dni: str
-    birth_date: date
+    birth_date: PastDate
     gender: Optional[Gender] = None
     address: Optional[str] = None
     contact_phone: Optional[str] = None
@@ -56,7 +56,7 @@ class PatientOut(BaseModel):
     second_surname: Optional[str]
     alias: str
     dni: str
-    birth_date: date
+    birth_date: PastDate
     gender: Optional[Gender]
     address: Optional[str]
     contact_phone: Optional[str]
