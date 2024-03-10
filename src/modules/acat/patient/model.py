@@ -5,6 +5,13 @@ from pydantic import BaseModel, UUID4
 from src.core.database.base_crud import BaseMongo
 
 
+def calculate_age(birth_date: date) -> int:
+    today = date.today()
+    return today.year - birth_date.year - (
+        (today.month, today.day) < (birth_date.month, birth_date.day)
+    )
+
+
 class Gender(Enum):
     MEN = 'Men'
     WOMEN = 'Women'
@@ -25,6 +32,9 @@ class Patient(BaseMongo):
     registration_date: date = date.today()  # Must be auto-generated
     observations: Optional[str]
 
+    def age(self) -> int:
+        return calculate_age(self.birth_date)
+
 
 class PatientCreate(BaseModel):
     name: str
@@ -37,3 +47,20 @@ class PatientCreate(BaseModel):
     contact_phone: Optional[str] = None
     dossier_number: str
     observations: Optional[str] = None
+
+
+class PatientOut(BaseModel):
+    id: UUID4
+    name: str
+    first_surname: str
+    second_surname: Optional[str]
+    alias: str
+    dni: str
+    birth_date: date
+    gender: Optional[Gender]
+    address: Optional[str]
+    contact_phone: Optional[str]
+    dossier_number: str
+    registration_date: date
+    observations: Optional[str]
+    age: int
