@@ -1,20 +1,16 @@
 from typing import Optional
 from datetime import date
 from enum import Enum
+
 from pydantic import BaseModel, UUID4, PastDate
+
 from src.core.database.base_crud import BaseMongo
-
-
-def calculate_age(birth_date: date) -> int:
-    today = date.today()
-    return today.year - birth_date.year - (
-        (today.month, today.day) < (birth_date.month, birth_date.day)
-    )
+from src.core.utils.helpers import calculate_age
 
 
 class Gender(Enum):
-    MEN = 'Men'
-    WOMEN = 'Women'
+    MEN = 'Man'
+    WOMEN = 'Woman'
 
 
 class Patient(BaseMongo):
@@ -23,7 +19,7 @@ class Patient(BaseMongo):
     first_surname: str
     second_surname: Optional[str]
     alias: str  # Must be auto-generated using the name and surnames
-    dni: str
+    nid: str
     birth_date: PastDate
     gender: Optional[Gender]
     address: Optional[str]
@@ -41,7 +37,7 @@ class PatientCreate(BaseModel):
     name: str
     first_surname: str
     second_surname: Optional[str] = None
-    dni: str
+    nid: str
     birth_date: PastDate
     gender: Optional[Gender] = None
     address: Optional[str] = None
@@ -57,7 +53,7 @@ class PatientOut(BaseModel):
     first_surname: str
     second_surname: Optional[str]
     alias: str
-    dni: str
+    nid: str
     birth_date: PastDate
     gender: Optional[Gender]
     address: Optional[str]

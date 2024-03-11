@@ -11,7 +11,7 @@ async def get_patient_by_id(db: DataBaseDep, query):
 
 
 async def get_patients_service(db: DataBaseDep) -> list[Patient]:
-    return await Patient.get_multi(db, query=None)
+    return await Patient.get_multi(db)
 
 
 async def create_patient_service(db: DataBaseDep, patient: PatientCreate) -> InsertOneResultMongo:
@@ -24,7 +24,7 @@ async def create_patient_service(db: DataBaseDep, patient: PatientCreate) -> Ins
         patient_dict['second_surname']
     )
 
-    result = await Patient.create(db, obj_to_create=patient_dict)
+    result: InsertOneResultMongo = await Patient.create(db, obj_to_create=patient_dict)
     if not result.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -34,13 +34,13 @@ async def create_patient_service(db: DataBaseDep, patient: PatientCreate) -> Ins
 
 
 async def get_patient_service(db: DataBaseDep, query: dict) -> PatientOut | None:
-    patient = await Patient.get(db, query)
+    patient: Patient = await Patient.get(db, query)
 
     if not patient:
         return None
 
     # Add age to the patient
-    patient_dict = patient.dict()
+    patient_dict = patient.model_dump()
     patient_dict['age'] = patient.age()
 
     return PatientOut(**patient_dict)
