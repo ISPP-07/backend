@@ -6,6 +6,10 @@ from src.core.database.mongo_types import InsertOneResultMongo
 from src.core.utils.helpers import generate_alias
 
 
+async def get_patient_by_id(db: DataBaseDep, query):
+    return await Patient.get(db, query=query)
+
+
 async def get_patients_service(db: DataBaseDep) -> list[Patient]:
     return await Patient.get_multi(db, query=None)
 
