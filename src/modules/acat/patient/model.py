@@ -29,6 +29,7 @@ class Patient(BaseMongo):
     address: Optional[str]
     contact_phone: Optional[str]
     dossier_number: str
+    first_technician: Optional[str]
     registration_date: date = date.today()  # Must be auto-generated
     observations: Optional[str]
 
@@ -46,6 +47,7 @@ class PatientCreate(BaseModel):
     address: Optional[str] = None
     contact_phone: Optional[str] = None
     dossier_number: str
+    first_technician: Optional[str] = None
     observations: Optional[str] = None
 
 
@@ -62,5 +64,6 @@ class PatientOut(BaseModel):
     contact_phone: Optional[str]
     dossier_number: str
     registration_date: date
+    first_technician: Optional[str]
     observations: Optional[str]
     age: int
