@@ -12,8 +12,8 @@ class Intervention(BaseMongo):
     reason: Optional[str]
     typology: Optional[str]
     observations: Optional[str]
-    patient: Patient
     technician: str
+    patient: Patient
 
 
 class InterventionCreate(BaseModel):
