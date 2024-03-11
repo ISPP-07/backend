@@ -197,8 +197,8 @@ class BaseMongo(BaseModel):
     def from_mongo(cls: Self, data: dict | None):
         if not data:
             return data
-        id = data.pop('_id', None)
-        return cls(**dict(data, id=id))
+        data_id = data.pop('_id', None)
+        return cls(**dict(data, id=data_id))
 
     def mongo(self, **kwargs):
         exclude_unset = kwargs.pop('exclude_unset', True)
