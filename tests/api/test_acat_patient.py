@@ -68,9 +68,12 @@ def test_create_patient(app_client: TestClient):
 
     assert response.status_code == 201
     response_data = response.json()
-    assert response_data["registration_date"] == datetime.date.today().isoformat()
-    assert response_data["alias"] == generate_alias(patient_data["name"], patient_data["first_surname"], patient_data["second_surname"])
-
+    assert response_data["registration_date"] == datetime.date.today(
+    ).isoformat()
+    assert response_data["alias"] == generate_alias(
+        patient_data["name"],
+        patient_data["first_surname"],
+        patient_data["second_surname"])
 
 
 # @pytest.mark.asyncio
