@@ -1,16 +1,16 @@
 from collections.abc import AsyncGenerator
 from datetime import datetime
-from typing import Annotated, Any, Union
+from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import ValidationError
 from jose import jwt
 
-from sqlmodel.ext.asyncio.session import AsyncSession
-
-from src.core.database.session import SessionLocal
+from src.core.database.session import get_client
 from src.core.config import settings
-from src.modules.shared.auth.schema import TokenPayload
+
+from src.modules.shared.auth.model import TokenPayload
 from src.modules.shared.user.model import User
 
 
@@ -20,15 +20,16 @@ reusable_oauth = OAuth2PasswordBearer(
 )
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with SessionLocal() as session:
-        yield session
+async def get_db() -> AsyncGenerator[AsyncIOMotorDatabase, None]:
+    client_db = get_client()
+    db = client_db.get_database(settings.MONGO_DB)
+    yield db
 
-SessionDep = Annotated[AsyncSession, Depends(get_db)]
+DataBaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth)]
 
 
-async def get_current_user(session: SessionDep, token: TokenDep) -> User:
+async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
             token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -41,14 +42,14 @@ async def get_current_user(session: SessionDep, token: TokenDep) -> User:
                 detail="Token expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    except (jwt.JWTError, ValidationError):
+    except (jwt.JWTError, ValidationError) as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
-    user = await User.get(session, id=token_data.sub)
+    user = await User.get(db, {'id': token_data.sub})
 
     if user is None:
         raise HTTPException(

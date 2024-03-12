@@ -1,60 +1,65 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from datetime import date
 from enum import Enum
-from sqlmodel import Field, String, Relationship
-from src.core.database.base_crud import Base
+
+from pydantic import BaseModel, UUID4, PastDate
+
+from src.core.database.base_crud import BaseMongo
+from src.core.utils.helpers import calculate_age
 
 
-# if TYPE_CHECKING:
-from src.modules.acat.appointment.model import Appointment
-from src.modules.shared.user.model import User
+class Gender(Enum):
+    MEN = 'Man'
+    WOMEN = 'Woman'
 
 
-class Technician(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class Patient(BaseMongo):
+    id: UUID4
     name: str
-    user_id: Optional[int] = Field(
-        default=None,
-        foreign_key='user.id',
-    )
-
-    user: Optional[User] = Relationship()
-
-    appointments: list['Appointment'] = Relationship(
-        back_populates='technician'
-    )
-
-
-class Sex(str, Enum):
-    MALE = 'Male'
-    FEMALE = 'Female'
-
-
-class PatientObservation(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    observation_text: str
-    patient_id: Optional[int] = Field(default=None, foreign_key='patient.id')
-    patient: Optional['Patient'] = Relationship(back_populates="observations")
-
-
-class Patient(Base, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True,)
-    registration_date: date
+    first_surname: str
+    second_surname: Optional[str]
+    alias: str  # Must be auto-generated using the name and surnames
+    nid: str
+    birth_date: PastDate
+    gender: Optional[Gender]
+    address: Optional[str]
+    contact_phone: Optional[str]
     dossier_number: str
+    first_technician: Optional[str]
+    registration_date: date = date.today()  # Must be auto-generated
+    observations: Optional[str]
+
+    def age(self) -> int:
+        return calculate_age(self.birth_date)
+
+
+class PatientCreate(BaseModel):
     name: str
+    first_surname: str
+    second_surname: Optional[str] = None
+    nid: str
+    birth_date: PastDate
+    gender: Optional[Gender] = None
+    address: Optional[str] = None
+    contact_phone: Optional[str] = None
+    dossier_number: str
+    first_technician: Optional[str] = None
+    observations: Optional[str] = None
+
+
+class PatientOut(BaseModel):
+    id: UUID4
+    name: str
+    first_surname: str
+    second_surname: Optional[str]
     alias: str
-    first_surname: str = String(length=2)
-    second_surname: str = String(length=2)
-    birth_date: date
-    sex: Sex
-    address: str
-    dni: str
-    contact_phone: str
+    nid: str
+    birth_date: PastDate
+    gender: Optional[Gender]
+    address: Optional[str]
+    contact_phone: Optional[str]
+    dossier_number: str
+    registration_date: date
+    first_technician: Optional[str]
+    observations: Optional[str]
     age: int
-    observations: list[PatientObservation] = Relationship(
-        back_populates='patient'
-    )
-    first_appointment_date: date
-    appointments: list['Appointment'] = Relationship(
-        back_populates='patient',
-    )
