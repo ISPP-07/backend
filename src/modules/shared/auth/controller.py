@@ -4,6 +4,7 @@ from pydantic import ValidationError
 
 from src.core.config import settings
 from src.core.deps import DataBaseDep
+from fastapi.security import OAuth2PasswordRequestForm
 from src.core.utils.security import create_access_token, create_refresh_token
 from src.modules.shared.auth import service
 from src.modules.shared.auth.model import TokenSchema, TokenPayload
@@ -14,7 +15,7 @@ def root_controller():
     return service.root_service()
 
 
-async def login_controller(db: DataBaseDep, form_data) -> TokenSchema:
+async def login_controller(db: DataBaseDep, form_data: OAuth2PasswordRequestForm) -> TokenSchema:
     user = await service.login_service(db, form_data)
     if user is None:
         raise HTTPException(
@@ -27,7 +28,7 @@ async def login_controller(db: DataBaseDep, form_data) -> TokenSchema:
     }
 
 
-async def refresh_controller(db, refresh_token) -> TokenSchema:
+async def refresh_controller(db: DataBaseDep, refresh_token: str) -> TokenSchema:
     try:
         payload = jwt.decode(
             refresh_token,
