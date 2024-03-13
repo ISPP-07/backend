@@ -59,9 +59,9 @@ def test_login(app_client: TestClient, create_user_auth):
 @pytest.mark.dependency(depends=['test_login'])
 def test_refresh_token(app_client: TestClient, login_user):
     refresh_token = login_user['refresh_token']
-    headers = {'refresh-token': refresh_token}
+    body = {'refresh_token': refresh_token}
     url = f'{URL_AUTH}refresh/'
-    response: Response = app_client.post(url=url, headers=headers)
+    response: Response = app_client.post(url=url, json=body)
     assert response.status_code == 200
     result = response.json()
     assert 'access_token' in result
