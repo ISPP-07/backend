@@ -35,7 +35,6 @@ async def refresh_controller(db: DataBaseDep, refresh_token: str) -> TokenSchema
             settings.JWT_REFRESH_SECRET_KEY,
             algorithms=[settings.ALGORITHM]
         )
-        print(payload)
         token_data = TokenPayload(**payload)
     except (JWTError, ValidationError) as e:
         raise HTTPException(
