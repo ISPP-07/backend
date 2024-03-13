@@ -1,4 +1,5 @@
 from pydantic import EmailStr, BaseModel, UUID4
+from typing import Optional
 
 from src.core.database.base_crud import BaseMongo
 
@@ -20,3 +21,9 @@ class UserOut(BaseModel):
     id: UUID4
     username: str
     email: EmailStr
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    email: Optional[EmailStr] = None

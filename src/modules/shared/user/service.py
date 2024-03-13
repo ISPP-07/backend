@@ -3,11 +3,12 @@ from fastapi import HTTPException, status
 from src.core.deps import DataBaseDep
 from src.core.utils.security import get_hashed_password
 from src.core.database.mongo_types import InsertOneResultMongo
-from src.modules.shared.user.model import UserCreate, User, UserOut
+from src.modules.shared.user.model import UserCreate, User, UserOut, UserUpdate
 
 
-async def get_user_service(db: DataBaseDep, query: dict) -> User:
-    return await User.get(db, query)
+async def get_user_service(db: DataBaseDep, query: dict) -> UserOut | None:
+    result = await User.get(db, query)
+    return result
 
 
 async def create_user_service(db: DataBaseDep, user: UserCreate) -> UserOut | None:
@@ -26,6 +27,25 @@ async def create_user_service(db: DataBaseDep, user: UserCreate) -> UserOut | No
             detail='DB error'
         )
     user_db = await User.get(db, query={'id': insert_mongo.inserted_id})
+    result = UserOut(
+        id=user_db.id,
+        username=user_db.username,
+        email=user_db.email
+    )
+    return result
+
+
+async def update_user_service(db: DataBaseDep, query: dict, user: UserUpdate) -> UserOut | None:
+    user_db = await User.get(db, query)
+    if user_db is None:
+        return None
+    hashed_password = get_hashed_password(user.password)
+    user.password = hashed_password
+    user_db = await User.update(
+        db,
+        query=query,
+        data_to_update=user.model_dump()
+    )
     result = UserOut(
         id=user_db.id,
         username=user_db.username,
