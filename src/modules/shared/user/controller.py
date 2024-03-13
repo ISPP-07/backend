@@ -34,3 +34,7 @@ async def update_user_controller(db: DataBaseDep, user_id: UUID4, user: UserUpda
             detail="User not found"
         )
     return result
+
+
+async def delete_user_controller(db: DataBaseDep, user_id: UUID4) -> None:
+    await service.delete_user_service(db, user_id)

@@ -1,14 +1,15 @@
 from fastapi import HTTPException, status
+from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.core.utils.security import get_hashed_password
 from src.core.database.mongo_types import InsertOneResultMongo
 from src.modules.shared.user.model import UserCreate, User, UserOut, UserUpdate
+from src.core.database.mongo_types import DeleteResultMongo
 
 
 async def get_user_service(db: DataBaseDep, query: dict) -> UserOut | None:
-    result = await User.get(db, query)
-    return result
+    return await User.get(db, query)
 
 
 async def create_user_service(db: DataBaseDep, user: UserCreate) -> UserOut | None:
@@ -52,3 +53,19 @@ async def update_user_service(db: DataBaseDep, query: dict, user: UserUpdate) ->
         email=user_db.email
     )
     return result
+
+
+async def delete_user_service(db: DataBaseDep, user_id: UUID4) -> None:
+    mongo_delete: DeleteResultMongo = await User.delete(db, query={'id': user_id})
+
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='User not found'
+        )
+
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
