@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "888d853b88da667edb58a84fc8bbb6c9eda4cc37417c5fbdadbbbcdf791523b6"
+            "sha256": "3c5de86b4c8060469b0bddcab1f1b6aadee4ada403f7539b8a180556813a4628"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1522,6 +1522,14 @@
             "markers": "python_version >= '3.8'",
             "version": "==0.23.5.post1"
         },
+        "pytest-dependency": {
+            "hashes": [
+                "sha256:934b0e6a39d95995062c193f7eaeed8a8ffa06ff1bcef4b62b0dc74a708bacc1"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.4'",
+            "version": "==0.6.0"
+        },
         "pytest-motor": {
             "hashes": [
                 "sha256:0f63d9f55e89d7d1a66966c4599f46bed563fcd2b2e2aa3ad042d9d3561a9e14",
@@ -1538,6 +1546,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==1.0.1"
+        },
+        "setuptools": {
+            "hashes": [
+                "sha256:02fa291a0471b3a18b2b2481ed902af520c69e8ae0919c13da936542754b4c56",
+                "sha256:5c0806c7d9af348e6dd3777b4f4dbb42c7ad85b190104837488eab9a7c945cf8"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==69.1.1"
         },
         "tomlkit": {
             "hashes": [
