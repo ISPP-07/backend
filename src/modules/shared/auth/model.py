@@ -14,3 +14,7 @@ class TokenPayload(BaseModel):
 class UserAuth(BaseModel):
     username: str
     password: str
+
+
+class RefreshTokenBody(BaseModel):
+    refresh_token: str
