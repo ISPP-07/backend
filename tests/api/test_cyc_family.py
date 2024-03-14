@@ -1,14 +1,14 @@
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-import pytest_asyncio
+import pytest
 from pymongo.database import Database
 
 from src.core.config import settings
 
 
-@pytest_asyncio.fixture
-async def insert_families_mongo(mongo_db: Database):
+@pytest.fixture
+def insert_families_mongo(mongo_db: Database):
     result = []
     families = [
         {

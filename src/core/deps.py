@@ -1,15 +1,15 @@
 from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import Annotated
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import ValidationError
-from jose import jwt
+from jose import jwt, JWTError
 
 from src.core.database.session import get_client
 from src.core.config import settings
-
 from src.modules.shared.auth.model import TokenPayload
 from src.modules.shared.user.model import User
 
@@ -42,7 +42,7 @@ async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
                 detail="Token expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    except (jwt.JWTError, ValidationError) as e:
+    except (JWTError, ValidationError) as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
