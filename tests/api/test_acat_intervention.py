@@ -32,7 +32,6 @@ async def insert_interventions_mongo(mongo_db: Database):
         patient["first_surname"],
         patient["second_surname"])
     patient["registration_date"] = datetime.date.today().isoformat()
-    print(patient)
 
     mongo_db['Patient'].insert_one(patient)
 
