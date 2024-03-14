@@ -13,6 +13,7 @@ requests = "*"
 pydantic-settings = "*"
 asyncio = "*"
 httpx = "*"
+pyotp = "*"
 psycopg = {extras = ["binary", "pool"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
