@@ -1,6 +1,5 @@
 from uuid import uuid4
 import datetime
-from src.modules.acat.intervention.model import Intervention
 
 from fastapi.testclient import TestClient
 import pytest_asyncio
