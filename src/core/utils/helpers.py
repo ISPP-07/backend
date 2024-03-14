@@ -69,3 +69,24 @@ def parse_arguments():
         help="Enable automatic reload"
     )
     return parser.parse_args()
+
+
+def generate_alias(name: str, first_surname: str, second_surname: str) -> str:
+    name_split = name.split()
+    number_of_names = len(name_split)
+    if number_of_names > 1:
+        alias = (
+            f'{name_split[0][0]}{name_split[1][0]}'
+            f'{first_surname[:2]}{second_surname[:2]}'
+        )
+    else:
+        alias = f'{name[:2]}{first_surname[:2]}{second_surname[:2]}'
+    return alias.lower()
+
+
+# SOLO CALCULA LA EDAD SEGUN EL AÑO NO IMPORTA LOS MESES Y LOS DIAS
+def calculate_age(birth_date: date) -> int:
+    today = date.today()
+    return today.year - birth_date.year - (
+        (today.month, today.day) < (birth_date.month, birth_date.day)
+    )

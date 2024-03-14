@@ -6,9 +6,6 @@ name = "pypi"
 [packages]
 fastapi = "*"
 uvicorn = "*"
-sqlmodel = "*"
-alembic = "*"
-sqlalchemy = "*"
 requests = "*"
 pydantic-settings = "*"
 asyncio = "*"
@@ -31,6 +28,8 @@ pylint-pydantic = "*"
 motor-types = "*"
 pytest-motor = "*"
 pymongo = "*"
+pylint-mongoengine = "*"
+pytest-dependency = "*"
 
 [requires]
 python_version = "3.11"

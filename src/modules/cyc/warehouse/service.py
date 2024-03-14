@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
 from src.modules.cyc.warehouse.model import (
     Warehouse,
     WarehouseUpdate,
@@ -22,7 +22,7 @@ async def create_warehouse_service(
     db: DataBaseDep,
     warehouse: WarehouseCreate
 ) -> InsertOneResultMongo:
-    result = await Warehouse.create(db, obj_to_create=warehouse.model_dump())
+    result: InsertOneResultMongo = await Warehouse.create(db, obj_to_create=warehouse.model_dump())
     if not result.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -44,7 +44,7 @@ async def update_warehouse_service(
 
 
 async def delete_warehouse_service(db: DataBaseDep, warehouse_id: UUID4) -> None:
-    mongo_delete = await Warehouse.delete(db, query={'id': warehouse_id})
+    mongo_delete: DeleteResultMongo = await Warehouse.delete(db, query={'id': warehouse_id})
     if not mongo_delete.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

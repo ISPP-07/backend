@@ -34,3 +34,7 @@ class UserSecretCreate(BaseModel):
 class UserSecretOut(BaseModel):
     email: EmailStr
     qr_code: str
+
+
+class RefreshTokenBody(BaseModel):
+    refresh_token: str

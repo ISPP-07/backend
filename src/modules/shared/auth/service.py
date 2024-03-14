@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 import pyotp
 from src.core.database.mongo_types import InsertOneResultMongo
+
 from src.core.deps import DataBaseDep
 from src.core.utils.security import verify_password
 from src.modules.shared.auth.model import UserSecret, UserSecretCreate, UserSecretOut
@@ -27,8 +29,8 @@ def verify_otp(secret, otp):
     return totp.verify(otp)
 
 
-async def login_service(db, form_data) -> User | None:
-    user = await User.get(db, query={'username': form_data.username})
+async def login_service(db: DataBaseDep, form_data: OAuth2PasswordRequestForm) -> User | None:
+    user: User = await User.get(db, query={'username': form_data.username})
     if not (user and verify_password(form_data.password, user.password)):
         return None
     return user

@@ -6,7 +6,7 @@ from src.modules.cyc.family.model import Family, FamilyCreate
 
 
 async def get_families_service(db: DataBaseDep) -> list[Family]:
-    return await Family.get_multi(db, query=None)
+    return await Family.get_multi(db)
 
 
 async def get_family_service(db: DataBaseDep, query: dict) -> Family | None:

@@ -1,7 +1,6 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal, Self
 from enum import Enum
-from datetime import date
 
 from fastapi import HTTPException, status
 from pydantic import (
@@ -14,7 +13,7 @@ from pydantic import (
 )
 
 from src.core.database.base_crud import BaseMongo
-from src.core.utils.helpers import check_nid
+from src.core.utils.helpers import check_nid, calculate_age
 
 AGE_RANGES: Dict[
     Literal['baby', 'child', 'adult', 'senior', 'old'],
@@ -26,13 +25,6 @@ AGE_RANGES: Dict[
     'senior': {'min': 45, 'max': 60, },
     'old': {'min': 60, 'max': maxsize, },
 }
-
-
-def calculate_age(birth_date: date) -> int:
-    today = date.today()
-    return today.year - birth_date.year - (
-        (today.month, today.day) < (birth_date.month, birth_date.day)
-    )
 
 
 def get_age_rank(age: int) -> str:
@@ -53,8 +45,8 @@ class PersonType(Enum):
 
 
 class Gender(Enum):
-    MEN = 'Men'
-    WOMEN = 'Women'
+    MEN = 'Man'
+    WOMEN = 'Woman'
 
 # This class is commented because the implementation of its functionalities will not be done in this sprint.
 # class DeliveryHistory(Base, table=True):
@@ -89,7 +81,11 @@ class Person(BaseModel):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={'field': 'nid', 'msg': 'Invalid NID'}
                 )
-            if all(data.__dict__[field] is None for field in ['name', 'surname', 'nid']):
+            if all(
+                data.__dict__[field] is None for field in [
+                    'name',
+                    'surname',
+                    'nid']):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail='Name, surname and nid are mandatory for adults'

@@ -14,9 +14,9 @@ urls_endpoints = core_urls
 if settings.CYC_NGO:
     from src.modules.cyc.cyc import router_urls as cyc_urls
     urls_endpoints += cyc_urls
-# if settings.ACAT_NGO:
-#     from src.modules.acat.acat import router_urls as acat_urls
-#     urls_endpoints += acat_urls
+if settings.ACAT_NGO:
+    from src.modules.acat.acat import router_urls as acat_urls
+    urls_endpoints += acat_urls
 
 dependencies: List[Depends] = [
     Depends(get_current_user)

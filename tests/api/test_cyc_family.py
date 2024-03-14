@@ -1,14 +1,14 @@
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-import pytest_asyncio
+import pytest
 from pymongo.database import Database
 
 from src.core.config import settings
 
 
-@pytest_asyncio.fixture
-async def insert_families_mongo(mongo_db: Database):
+@pytest.fixture
+def insert_families_mongo(mongo_db: Database):
     result = []
     families = [
         {
@@ -30,7 +30,7 @@ async def insert_families_mongo(mongo_db: Database):
                     "nationality": "Spain",
                     "nid": "07344702C",
                     "family_head": True,
-                    "gender": "Men",
+                    "gender": "Man",
                     "functional_diversity": True,
                     "food_intolerances": [],
                     "homeless": False
@@ -53,7 +53,7 @@ def test_get_families(app_client: TestClient, insert_families_mongo):
     assert isinstance(result, list)
     assert len(result) == 1
     for item, family in zip(result, insert_families_mongo):
-        assert item['id'] == str(family['_id'])  # pylint: disable=W0212
+        assert item['id'] == str(family['_id'])
         assert item['name'] == family['name']
         assert item['number_of_people'] == family['number_of_people']
         assert len(item['members']) == len(family['members'])

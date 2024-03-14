@@ -114,8 +114,7 @@ async def update_product_controller(
             id=product.product_id,
             name=old_product.name if product.name is None else product.name,
             quantity=old_product.quantity if product.quantity is None else product. quantity,
-            exp_date=product.exp_date if product.update_exp_date else old_product.exp_date
-        )
+            exp_date=product.exp_date if product.update_exp_date else old_product.exp_date)
         warehouse.products.remove(old_product)
         new_products = warehouse.products + [updated_product]
         await service.update_warehouse_service(
