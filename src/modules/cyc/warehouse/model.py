@@ -1,7 +1,7 @@
 from uuid import uuid4
 from typing import Optional
 
-from pydantic import PositiveInt, FutureDate, UUID4, BaseModel
+from pydantic import PositiveInt, FutureDate, UUID4, BaseModel,NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
 
@@ -9,7 +9,7 @@ from src.core.database.base_crud import BaseMongo
 class Product(BaseModel):
     id: UUID4 = uuid4()
     name: str
-    quantity: PositiveInt
+    quantity: NonNegativeInt
     exp_date: Optional[FutureDate] = None
 
 

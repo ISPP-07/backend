@@ -3,9 +3,14 @@ from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.delivery import controller
-from src.modules.cyc.delivery.model import Delivery
+from src.modules.cyc.delivery.model import Delivery, DeliveryCreate
 
-router = APIRouter()
+router = APIRouter(tags=["Delivery"])
+
+
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=Delivery)
+async def create_delivery(db: DataBaseDep, delivery: DeliveryCreate):
+    return await controller.create_delivery_controller(db, delivery)
 
 
 @router.get('/{delivery_id}',
