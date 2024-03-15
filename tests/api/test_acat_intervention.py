@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 import pytest_asyncio
 from pymongo.database import Database
 from src.core.utils.helpers import generate_alias
+from tests.api.test_acat_patient import insert_patients_mongo
 
 from src.core.config import settings
 
@@ -83,3 +84,23 @@ def test_get_intervention_detail(
     assert result["patient"]["alias"] == "pecaca"
     assert result["patient"]["nid"] == "07344702C"
     assert result["patient"]["birth_date"] == "2003-03-08"
+
+def test_create_intervention(app_client: TestClient, insert_patients_mongo):
+    patient_id = str(insert_patients_mongo[0]["_id"])
+    url = f'{settings.API_STR}acat/intervention/'
+    intervention_data = {
+        "date": "2023-03-03",
+        "reason": "Food intervention",
+        "typology": "Food",
+        "observations": "Food intervention",
+        "patient_id": patient_id,
+        "technician": "John Doe"
+    }
+    response = app_client.post(url=url, json=intervention_data)
+    assert response.status_code == 201
+    response_data = response.json()
+    assert response_data["date"] == intervention_data["date"]
+    assert response_data["reason"] == intervention_data["reason"]
+    assert response_data["typology"] == intervention_data["typology"]
+    assert response_data["observations"] == intervention_data["observations"]
+    assert response_data["technician"] == intervention_data["technician"]
