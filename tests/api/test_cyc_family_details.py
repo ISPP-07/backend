@@ -10,16 +10,16 @@ from src.core.config import settings
 @pytest_asyncio.fixture
 async def insert_family_mongo(mongo_db: Database):
     family_data = {
-            "_id": uuid4(),
-            "name": "familia Pedro TEST",
-            "phone": "66666666",
-            "address": "San Marcos",
-            "referred_organization": None,
-            "next_renewal_date": "2025-03-08",
-            "observation": None,
-            "number_of_people": 1,
-            "informed": False,
-            "members": [
+        "_id": uuid4(),
+        "name": "familia Pedro TEST",
+        "phone": "66666666",
+        "address": "San Marcos",
+        "referred_organization": None,
+        "next_renewal_date": "2025-03-08",
+        "observation": None,
+        "number_of_people": 1,
+        "informed": False,
+        "members": [
                 {
                     "date_birth": "2003-03-08",
                     "type": "Adult",
@@ -33,8 +33,8 @@ async def insert_family_mongo(mongo_db: Database):
                     "food_intolerances": [],
                     "homeless": False
                 }
-            ]
-        }
+        ]
+    }
 
     mongo_db['Family'].insert_one(family_data)
 
