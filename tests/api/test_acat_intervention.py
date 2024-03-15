@@ -85,6 +85,7 @@ def test_get_intervention_detail(
     assert result["patient"]["nid"] == "07344702C"
     assert result["patient"]["birth_date"] == "2003-03-08"
 
+
 def test_create_intervention(app_client: TestClient, insert_patients_mongo):
     patient_id = str(insert_patients_mongo[0]["_id"])
     url = f'{settings.API_STR}acat/intervention/'
