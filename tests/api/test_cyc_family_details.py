@@ -1,60 +1,52 @@
-# import pytest_asyncio
-# from fastapi.testclient import TestClient
+from uuid import uuid4
 
-# from src.core.config import settings
+import pytest_asyncio
+from fastapi.testclient import TestClient
+from pymongo.database import Database
 
-# from src.modules.cyc.family.model import Family, FamilyObservation, Person
-
-
-# @pytest_asyncio.fixture
-# async def create_family(session) -> Family:
-#     family_data = {
-#         "id": 1,
-#         "name": "La Familia",
-#         "phone": "123456789",
-#         "address": "123 Main St",
-#         "number_of_people": 4,
-#         "referred_organization": "Hospital ABC",
-#         "next_renewal_date": "2100-12-31",
-#         "derecognition_state": "Active",
-#     }
-
-#     family = await Family.create(session, **family_data)
-
-#     observations_data = [
-#         {"observation_text": "Observation 1", "family_id": family.id},
-#         {"observation_text": "Observation 2", "family_id": family.id},
-#     ]
-
-#     for obs_data in observations_data:
-#         await FamilyObservation.create(session, **obs_data)
-
-#     person1_data = {
-#         "date_birth": "2005-01-01",
-#         "type": "Child",
-#         "name": "Jane Doe",
-#         "dni": "87654321",
-#         "family_id": family.id
-#     }
-
-#     person2_data = {
-#         "date_birth": "2000-01-01",
-#         "type": "Adult",
-#         "name": "John Doe",
-#         "dni": "12345678",
-#         "family_id": family.id
-#     }
-
-#     await Person.create(session, **person1_data)
-#     await Person.create(session, **person2_data)
-
-#     return family
+from src.core.config import settings
 
 
-# def test_get_family_details(client: TestClient, create_family: Family):
-#     family_id = create_family.id
-#     url = f'{settings.API_STR}cyc/family/' + str(family_id)
+@pytest_asyncio.fixture
+async def insert_family_mongo(mongo_db: Database):
+    family_data = {
+            "_id": uuid4(),
+            "name": "familia Pedro TEST",
+            "phone": "66666666",
+            "address": "San Marcos",
+            "referred_organization": None,
+            "next_renewal_date": "2025-03-08",
+            "observation": None,
+            "number_of_people": 1,
+            "informed": False,
+            "members": [
+                {
+                    "date_birth": "2003-03-08",
+                    "type": "Adult",
+                    "name": "Pepe",
+                    "surname": "Cast",
+                    "nationality": "Spain",
+                    "nid": "07344702C",
+                    "family_head": True,
+                    "gender": "Man",
+                    "functional_diversity": True,
+                    "food_intolerances": [],
+                    "homeless": False
+                }
+            ]
+        }
 
-#     response = client.get(url)
-#     assert response.status_code == 200
-#     assert response.json()["id"] == family_id
+    mongo_db['Family'].insert_one(family_data)
+
+    return family_data
+
+
+def test_get_family_details(app_client: TestClient, insert_family_mongo):
+    family = insert_family_mongo
+    family_id = family['_id']
+    url = f'{settings.API_STR}cyc/family/{family_id}'
+
+    response = app_client.get(url)
+    assert response.status_code == 200
+    result = response.json()
+    assert result["id"] == str(family_id)
