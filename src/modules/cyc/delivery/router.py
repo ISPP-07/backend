@@ -11,5 +11,5 @@ router = APIRouter()
 @router.get('/{delivery_id}',
             status_code=status.HTTP_200_OK,
             response_model=Delivery)
-async def get_family_details(db: DataBaseDep, delivery_id: UUID4):
+async def get_delivery_details(db: DataBaseDep, delivery_id: UUID4):
     return await controller.get_delivery_details_controller(db, delivery_id)
