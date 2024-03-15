@@ -9,6 +9,20 @@ from src.modules.cyc.warehouse import service as product_service
 from src.modules.cyc.warehouse.model import Product, WarehouseUpdate
 
 
+async def get_deliveries_controller(db: DataBaseDep):
+    return await service.get_deliveries_service(db)
+
+
+async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> Delivery:
+    result = await service.get_delivery_service(db, query={'id': delivery_id})
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Delivery not found',
+        )
+    return result
+
+
 async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryCreate) -> Delivery:
     # Validate product uniqueness in lines
     products_count = Counter(line.product_id for line in create_delivery.lines)
@@ -70,14 +84,4 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
     # Create and retrieve the delivery
     mongo_insert = await service.create_delivery_service(db, create_delivery)
     result = await service.get_delivery_service(db, query={'id': mongo_insert.inserted_id})
-    return result
-
-
-async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> Delivery:
-    result = await service.get_delivery_service(db, query={'id': delivery_id})
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Delivery not found',
-        )
     return result
