@@ -40,7 +40,9 @@ async def insert_warehouses_with_products(mongo_db: Database):
     yield warehouses
 
 
-def test_get_all_products_list(app_client: TestClient, insert_warehouses_with_products):
+def test_get_all_products_list(
+        app_client: TestClient,
+        insert_warehouses_with_products):
     warehouses = insert_warehouses_with_products
     url_get = f'{settings.API_STR}cyc/warehouse/product'
     response = app_client.get(url_get)
