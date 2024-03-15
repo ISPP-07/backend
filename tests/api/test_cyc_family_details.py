@@ -50,3 +50,9 @@ def test_get_family_details(app_client: TestClient, insert_family_mongo):
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == str(family_id)
+
+    for field in family:
+        if field == '_id':
+            assert str(result['id']) == str(family[field])
+        else:
+            assert str(result[field]) == str(family[field])
