@@ -19,26 +19,28 @@ async def insert_patients_mongo(mongo_db: Database):
             "first_surname": "AAA",
             "second_surname": "BBB",
             "birth_date": "2023-02-28",
-            "sex": "Male",
             "address": "Calle 1",
-            "dni": "12343456M",
             "contact_phone": "123123123",
-            "age": 1,
-            "first_appointment_date": "2023-02-28"
+            "alias": "Paciente 1 AAA BBB",
+            "nid": "12343456M",
+            "first_technician": "string",
+            "gender": "Man",
+            "observations": "string"
         },
         {
             "_id": uuid4(),
             "dossier_number": "2",
             "name": "Paciente 2",
-            "first_surname": "CCC",
-            "second_surname": "DDD",
-            "birth_date": "2024-02-29",
-            "sex": "Male",
-            "address": "Calle 2",
-            "dni": "54343421M",
-            "contact_phone": "321321321",
-            "age": 0,
-            "first_appointment_date": "2024-02-29"
+            "first_surname": "AAA",
+            "second_surname": "BBB",
+            "birth_date": "2023-02-28",
+            "address": "Calle 1",
+            "contact_phone": "123123123",
+            "alias": "Paciente 1 AAA BBB",
+            "nid": "12343456M",
+            "first_technician": "string",
+            "gender": "Man",
+            "observations": "string"
         },
     ]
     for patient in patients:
@@ -51,16 +53,17 @@ def test_create_patient(app_client: TestClient):
     url = f'{settings.API_STR}acat/patient/'
 
     patient_data = {
-        "name": "string",
-        "first_surname": "string",
-        "second_surname": "string",
-        "nid": "string",
-        "birth_date": "2012-02-26",
-        "gender": "Man",
-        "address": "string",
-        "contact_phone": "string",
-        "dossier_number": "string",
+        "dossier_number": "1",
+        "name": "Paciente 1",
+        "first_surname": "AAA",
+        "second_surname": "BBB",
+        "birth_date": "2023-02-28",
+        "address": "Calle 1",
+        "contact_phone": "123123123",
+        "alias": "Paciente 1 AAA BBB",
+        "nid": "12343456M",
         "first_technician": "string",
+        "gender": "Man",
         "observations": "string"
     }
 
