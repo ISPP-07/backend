@@ -1,8 +1,12 @@
 from fastapi import HTTPException, status
 
-from src.core.deps import DataBaseDep
 from src.modules.cyc.delivery.model import Delivery
 from src.modules.cyc.delivery import service
+from src.core.deps import DataBaseDep
+
+
+async def get_deliveries_controller(db: DataBaseDep):
+    return await service.get_deliveries_service(db)
 
 
 async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> Delivery:

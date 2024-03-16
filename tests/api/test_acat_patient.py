@@ -49,6 +49,20 @@ async def insert_patients_mongo(mongo_db: Database):
     return result
 
 
+def test_get_patient_details(app_client: TestClient, insert_patients_mongo):
+    patient_id = str(insert_patients_mongo[0]["_id"])
+
+    url_get = f'{settings.API_STR}acat/patient/{patient_id}'
+    response = app_client.get(url_get)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["dossier_number"] == str(
+        insert_patients_mongo[0]["dossier_number"])
+    assert response_data["name"] == str(insert_patients_mongo[0]["name"])
+    assert response_data["first_surname"] == str(
+        insert_patients_mongo[0]["first_surname"])
+
+
 def test_create_patient(app_client: TestClient):
     url = f'{settings.API_STR}acat/patient/'
 
@@ -88,20 +102,3 @@ def test_create_patient(app_client: TestClient):
 #     assert isinstance(result, list)
 #     assert len(result) == 2
 #     assert result == [patient.model_dump() for patient in create_patients]
-
-
-# @pytest.mark.asyncio
-# async def test_get_patient_details(client: TestClient, create_patients:
-# list[Patient]):
-
-#     patient = create_patients.pop()
-
-#     url_get = f'{settings.API_STR}acat/patient/details/{patient.id}'
-
-#     response = client.get(url_get)
-
-#     assert response.status_code == 200
-
-#     response_data = response.json()
-#     assert response_data["name"] == patient.name
-#     assert response_data["alias"] == patient.alias
