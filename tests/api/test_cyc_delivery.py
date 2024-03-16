@@ -42,6 +42,26 @@ async def insert_deliveries_mongo(mongo_db: Database):
     yield result
 
 
+def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
+    url = f'{settings.API_STR}cyc/delivery/'
+    response = app_client.get(url=url)
+    assert response.status_code == 200
+    result = response.json()
+    assert isinstance(result, list)
+    assert len(result) == 2
+    for item, delivery in zip(result, insert_deliveries_mongo):
+        assert item['id'] == str(delivery['_id'])
+        # Convert the date string to ISO format without time
+        item_date = item['date'].split('T')[0]
+        assert item_date == delivery['date']
+        assert item['months'] == delivery['months']
+        assert item['family_id'] == str(delivery['family_id'])
+        assert item['products'][0]['id'] == str(delivery['products'][0]['id'])
+        assert item['products'][0]['name'] == delivery['products'][0]['name']
+        assert item['products'][0]['quantity'] == delivery['products'][0]['quantity']
+        assert item['products'][0]['exp_date'] == delivery['products'][0]['exp_date']
+
+
 def test_get_delivery_detail(
         app_client: TestClient,
         insert_deliveries_mongo):
