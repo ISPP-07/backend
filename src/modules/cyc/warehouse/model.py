@@ -1,7 +1,7 @@
 from uuid import uuid4
 from typing import Optional
 
-from pydantic import PositiveInt, FutureDate, UUID4, BaseModel,NonNegativeInt
+from pydantic import PositiveInt, FutureDate, UUID4, BaseModel, NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
 
