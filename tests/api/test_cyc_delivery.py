@@ -11,6 +11,35 @@ from src.core.config import settings
 async def insert_deliveries_mongo(mongo_db: Database):
     result = []
 
+    family = {
+        "_id": uuid4(),
+        "name": "familia Pedro TEST",
+        "phone": "66666666",
+        "address": "San Marcos",
+        "referred_organization": None,
+        "next_renewal_date": "2025-03-08",
+        "observation": None,
+        "number_of_people": 1,
+        "informed": False,
+        "members": [
+                {
+                    "date_birth": "2003-03-08",
+                    "type": "Adult",
+                    "name": "Pepe",
+                    "surname": "Cast",
+                    "nationality": "Spain",
+                    "nid": "07344702C",
+                    "family_head": True,
+                    "gender": "Man",
+                    "functional_diversity": True,
+                    "food_intolerances": [],
+                    "homeless": False
+                }
+        ]
+    }
+
+    mongo_db['Family'].insert_one(family)
+
     warehouse = {
         "_id": uuid4(),
         "name": "Warehouse",
@@ -38,7 +67,7 @@ async def insert_deliveries_mongo(mongo_db: Database):
                     "state": "good",
                 }
             ],
-            "family_id": uuid4(),
+            "family_id": family["_id"],
         },
         {
             "_id": uuid4(),
@@ -51,7 +80,7 @@ async def insert_deliveries_mongo(mongo_db: Database):
                     "state": "good",
                 }
             ],
-            "family_id": uuid4(),
+            "family_id": family["_id"],
         },
     ]
 
@@ -98,3 +127,29 @@ def test_get_delivery_detail(
     assert result["lines"][0]["state"] == insert_deliveries_mongo[0]["lines"][0]["state"]
     assert result["family_id"] == str(
         insert_deliveries_mongo[0]["family_id"])
+
+
+def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
+    url = f'{settings.API_STR}cyc/delivery/'
+    data = {
+        "date": "2025-03-08",
+        "months": 1,
+        "lines": [
+            {
+                "product_id": str(insert_deliveries_mongo[0]["lines"][0]["product_id"]),
+                "quantity": 1,
+                "state": "good",
+            }
+        ],
+        "family_id": str(insert_deliveries_mongo[0]["family_id"]),
+    }
+    response = app_client.post(url=url, json=data)
+    print(response.json(), "BBBBBBBBBBBBBBBB")
+    assert response.status_code == 201
+    result = response.json()
+    assert result["date"] == "2025-03-08T00:00:00"
+    assert result["months"] == 1
+    assert result["lines"][0]["product_id"] == data["lines"][0]["product_id"]
+    assert result["lines"][0]["quantity"] == data["lines"][0]["quantity"]
+    assert result["lines"][0]["state"] == data["lines"][0]["state"]
+    assert result["family_id"] == data["family_id"]
