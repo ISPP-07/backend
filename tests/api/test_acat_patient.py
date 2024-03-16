@@ -8,8 +8,9 @@ from src.core.config import settings
 from src.core.utils.helpers import generate_alias
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def insert_patients_mongo(mongo_db: Database):
+    mongo_db["Patient"].delete_many({})
     result = []
     patients = [
         {
@@ -46,7 +47,7 @@ async def insert_patients_mongo(mongo_db: Database):
     for patient in patients:
         mongo_db['Patient'].insert_one(patient)
         result.append(patient)
-    return result
+    yield result
 
 
 def test_get_patient_details(app_client: TestClient, insert_patients_mongo):
@@ -93,12 +94,37 @@ def test_create_patient(app_client: TestClient):
         patient_data["second_surname"])
 
 
+def test_get_patients(app_client: TestClient, insert_patients_mongo, mongo_db: Database):
+    url = f'{settings.API_STR}acat/patient'
+
+    test = mongo_db["Patient"].find()
+    for x in test:
+        print(x)
+
+    response = app_client.get(url=url)
+    assert response.status_code == 200
+    result = response.json()
+    assert isinstance(result, list)
+    for item, patient in zip(result, insert_patients_mongo):
+        assert item["id"] == str(patient["_id"])
+        assert item["name"] == patient["name"]
+        assert item["address"] == patient["address"]
+        assert item["alias"] == patient["alias"]
+        assert item["nid"] == patient["nid"]
+
+
 # @pytest.mark.asyncio
-# def test_get_patients(client: TestClient, create_patients: list[Patient]):
-#     url = f'{settings.API_STR}acat/patient'
-#     response = client.get(url)
+# async def test_get_patient_details(client: TestClient, create_patients:
+# list[Patient]):
+
+#     patient = create_patients.pop()
+
+#     url_get = f'{settings.API_STR}acat/patient/details/{patient.id}'
+
+#     response = client.get(url_get)
+
 #     assert response.status_code == 200
-#     result = response.json()
-#     assert isinstance(result, list)
-#     assert len(result) == 2
-#     assert result == [patient.model_dump() for patient in create_patients]
+
+#     response_data = response.json()
+#     assert response_data["name"] == patient.name
+#     assert response_data["alias"] == patient.alias

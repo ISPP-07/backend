@@ -14,7 +14,7 @@ from src.core.config import settings
 async def insert_interventions_mongo(mongo_db: Database):
     result = []
     patient = {
-        "id": uuid4(),
+        "_id": uuid4(),
         "name": "Pepe",
         "first_surname": "Cast",
         "second_surname": "Cast2",
@@ -35,6 +35,7 @@ async def insert_interventions_mongo(mongo_db: Database):
     patient["registration_date"] = datetime.date.today().isoformat()
 
     mongo_db['Patient'].insert_one(patient)
+    patient["id"] = patient.pop("_id")
 
     interventions = [
         {
