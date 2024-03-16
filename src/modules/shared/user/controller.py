@@ -22,12 +22,12 @@ async def change_password_controller(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo electrónico introducido no está asociado a ningún usuario")
+            detail="The email does not exist in the system.")
     secret = await get_secret_by_email(db, email)
     result = verify_otp(secret, otp_code)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código de verificación es incorrecto"
+            detail="The verification code is not valid. Please try again."
         )
     return await service.change_password_service(db, email, new_password)

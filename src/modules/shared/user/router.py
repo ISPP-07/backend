@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 from pydantic import EmailStr
 
-from src.core.deps import DataBaseDep, get_current_user
+from src.core.deps import DataBaseDep
 from src.modules.shared.user import controller
-from src.modules.shared.user.model import User, UserCreate, UserOut
+from src.modules.shared.user.model import UserCreate, UserOut
 from src.modules.shared.user.controller import create_user_controller
 
 router = APIRouter()

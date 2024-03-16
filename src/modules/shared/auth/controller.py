@@ -59,7 +59,7 @@ async def get_secret_and_qr(db, email) -> UserSecretOut:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Correo electrónico no encontrado"
+            detail="That email does not exist in the system."
         )
 
     user_secret = service.generate_user_secret()

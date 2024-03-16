@@ -52,4 +52,4 @@ async def find_username_by_email(db: DataBaseDep, email: str) -> str:
 async def change_password_service(db: DataBaseDep, email: str, new_password: str) -> dict:
     hashed_password = get_hashed_password(new_password)
     await User.update(db, {'email': email}, {'password': hashed_password})
-    return {'detail': 'La contraseña ha sido cambiada correctamente'}
+    return {'detail': 'Your password has been changed successfully.'}
