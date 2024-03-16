@@ -1,11 +1,7 @@
-from typing import Optional, Self
+from typing import Optional
+from pydantic import BaseModel, UUID4, PositiveInt, FutureDatetime
 
-from pydantic import BaseModel, UUID4, PositiveInt, FutureDatetime, model_validator
-from src.core.deps import DataBaseDep, get_db
 from src.core.database.base_crud import BaseMongo
-from src.modules.cyc.warehouse.controller import get_products_controller
-from src.modules.cyc.warehouse.model import Product
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 class DeliveryLine(BaseModel):

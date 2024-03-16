@@ -10,28 +10,47 @@ from src.core.config import settings
 @pytest_asyncio.fixture
 async def insert_deliveries_mongo(mongo_db: Database):
     result = []
-    product = {
-        "id": uuid4(),
-        "name": "Pepe",
-        "quantity": 1,
-        "exp_date": "2025-03-08",
+
+    warehouse = {
+        "_id": uuid4(),
+        "name": "Warehouse",
+        "products": [
+            {
+                "id": uuid4(),
+                "name": "Product 1",
+                "quantity": 10,
+                "exp_date": "2025-03-08",
+            }
+        ]
     }
 
-    mongo_db['Product'].insert_one(product)
+    mongo_db['Warehouse'].insert_one(warehouse)
 
     deliveries = [
         {
             "_id": uuid4(),
             "date": "2025-03-08",
             "months": 1,
-            "products": [product],
+            "lines": [
+                {
+                    "product_id": warehouse["products"][0]["id"],
+                    "quantity": 1,
+                    "state": "good",
+                }
+            ],
             "family_id": uuid4(),
         },
         {
             "_id": uuid4(),
             "date": "2025-03-08",
             "months": 2,
-            "products": [product],
+            "lines": [
+                {
+                    "product_id": warehouse["products"][0]["id"],
+                    "quantity": 1,
+                    "state": "good",
+                }
+            ],
             "family_id": uuid4(),
         },
     ]
@@ -55,11 +74,11 @@ def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
         item_date = item['date'].split('T')[0]
         assert item_date == delivery['date']
         assert item['months'] == delivery['months']
+        assert item['lines'][0]['product_id'] == str(
+            delivery['lines'][0]['product_id'])
+        assert item['lines'][0]['quantity'] == delivery['lines'][0]['quantity']
+        assert item['lines'][0]['state'] == delivery['lines'][0]['state']
         assert item['family_id'] == str(delivery['family_id'])
-        assert item['products'][0]['id'] == str(delivery['products'][0]['id'])
-        assert item['products'][0]['name'] == delivery['products'][0]['name']
-        assert item['products'][0]['quantity'] == delivery['products'][0]['quantity']
-        assert item['products'][0]['exp_date'] == delivery['products'][0]['exp_date']
 
 
 def test_get_delivery_detail(
@@ -71,12 +90,11 @@ def test_get_delivery_detail(
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == delivery_id
+    assert result["date"] == "2025-03-08T00:00:00"
     assert result["months"] == 1
-    assert result["products"][0]["id"] == str(
-        insert_deliveries_mongo[0]["products"][0]["id"])
-    assert result["products"][0]["name"] == "Pepe"
-    assert result["products"][0]["quantity"] == 1
-    assert result["products"][0]["exp_date"] == "2025-03-08"
+    assert result["lines"][0]["product_id"] == str(
+        insert_deliveries_mongo[0]["lines"][0]["product_id"])
+    assert result["lines"][0]["quantity"] == insert_deliveries_mongo[0]["lines"][0]["quantity"]
+    assert result["lines"][0]["state"] == insert_deliveries_mongo[0]["lines"][0]["state"]
     assert result["family_id"] == str(
         insert_deliveries_mongo[0]["family_id"])
-    assert result["date"] == "2025-03-08T00:00:00"

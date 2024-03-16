@@ -29,7 +29,7 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
     if any(count > 1 for count in products_count.values()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='There is one product that is in two different lines.' +
+            detail='There is one product that is in two different lines. ' +
             'Please put them in a single line'
         )
 
@@ -60,7 +60,7 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
         if not warehouse or product.quantity < required_quantity:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Not enough stock for product {product.name}.' +
+                detail=f'Not enough stock for product {product.name}. ' +
                 f'There is only {product.quantity} left' if warehouse else 'Product not found'
             )
 
