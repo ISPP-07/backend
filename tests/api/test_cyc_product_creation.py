@@ -1,38 +1,72 @@
-# import pytest
-# from fastapi.testclient import TestClient
-# from src.core.config import settings
+from uuid import uuid4
+
+from fastapi.testclient import TestClient
+import pytest_asyncio
+from pymongo.database import Database
+
+from src.core.config import settings
 
 
-# @pytest.mark.asyncio
-# async def test_create_warehouse_and_product(client: TestClient):
-#     warehouse_url = f'{settings.API_STR}cyc/product/warehouse/'
-#     product_url = f'{settings.API_STR}cyc/product/'
+@pytest_asyncio.fixture
+async def insert_warehouse_mongo(mongo_db: Database):
+    warehouse = {
+        "_id": uuid4(),
+        "name": "Almacén principal",
+        "products": [
+            {
+                "id": uuid4(),
+                "name": "Leche desnatada",
+                "quantity": 34,
+                "exp_date": "2025-03-16"
+            }
+        ]
+    }
 
-#     # Create a warehouse
-#     warehouse_data = {
-#         "name": "Warehouse 1",
-#     }
-#     warehouse_response = client.post(warehouse_url, json=warehouse_data)
-#     assert warehouse_response.status_code == 201
-#     assert warehouse_response.json()["name"] == warehouse_data["name"]
-#     assert warehouse_response.json()["id"] is not None
+    mongo_db['Warehouse'].insert_one(warehouse)
+    yield warehouse
 
-#     warehouse_id = warehouse_response.json()["id"]
 
-#     # Create a product with the warehouse_id
-#     product_data = {
-#         "name": "Product 1",
-#         "quantity": 10,
-#         "exp_date": "2100-12-31",
-#         "warehouse_id": warehouse_id
-#     }
+def test_create_product(app_client: TestClient, insert_warehouse_mongo):
+    warehouse_id = str(insert_warehouse_mongo["_id"])
+    product_url = f'{settings.API_STR}cyc/warehouse/product/'
 
-#     product_response = client.post(product_url, json=product_data)
+    product_data = {
+        "products": [
+            {
+                "name": "Queso",
+                "exp_date": "2026-03-16",
+                "quantity": 23,
+                "warehouse_id": warehouse_id
+            }
+        ]
+    }
 
-#     assert product_response.status_code == 201
-#     response_data = product_response.json()
-#     assert response_data["name"] == product_data["name"]
-#     assert response_data["quantity"] == product_data["quantity"]
-#     assert response_data["exp_date"] == product_data["exp_date"]
-#     assert response_data["warehouse_id"] == product_data["warehouse_id"]
-#     assert response_data["id"] is not None
+    response = app_client.post(product_url, json=product_data)
+    assert response.status_code == 201
+    result = response.json()
+
+    for field in product_data["products"][0]:
+        assert str(result[0][field]) == str(product_data["products"][0][field])
+
+
+def test_create_warehouse(app_client: TestClient):
+    warehouse_url = f'{settings.API_STR}cyc/warehouse/'
+
+    warehouse_data = {
+        "name": "Almacén secundario",
+        "products": [
+            {
+                "id": str(uuid4()),
+                "name": "Leche entera",
+                "quantity": 34,
+                "exp_date": "2025-03-16"
+            }
+        ]
+    }
+
+    response = app_client.post(warehouse_url, json=warehouse_data)
+    assert response.status_code == 201
+    result = response.json()
+
+    for field in warehouse_data:
+        assert str(result[field]) == str(warehouse_data[field])
