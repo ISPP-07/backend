@@ -94,7 +94,10 @@ def test_create_patient(app_client: TestClient):
         patient_data["second_surname"])
 
 
-def test_get_patients(app_client: TestClient, insert_patients_mongo, mongo_db: Database):
+def test_get_patients(
+        app_client: TestClient,
+        insert_patients_mongo,
+        mongo_db: Database):
     url = f'{settings.API_STR}acat/patient'
 
     test = mongo_db["Patient"].find()
