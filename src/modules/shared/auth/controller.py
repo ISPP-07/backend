@@ -7,8 +7,8 @@ from src.core.deps import DataBaseDep
 from fastapi.security import OAuth2PasswordRequestForm
 from src.core.utils.security import create_access_token, create_refresh_token
 from src.modules.shared.auth import service
-from src.modules.shared.auth.model import TokenSchema, TokenPayload
-from src.modules.shared.user.service import get_user_service
+from src.modules.shared.auth.model import TokenSchema, TokenPayload, UserSecretCreate, UserSecretOut
+from src.modules.shared.user.service import find_user_by_email, get_user_service
 
 
 def root_controller():
@@ -52,3 +52,23 @@ async def refresh_controller(db: DataBaseDep, refresh_token: str) -> TokenSchema
         "access_token": create_access_token(user.id),
         "refresh_token": create_refresh_token(user.id),
     }
+
+
+async def get_secret_and_qr(db, email) -> UserSecretOut:
+    user = await find_user_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="That email does not exist in the system."
+        )
+
+    user_secret = service.generate_user_secret()
+    qr_code = service.generate_qr_code(email, user_secret)
+
+    result = await service.create_user_secret(
+        db,
+        UserSecretCreate(
+            email=email, user_secret=user_secret, qr_code=qr_code)
+    )
+
+    return result
