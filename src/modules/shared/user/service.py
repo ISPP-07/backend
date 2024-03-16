@@ -32,3 +32,24 @@ async def create_user_service(db: DataBaseDep, user: UserCreate) -> UserOut | No
         email=user_db.email
     )
     return result
+
+
+async def find_user_by_email(db: DataBaseDep, email: str) -> User:
+    query = {'email': email}
+    user = await User.get(db, query)
+    return user
+
+
+async def find_username_by_email(db: DataBaseDep, email: str) -> str:
+    query = {'email': email}
+    user = await User.get(db, query)
+    if user:
+        return user.username
+    else:
+        return None
+
+
+async def change_password_service(db: DataBaseDep, email: str, new_password: str) -> dict:
+    hashed_password = get_hashed_password(new_password)
+    await User.update(db, {'email': email}, {'password': hashed_password})
+    return {'detail': 'Your password has been changed successfully.'}

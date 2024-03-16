@@ -1,4 +1,6 @@
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, EmailStr
+
+from src.core.database.base_crud import BaseMongo
 
 
 class TokenSchema(BaseModel):
@@ -14,6 +16,24 @@ class TokenPayload(BaseModel):
 class UserAuth(BaseModel):
     username: str
     password: str
+
+
+class UserSecret(BaseMongo):
+    id: UUID4
+    email: EmailStr
+    user_secret: str
+    qr_code: str
+
+
+class UserSecretCreate(BaseModel):
+    email: EmailStr
+    user_secret: str
+    qr_code: str
+
+
+class UserSecretOut(BaseModel):
+    email: EmailStr
+    qr_code: str
 
 
 class RefreshTokenBody(BaseModel):
