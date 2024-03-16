@@ -136,12 +136,13 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
         "months": 1,
         "lines": [
             {
-                "product_id": str(insert_deliveries_mongo[0]["lines"][0]["product_id"]),
+                "product_id": str(
+                    insert_deliveries_mongo[0]["lines"][0]["product_id"]),
                 "quantity": 1,
                 "state": "good",
-            }
-        ],
-        "family_id": str(insert_deliveries_mongo[0]["family_id"]),
+            }],
+        "family_id": str(
+            insert_deliveries_mongo[0]["family_id"]),
     }
     response = app_client.post(url=url, json=data)
     print(response.json(), "BBBBBBBBBBBBBBBB")

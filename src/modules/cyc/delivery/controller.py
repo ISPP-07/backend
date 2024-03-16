@@ -43,8 +43,10 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
 
     # Fetch warehouses and validate all products exist and have enough stock
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_warehouse = {product.id: (warehouse, product) for warehouse in warehouses
-                            for product in warehouse.products}
+    product_to_warehouse = {
+        product.id: (
+            warehouse,
+            product) for warehouse in warehouses for product in warehouse.products}
 
     missing_products = [product_id for product_id in products_count
                         if product_id not in product_to_warehouse]
@@ -61,20 +63,19 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'Not enough stock for product {product.name}. ' +
-                f'There is only {product.quantity} left' if warehouse else 'Product not found'
-            )
+                f'There is only {product.quantity} left' if warehouse else 'Product not found')
 
-    # Proceed with updating the product quantities in their respective warehouses
+    # Proceed with updating the product quantities in their respective
+    # warehouses
     for line in create_delivery.lines:
         warehouse, product = product_to_warehouse[line.product_id]
-        updated_products = [p for p in warehouse.products if p.id != line.product_id] + [
+        updated_products = [
+            p for p in warehouse.products if p.id != line.product_id] + [
             Product(
                 id=product.id,
                 name=product.name,
                 quantity=product.quantity - line.quantity,
-                exp_date=product.exp_date
-            )
-        ]
+                exp_date=product.exp_date)]
         await product_service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
