@@ -8,7 +8,6 @@ from src.core.config import settings
 
 @pytest_asyncio.fixture
 async def insert_warehouses_with_products(mongo_db: Database):
-    # Clean the database
     mongo_db['Warehouse'].delete_many({})
 
     warehouse_id_1 = uuid4()
@@ -59,3 +58,49 @@ def test_get_all_products_list(
     for product_data in response_data:
         assert any(product_data["name"] == product["name"] and product_data["quantity"]
                    == product["quantity"] for product in inserted_products)
+
+
+def test_create_product(app_client: TestClient, insert_warehouses_with_products):
+    warehouse_id = str(insert_warehouses_with_products[0]["_id"])
+    product_url = f'{settings.API_STR}cyc/warehouse/product/'
+
+    product_data = {
+        "products": [
+            {
+                "name": "Queso",
+                "exp_date": "2026-03-16",
+                "quantity": 23,
+                "warehouse_id": warehouse_id
+            }
+        ]
+    }
+
+    response = app_client.post(product_url, json=product_data)
+    assert response.status_code == 201
+    result = response.json()
+
+    for field in product_data["products"][0]:
+        assert str(result[0][field]) == str(product_data["products"][0][field])
+
+
+def test_create_warehouse(app_client: TestClient):
+    warehouse_url = f'{settings.API_STR}cyc/warehouse/'
+
+    warehouse_data = {
+        "name": "Almacén secundario",
+        "products": [
+            {
+                "id": str(uuid4()),
+                "name": "Leche entera",
+                "quantity": 34,
+                "exp_date": "2025-03-16"
+            }
+        ]
+    }
+
+    response = app_client.post(warehouse_url, json=warehouse_data)
+    assert response.status_code == 201
+    result = response.json()
+
+    for field in warehouse_data:
+        assert str(result[field]) == str(warehouse_data[field])
