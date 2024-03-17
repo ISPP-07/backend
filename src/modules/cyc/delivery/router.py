@@ -41,7 +41,7 @@ async def get_delivery_details(db: DataBaseDep, delivery_id: UUID4):
     **Get detailed information about a specific delivery.**
 
     Fetches and returns detailed information about a specific delivery identified by its UUID.
-    The information includes the delivery's ID, the scheduled date, duration in months, item lines 
+    The information includes the delivery's ID, the scheduled date, duration in months, item lines
     with product ID, quantity,
     and state (if specified), and the associated family ID.
     """
@@ -67,7 +67,7 @@ async def create_delivery(db: DataBaseDep, delivery: DeliveryCreate):
     **Create a new delivery.**
 
     Accepts delivery information and creates a new delivery record in the database.
-    The delivery information includes the scheduled date, duration in months, item lines with 
+    The delivery information includes the scheduled date, duration in months, item lines with
     product ID and quantity,
     and the associated family ID.
     """
