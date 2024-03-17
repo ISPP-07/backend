@@ -15,20 +15,20 @@ TEST_DB_URI = os.getenv('TEST_DB_URI')
 TEST_DB = os.getenv('TEST_DB')
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def mongo_client():
     client = MongoClient(TEST_DB_URI, uuidRepresentation='standard')
     yield client
     client.drop_database(TEST_DB)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def mongo_db(mongo_client: MongoClient):
     db = mongo_client[TEST_DB]
     yield db
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def app_client():
     settings.MONGO_DATABASE_URI = TEST_DB_URI
     settings.MONGO_DB = TEST_DB
