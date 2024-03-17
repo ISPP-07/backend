@@ -21,7 +21,7 @@ async def get_warehouses(db: DataBaseDep):
     """
     **Retrieve a list of all warehouses.**
 
-    Queries the database and returns a list of all warehouses, each including 
+    Queries the database and returns a list of all warehouses, each including
     its name, location, and the products it stores.
     """
     return await controller.get_warehouses_controller(db)
@@ -73,8 +73,8 @@ async def get_products(db: DataBaseDep):
     """
     **Retrieve a list of all products in all warehouses.**
 
-    Queries the database to return a list of all products across all warehouses, 
-    including each product's name, quantity, expiration date, and the ID of the warehouse 
+    Queries the database to return a list of all products across all warehouses,
+    including each product's name, quantity, expiration date, and the ID of the warehouse
     it's stored in.
     """
     return await controller.get_products_controller(db)
@@ -111,7 +111,7 @@ async def update_product(db: DataBaseDep, product_update: model.ProductUpdate):
     """
     **Update existing products within a warehouse.**
 
-    Accepts product information to update existing products. Each product update must specify 
+    Accepts product information to update existing products. Each product update must specify
     the product ID,
     and can update the product's name, quantity, and expiration date.
     """

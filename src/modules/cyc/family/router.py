@@ -21,7 +21,7 @@ async def get_families(db: DataBaseDep):
     """
     **Retrieve a list of all families.**
 
-    Queries the database and returns a list of all families. Each family includes 
+    Queries the database and returns a list of all families. Each family includes
     details such as the family ID, name, and related information.
     """
     return await controller.get_families_controller(db)
@@ -39,7 +39,7 @@ async def create_family(db: DataBaseDep, family: FamilyCreate):
     """
     **Create a new family.**
 
-    Accepts family information and creates a new family record in the database. The family 
+    Accepts family information and creates a new family record in the database. The family
     information includes the family's name and other relevant details.
     """
     return await controller.create_family_controller(db, family)
@@ -57,7 +57,7 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
     """
     **Get detailed information about a specific family.**
 
-    Fetches and returns detailed information about a specific family identified by its UUID. 
+    Fetches and returns detailed information about a specific family identified by its UUID.
     This includes the family's ID, name, and other pertinent details.
     """
     return await controller.get_family_details_controller(db, family_id)
