@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.core.deps import DataBaseDep, get_current_user
 from src.modules.shared.auth import controller
-from src.modules.shared.auth.model import TokenSchema, RefreshTokenBody
+from src.modules.shared.auth.model import TokenSchema, UserSecretOut, RefreshTokenBody
 from src.modules.shared.user.model import User, UserOut
 
 router = APIRouter(
@@ -38,3 +38,9 @@ async def test_token(user: Annotated[User, Depends(get_current_user)]):
 @router.post('/refresh', summary="Refresh token", response_model=TokenSchema)
 async def refresh_token(db: DataBaseDep, refresh_body: RefreshTokenBody):
     return await controller.refresh_controller(db, refresh_token=refresh_body.refresh_token)
+
+
+@router.post("/recovery-qr-code", response_model=UserSecretOut)
+async def get_secret_and_qr(db: DataBaseDep, user: User = Depends(get_current_user)):
+    email = user.email
+    return await controller.get_secret_and_qr(db, email)
