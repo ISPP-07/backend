@@ -65,7 +65,7 @@ async def refresh_token(db: DataBaseDep, refresh_body: model.RefreshTokenBody):
              })
 async def get_secret_and_qr(db: DataBaseDep, user: user_model.User = Depends(get_current_user)):
     """
-    Generates a new secret and QR code for a user, typically used for two-factor authentication 
+    Generates a new secret and QR code for a user, typically used for two-factor authentication
     setup.
     """
     email = user.email
