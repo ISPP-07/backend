@@ -1,25 +1,36 @@
-# import pytest
-# from fastapi.testclient import TestClient
-# from src.core.config import settings
+from fastapi.testclient import TestClient
+from src.core.config import settings
 
 
-# @pytest.mark.asyncio
-# async def test_create_family(client: TestClient):
-#     url = f'{settings.API_STR}cyc/family/'
+def test_create_family(app_client: TestClient):
+    url = f'{settings.API_STR}cyc/family/'
+    family_data = {
+        "name": "La Familia Pérez",
+        "phone": "123456789",
+        "address": "456 Main St",
+        "referred_organization": "Hospital XYZ",
+        "next_renewal_date": "2025-12-31",
+        "observation": "Una observación",
+        "members": [
+            {
+                "date_birth": "1985-08-25",
+                "type": "Adult",
+                "name": "Maria",
+                "surname": "Pérez",
+                "nationality": "Española",
+                "nid": "51506994N",
+                "family_head": True,
+                "gender": "Woman",
+                "functional_diversity": False,
+                "food_intolerances": [],
+                "homeless": False
+            }
+            # Puedes añadir más miembros según sea necesario
+        ]
+    }
 
-#     family_data = {
-#         "name": "La Familia",
-#         "phone": "123456789",
-#         "address": "123 Main St",
-#         "number_of_people": 4,
-#         "referred_organization": "Hospital ABC",
-#         "next_renewal_date": "2100-12-31",
-#         "derecognition_state": "Active"
-#     }
-
-#     response = client.post(url, json=family_data)
-
-#     assert response.status_code == 201
-#     response_data = response.json()
-#     assert response_data["name"] == family_data["name"]
-#     assert response_data["address"] == family_data["address"]
+    response = app_client.post(url=url, json=family_data)
+    assert response.status_code == 201
+    response_data = response.json()
+    assert response_data["name"] == family_data["name"]
+    assert response_data["address"] == family_data["address"]
