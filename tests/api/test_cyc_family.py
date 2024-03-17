@@ -9,6 +9,9 @@ from src.core.config import settings
 
 @pytest.fixture
 def insert_families_mongo(mongo_db: Database):
+    # Clean the database
+    mongo_db['Family'].delete_many({})
+
     result = []
     families = [
         {

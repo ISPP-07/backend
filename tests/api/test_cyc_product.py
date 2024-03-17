@@ -8,6 +8,9 @@ from src.core.config import settings
 
 @pytest_asyncio.fixture
 async def insert_warehouses_with_products(mongo_db: Database):
+    # Clean the database
+    mongo_db['Warehouse'].delete_many({})
+
     warehouse_id_1 = uuid4()
     warehouse_id_2 = uuid4()
     warehouses = [
