@@ -19,7 +19,8 @@ async def get_interventions_service(db: DataBaseDep) -> list[model.Intervention]
     return await model.Intervention.get_multi(db, query=None)
 
 
-async def create_intervention_service(db: DataBaseDep, intervention_data: model.InterventionCreate, patient_data: patient_model.Patient) -> InsertOneResultMongo:
+async def create_intervention_service(db: DataBaseDep, intervention_data: model.InterventionCreate,
+                                      patient_data: patient_model.Patient) -> InsertOneResultMongo:
     intervention_dict = intervention_data.model_dump()
     intervention_dict['patient'] = patient_data.model_dump()
     intervention_dict.pop('patient_id')
