@@ -1,13 +1,13 @@
-from uuid import uuid4
 import datetime
+import pytest_asyncio
+from uuid import uuid4
+from pymongo.database import Database
 
 from fastapi.testclient import TestClient
-import pytest_asyncio
-from pymongo.database import Database
-from src.core.utils.helpers import generate_alias
-from tests.api.test_acat_patient import insert_patients_mongo
 
 from src.core.config import settings
+from src.core.utils.helpers import generate_alias
+from tests.api.test_acat_patient import insert_patients_mongo
 
 
 @pytest_asyncio.fixture
