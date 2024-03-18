@@ -1,11 +1,11 @@
 from pydantic import UUID4
+
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-
 from src.modules.acat.intervention import service
-from src.modules.acat.intervention.model import InterventionCreate
-from src.modules.acat.patient.service import get_patient_by_id
+from src.modules.acat.intervention import model
+from src.modules.acat.patient import service as patient_service
 
 
 async def get_interventions_controller(db: DataBaseDep):
@@ -22,9 +22,9 @@ async def get_intervention_details_controller(db: DataBaseDep, intervention_id: 
     return result
 
 
-async def create_intervention_controller(db: DataBaseDep, intervention: InterventionCreate):
+async def create_intervention_controller(db: DataBaseDep, intervention: model.InterventionCreate):
 
-    patient = await get_patient_by_id(db, query={'id': intervention.patient_id})
+    patient = await patient_service.get_patient_by_id(db, query={'id': intervention.patient_id})
 
     if patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
