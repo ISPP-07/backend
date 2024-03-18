@@ -5,42 +5,68 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.core.deps import DataBaseDep, get_current_user
 from src.modules.shared.auth import controller
-from src.modules.shared.auth.model import TokenSchema, UserSecretOut, RefreshTokenBody
-from src.modules.shared.user.model import User, UserOut
+from src.modules.shared.auth import model
+from src.modules.shared.user import model as user_model
 
-router = APIRouter(
-    tags=['core'],
-)
-
-
-@router.get('/')
-def root():
-    return controller.root_controller()
+router = APIRouter(tags=['Authentication'])
 
 
 @router.post(
     '/login',
     status_code=status.HTTP_200_OK,
-    response_model=TokenSchema,
+    response_model=model.TokenSchema,
+    responses={
+        200: {"description": "Token successfully generated"},
+        401: {"description": "Incorrect email or password"},
+    }
 )
 async def login(
     db: DataBaseDep,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
+    """
+    Authenticates a user and generates an access and refresh token.
+    """
     return await controller.login_controller(db, form_data)
 
 
-@router.post('/test-token', response_model=UserOut)
-async def test_token(user: Annotated[User, Depends(get_current_user)]):
+@router.post('/test-token',
+             response_model=user_model.UserOut,
+             responses={
+                 200: {"description": "User information retrieved successfully"},
+             })
+async def test_token(user: Annotated[user_model.User, Depends(get_current_user)]):
+    """
+    Tests the validity of the current access token and returns the user information.
+    """
     return user
 
 
-@router.post('/refresh', summary="Refresh token", response_model=TokenSchema)
-async def refresh_token(db: DataBaseDep, refresh_body: RefreshTokenBody):
+@router.post('/refresh',
+             summary="Refresh token",
+             response_model=model.TokenSchema,
+             responses={
+                 200: {"description": "Token successfully refreshed"},
+                 403: {"description": "Invalid token"},
+                 404: {"description": "Invalid token for user"},
+             })
+async def refresh_token(db: DataBaseDep, refresh_body: model.RefreshTokenBody):
+    """
+    Refreshes the access token using a refresh token.
+    """
     return await controller.refresh_controller(db, refresh_token=refresh_body.refresh_token)
 
 
-@router.post("/recovery-qr-code", response_model=UserSecretOut)
-async def get_secret_and_qr(db: DataBaseDep, user: User = Depends(get_current_user)):
+@router.post("/recovery-qr-code",
+             response_model=model.UserSecretOut,
+             responses={
+                 200: {"description": "User secret and QR code generated successfully"},
+                 400: {"description": "Email does not exist in the system"},
+             })
+async def get_secret_and_qr(db: DataBaseDep, user: user_model.User = Depends(get_current_user)):
+    """
+    Generates a new secret and QR code for a user, typically used for two-factor authentication
+    setup.
+    """
     email = user.email
     return await controller.get_secret_and_qr(db, email)
