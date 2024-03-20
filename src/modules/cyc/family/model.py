@@ -172,3 +172,24 @@ class FamilyCreate(BaseModel):
     next_renewal_date: Optional[FutureDate] = None
     observation: Optional[str] = None
     members: list[Person]
+
+class FamilyUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    referred_organization: Optional[str] = None
+    next_renewal_date: Optional[FutureDate] = None
+    observation: Optional[str] = None
+    members: Optional[list[Person]] = None
+
+class PersonUpdate(BaseModel):
+    date_birth: Optional[PastDate] = None
+    type: Optional[PersonType] = None
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    nationality: Optional[str] = None
+    nid: Optional[str] = None
+    gender: Optional[Gender] = None
+    functional_diversity: Optional[bool] = None
+    food_intolerances: Optional[list[str]] = None
+    homeless: Optional[bool] = None
