@@ -1,7 +1,9 @@
+from pydantic import UUID4
+
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.modules.cyc.family.model import Family, FamilyCreate
+from src.modules.cyc.family.model import Family, FamilyCreate, FamilyUpdate
 from src.modules.cyc.family import service
 
 
@@ -23,3 +25,17 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> Fami
             detail='Family not found',
         )
     return result
+
+
+async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: FamilyUpdate) -> Family:
+    result = await service.update_family_service(db, query={'id': family_id}, family=family)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Family not found',
+        )
+    return result
+
+
+async def delete_family_controller(db: DataBaseDep, family_id: UUID4):
+    await service.delete_family_service(db, query={'id': family_id})
