@@ -3,7 +3,7 @@ from collections import Counter
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.modules.cyc.delivery.model import Delivery, DeliveryCreate
+from src.modules.cyc.delivery.model import Delivery, DeliveryCreate, DeliveryLineOut, DeliveryOut
 from src.modules.cyc.delivery import service
 from src.modules.cyc.family import service as family_service
 from src.modules.cyc.warehouse import service as product_service
@@ -11,17 +11,82 @@ from src.modules.cyc.warehouse.model import Product, WarehouseUpdate
 
 
 async def get_deliveries_controller(db: DataBaseDep):
-    return await service.get_deliveries_service(db)
+    result = await service.get_deliveries_service(db)
+    warehouses = await product_service.get_warehouses_service(db, query=None)
+    product_to_name = {
+        product.id: product.name for warehouse in warehouses for product in warehouse.products}
+    result_final = []
+    for delivery in result:
+        updated_lines = []
+        for line in delivery.lines:
+            product_name = product_to_name.get(line.product_id)
+            updated_line = DeliveryLineOut(**line.dict(), name=product_name)
+            updated_lines.append(updated_line)
+        salida = DeliveryOut(id=delivery.id,
+                             date=delivery.date,
+                             months=delivery.months,
+                             state=delivery.state,
+                             lines=updated_lines,
+                             family_id=delivery.family_id)
+        result_final.append(salida)
+    return result_final
 
 
-async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> Delivery:
+async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> DeliveryOut:
     result = await service.get_delivery_service(db, query={'id': delivery_id})
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Delivery not found',
         )
-    return result
+    warehouses = await product_service.get_warehouses_service(db, query=None)
+    product_to_name = {
+        product.id: product.name for warehouse in warehouses for product in warehouse.products}
+
+    updated_lines = []
+    for line in result.lines:
+        product_name = product_to_name.get(line.product_id)
+        updated_line = DeliveryLineOut(**line.dict(), name=product_name)
+        updated_lines.append(updated_line)
+    salida = DeliveryOut(id=result.id,
+                         date=result.date,
+                         months=result.months,
+                         state=result.state,
+                         lines=updated_lines,
+                         family_id=result.family_id)
+    return salida
+
+
+# async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> Delivery:
+#     result = await service.get_delivery_service(db, query={'id': delivery_id})
+#     if result is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail='Delivery not found',
+#         )
+#     return result
+
+async def get_family_deliveries_controller(db: DataBaseDep, family_id: int) -> list[DeliveryOut]:
+    deliveries = await service.get_deliveries_service(db)
+    result = [delivery for delivery in deliveries if delivery.family_id == family_id]
+    warehouses = await product_service.get_warehouses_service(db, query=None)
+    product_to_name = {
+        product.id: product.name for warehouse in warehouses for product in warehouse.products}
+    result_final = []
+    for delivery in result:
+        updated_lines = []
+        for line in delivery.lines:
+            product_name = product_to_name.get(line.product_id)
+            updated_line = DeliveryLineOut(**line.dict(), name=product_name)
+            updated_lines.append(updated_line)
+        salida = DeliveryOut(id=delivery.id,
+                             date=delivery.date,
+                             months=delivery.months,
+                             state=delivery.state,
+                             lines=updated_lines,
+                             family_id=delivery.family_id)
+        result_final.append(salida)
+    return result_final
 
 
 async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryCreate) -> Delivery:
@@ -84,6 +149,7 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
         )
 
     # Create and retrieve the delivery
+    print(create_delivery.dict())
     mongo_insert = await service.create_delivery_service(db, create_delivery)
     result = await service.get_delivery_service(db, query={'id': mongo_insert.inserted_id})
     return result
