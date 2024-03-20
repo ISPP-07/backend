@@ -1,6 +1,9 @@
+import os
+from uuid import UUID
 from pydantic import UUID4
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
+import openpyxl
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.warehouse import service
@@ -8,23 +11,15 @@ from src.modules.cyc.warehouse import model
 
 
 async def get_products_controller(db: DataBaseDep) -> list[model.ProductOut]:
-    warehouses = await service.get_warehouses_service(db, query=None)
-    result = [
-        model.ProductOut(
-            id=product.id,
-            name=product.name,
-            quantity=product.quantity,
-            exp_date=product.exp_date,
-            warehouse_id=warehouse.id,
-        )
-        for warehouse in warehouses
-        for product in warehouse.products
-    ]
-    return result
+    return await service.get_products_service(db)
 
 
 async def get_warehouses_controller(db: DataBaseDep) -> list[model.Warehouse]:
-    return await service.get_warehouses_service(db, query=None)
+    return await service.get_warehouses_service(db)
+
+
+async def get_warehouse_controller(db: DataBaseDep, warehouse_id: UUID4) -> model.Warehouse:
+    return await service.get_warehouse_service(db, query={'id': warehouse_id})
 
 
 async def create_product_controller(
@@ -70,8 +65,10 @@ async def create_product_controller(
     return result
 
 
-async def create_warehouse_controller(db: DataBaseDep,
-                                      warehouse: model.WarehouseCreate) -> model.Warehouse:
+async def create_warehouse_controller(
+    db: DataBaseDep,
+    warehouse: model.WarehouseCreate
+) -> model.Warehouse:
     check_warehouse = await service.get_warehouse_service(db, query={'name': warehouse.name})
     if check_warehouse is not None:
         raise HTTPException(
@@ -130,3 +127,84 @@ async def update_product_controller(
 
 async def delete_warehouse_controller(db: DataBaseDep, warehouse_id: UUID4) -> None:
     await service.delete_warehouse_service(db, warehouse_id)
+
+
+async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile) -> None:
+    [_, extension] = os.path.splitext(products.filename)
+    if extension[1:] not in ['xlsx', 'xlsm']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'The files with extension ',
+                f'"{extension[1:]}" are not supported.'
+            )
+        )
+    fields_excel = ['nombre', 'cantidad', 'fecha caducidad', 'almacen']
+    wb = openpyxl.load_workbook(products.file)
+    ws = wb.active
+    first_row = [
+        ws.cell(row=1, column=i).value
+        for i in range(1, len(fields_excel) + 1)
+    ]
+    if len(first_row) != len(fields_excel) and not all(field in fields_excel for field in first_row):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='The excel file is incorrect'
+        )
+    products_excel: dict[str, list[model.Product]] = {}
+    for row in ws.values:
+        row_values = [row[0], row[1], row[2], row[3]]
+        if all(value in fields_excel or value is None for value in row_values):
+            continue
+        if row_values[0] is None or row_values[1] is None or row_values[3] is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        warehouse_name: str = row_values[3]
+        new_product = model.Product(
+            name=row_values[0],
+            quantity=row_values[1],
+            exp_date=row_values[2],
+        )
+        if not warehouse_name in products_excel:
+            products_excel[warehouse_name] = []
+        if new_product.name in [p.name for p in products_excel.get(warehouse_name)]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='There cannot be duplicated products'
+            )
+        products_excel.get(warehouse_name).append(new_product)
+    for key, value in products_excel.items():
+        warehouse = await service.get_warehouse_service(db, query={'name': key})
+        if warehouse is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Warehouse {key} not found'
+            )
+        products_names = [p.name for p in value]
+        updated = []
+        for product in warehouse.products:
+            if product.name in products_names:
+                new_p = next(
+                    (p for p in value if p.name == product.name),
+                    None
+                )
+                p = model.Product(
+                    id=product.id,
+                    name=new_p.name,
+                    quantity=new_p.quantity,
+                    exp_date=new_p.exp_date,
+                )
+                updated.append(p)
+                value.remove(new_p)
+                continue
+            updated.append(product)
+        new_products = updated + value
+        await service.update_warehouse_service(
+            db,
+            warehouse_id=warehouse.id,
+            warehouse_update=model.WarehouseUpdate(
+                products=new_products
+            )
+        )

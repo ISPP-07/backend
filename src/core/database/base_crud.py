@@ -4,7 +4,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 
-from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo, UpdateResult
 from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
 
 
@@ -143,6 +143,31 @@ class BaseMongo(BaseModel):
             **kwargs
         )
         return cls.from_mongo(result)
+
+    @classmethod
+    async def update_many(
+        cls: Self,
+        db: AsyncIOMotorDatabase,
+        query: dict,
+        data_to_update: dict,
+        **kwargs: Any,
+    ) -> UpdateResult:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if 'id' in data_to_update:
+            data_to_update.pop('id')
+        if '_id' in data_to_update:
+            data_to_update.pop('_id')
+        for key, value in copy.deepcopy(data_to_update).items():
+            if value is None:
+                data_to_update.pop(key)
+        change_invalid_types_mongo(data_to_update)
+        update = {'$set': data_to_update}
+        result = await collection.update_many(
+            cls.prepare_query(query),
+            update,
+            **kwargs
+        )
+        return result
 
     @classmethod
     async def delete(

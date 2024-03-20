@@ -9,3 +9,9 @@ class DeleteResultMongo():
 class InsertOneResultMongo():
     acknowledged: bool
     inserted_id: Any
+
+
+class UpdateResult():
+    matchedCount: int
+    modifiedCount: int
+    upsertedId: Any | None
