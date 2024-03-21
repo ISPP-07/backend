@@ -1,10 +1,9 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from src.core.config import settings
 
 
-@pytest.mark.asyncio
-async def test_create_warehouse_and_product(client: TestClient):
+def test_create_warehouse_and_product(app_client: TestClient):
     user_url = f'{settings.API_STR}shared/user/'
 
     user_data = {
@@ -13,7 +12,7 @@ async def test_create_warehouse_and_product(client: TestClient):
         "email": "username@username.com",
     }
 
-    user_response = client.post(user_url, json=user_data)
+    user_response = app_client.post(user_url, json=user_data)
 
     assert user_response.status_code == 201
     response_data = user_response.json()

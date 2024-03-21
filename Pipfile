@@ -6,24 +6,30 @@ name = "pypi"
 [packages]
 fastapi = "*"
 uvicorn = "*"
-sqlmodel = "*"
-alembic = "*"
-sqlalchemy = "*"
-pydantic = "*"
 requests = "*"
 pydantic-settings = "*"
 asyncio = "*"
 httpx = "*"
+pyotp = "*"
 psycopg = {extras = ["binary", "pool"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
 bcrypt = "*"
 gunicorn = "*"
+motor = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 pytest = "*"
 pytest-asyncio = "*"
 python-dotenv = "*"
+pylint = "*"
+pylint-pydantic = "*"
+motor-types = "*"
+pytest-motor = "*"
+pymongo = "*"
+pylint-mongoengine = "*"
+pytest-dependency = "*"
 
 [requires]
 python_version = "3.11"
