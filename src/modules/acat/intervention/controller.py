@@ -33,3 +33,17 @@ async def create_intervention_controller(db: DataBaseDep, intervention: model.In
     result = await service.get_intervention_service(db, query={'id': mongo_insert.inserted_id})
 
     return result
+
+
+async def update_intervention_controller(db: DataBaseDep, intervention_id: UUID4, intervention: model.InterventionUpdate) -> model.Intervention:
+    result = await service.update_intervention_service(db, query={'id': intervention_id}, intervention=intervention)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Intervention not found',
+        )
+    return result
+
+
+async def delete_intervention_controller(db: DataBaseDep, intervention_id: UUID4):
+    await service.delete_intervention_service(db, query={'id': intervention_id})

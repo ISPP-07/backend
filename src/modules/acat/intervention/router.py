@@ -66,3 +66,38 @@ async def create_intervention(db: DataBaseDep, intervention: model.InterventionC
     any observations.
     """
     return await controller.create_intervention_controller(db, intervention)
+
+
+@router.patch('/{intervention_id}',
+              status_code=status.HTTP_200_OK,
+              response_model=model.Intervention,
+              responses={
+                  200: {"description": "Intervention updated successfully"},
+                  400: {"description": "Bad Request - Invalid data input for updating a intervention"},
+                  404: {"description": "Intervention not found"},
+                  500: {"description": "Internal Server Error"}
+              })
+async def update_intervention(db: DataBaseDep, intervention_id: UUID4, intervention: model.InterventionUpdate):
+    """
+    **Update an existing invervention.**
+
+    Accepts updated intervention information and updates the corresponding intervention record in the database.
+    The intervention information includes the intervention's date and other relevant details.
+    """
+    return await controller.update_intervention_controller(db, intervention_id, intervention)
+
+
+@router.delete('/{intervention_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               responses={
+                   204: {"description": "Intervention deleted successfully"},
+                   404: {"description": "Intervention not found"},
+                   500: {"description": "Internal Server Error"}
+               })
+async def delete_family(db: DataBaseDep, intervention_id: UUID4):
+    """
+    **Delete an intervention.**
+
+    Deletes an intervention record from the database based on the intervention's UUID.
+    """
+    return await controller.delete_intervention_controller(db, intervention_id)
