@@ -11,7 +11,12 @@ async def populate_json_data(motor: AsyncIOMotorClient, route: str):
     try:
         with open(route, 'r', encoding='utf-8') as file:
             data = json.load(file)
-            if not isinstance(data, dict) or not all(isinstance(value, list) for value in data.values()):
+            if not isinstance(
+                data,
+                dict) or not all(
+                isinstance(
+                    value,
+                    list) for value in data.values()):
                 raise ValueError("Invalid JSON data format")
             await backup.populate_from_json(motor, data)
     except FileNotFoundError:
