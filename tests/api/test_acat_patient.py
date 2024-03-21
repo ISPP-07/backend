@@ -1,90 +1,120 @@
-# import pytest
-# from fastapi.testclient import TestClient
-# import pytest_asyncio
+import datetime
+import pytest_asyncio
+from uuid import uuid4
+from pymongo.database import Database
 
-# from src.core.config import settings
-# from src.modules.acat.patient.model import Patient
+from fastapi.testclient import TestClient
 
-
-# @pytest_asyncio.fixture
-# async def create_patients(session) -> list[Patient]:
-#     result = []
-#     patients_data = [
-#         {
-#             "registration_date": "2023-02-28",
-#             "dossier_number": "1",
-#             "name": "Paciente 1",
-#             "alias": "P1",
-#             "first_surname": "AAA",
-#             "second_surname": "BBB",
-#             "birth_date": "2023-02-28",
-#             "sex": "Male",
-#             "address": "Calle 1",
-#             "dni": "12343456M",
-#             "contact_phone": "123123123",
-#             "age": 1,
-#             "first_appointment_date": "2023-02-28"
-#         },
-#         {
-#             "registration_date": "2024-02-29",
-#             "dossier_number": "2",
-#             "name": "Paciente 2",
-#             "alias": "P2",
-#             "first_surname": "CCC",
-#             "second_surname": "DDD",
-#             "birth_date": "2024-02-29",
-#             "sex": "Male",
-#             "address": "Calle 2",
-#             "dni": "54343421M",
-#             "contact_phone": "321321321",
-#             "age": 0,
-#             "first_appointment_date": "2024-02-29"
-#         },
-#     ]
-#     for patient_data in patients_data:
-#         patient = await Patient.create(session, **patient_data)
-#         result.append(patient)
-#     return result
+from src.core.config import settings
+from src.core.utils.helpers import generate_alias
 
 
-# @pytest.mark.asyncio
-# async def test_create_patient(client: TestClient):
-#     url = f'{settings.API_STR}acat/patient/'
+@pytest_asyncio.fixture()
+async def insert_patients_mongo(mongo_db: Database):
+    mongo_db["Patient"].delete_many({})
+    result = []
+    patients = [
+        {
+            "_id": uuid4(),
+            "dossier_number": "1",
+            "name": "Paciente 1",
+            "first_surname": "AAA",
+            "second_surname": "BBB",
+            "birth_date": "2023-02-28",
+            "address": "Calle 1",
+            "contact_phone": "123123123",
+            "alias": "Paciente 1 AAA BBB",
+            "nid": "12343456M",
+            "first_technician": "string",
+            "gender": "Man",
+            "observations": "string"
+        },
+        {
+            "_id": uuid4(),
+            "dossier_number": "2",
+            "name": "Paciente 2",
+            "first_surname": "AAA",
+            "second_surname": "BBB",
+            "birth_date": "2023-02-28",
+            "address": "Calle 1",
+            "contact_phone": "123123123",
+            "alias": "Paciente 1 AAA BBB",
+            "nid": "12343456M",
+            "first_technician": "string",
+            "gender": "Man",
+            "observations": "string"
+        },
+    ]
+    for patient in patients:
+        mongo_db['Patient'].insert_one(patient)
+        result.append(patient)
+    yield result
 
-#     patient_data = {
-#         "id": 0,
-#         "registration_date": "2024-02-26",
-#         "dossier_number": "string",
-#         "name": "string",
-#         "alias": "string",
-#         "first_surname": "string",
-#         "second_surname": "string",
-#         "birth_date": "2024-02-26",
-#         "sex": "Male",
-#         "address": "string",
-#         "dni": "string",
-#         "contact_phone": "string",
-#         "age": 0,
-#         "first_appointment_date": "2024-02-26"
-#     }
 
-#     response = client.post(url, json=patient_data)
+def test_get_patient_details(app_client: TestClient, insert_patients_mongo):
+    patient_id = str(insert_patients_mongo[0]["_id"])
 
-#     assert response.status_code == 200
-#     response_data = response.json()
-#     assert response_data["name"] == patient_data["name"]
-#     assert response_data["alias"] == patient_data["alias"]
+    url_get = f'{settings.API_STR}acat/patient/{patient_id}'
+    response = app_client.get(url_get)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["dossier_number"] == str(
+        insert_patients_mongo[0]["dossier_number"])
+    assert response_data["name"] == str(insert_patients_mongo[0]["name"])
+    assert response_data["first_surname"] == str(
+        insert_patients_mongo[0]["first_surname"])
 
 
-# @pytest.mark.asyncio
-# def test_get_patients(client: TestClient, create_patients: list[Patient]):
-#     url = f'{settings.API_STR}acat/patient'
-#     response = client.get(url)
-#     assert response.status_code == 200
-#     result = response.json()
-#     assert isinstance(result, list)
-#     assert len(result) == 2
-#     assert result == [patient.model_dump() for patient in create_patients]
+def test_create_patient(app_client: TestClient):
+    url = f'{settings.API_STR}acat/patient/'
+
+    patient_data = {
+        "dossier_number": "1",
+        "name": "Paciente 1",
+        "first_surname": "AAA",
+        "second_surname": "BBB",
+        "birth_date": "2023-02-28",
+        "address": "Calle 1",
+        "contact_phone": "123123123",
+        "alias": "Paciente 1 AAA BBB",
+        "nid": "12343456M",
+        "first_technician": "string",
+        "gender": "Man",
+        "observations": "string"
+    }
+
+    response = app_client.post(url=url, json=patient_data)
+
+    assert response.status_code == 201
+    response_data = response.json()
+    assert response_data["registration_date"] == datetime.date.today(
+    ).isoformat()
+    assert response_data["alias"] == generate_alias(
+        patient_data["name"],
+        patient_data["first_surname"],
+        patient_data["second_surname"])
+
+
+def test_get_patients(
+        app_client: TestClient,
+        insert_patients_mongo,
+        mongo_db: Database):
+    url = f'{settings.API_STR}acat/patient'
+
+    test = mongo_db["Patient"].find()
+    for x in test:
+        print(x)
+
+    response = app_client.get(url=url)
+    assert response.status_code == 200
+    result = response.json()
+    assert isinstance(result, list)
+    for item, patient in zip(result, insert_patients_mongo):
+        assert item["id"] == str(patient["_id"])
+        assert item["name"] == patient["name"]
+        assert item["address"] == patient["address"]
+        assert item["alias"] == patient["alias"]
+        assert item["nid"] == patient["nid"]
 
 
 # @pytest.mark.asyncio

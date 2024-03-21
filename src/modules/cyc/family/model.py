@@ -1,8 +1,6 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal, Self
 from enum import Enum
-
-from fastapi import HTTPException, status
 from pydantic import (
     PastDate,
     FutureDate,
@@ -11,6 +9,8 @@ from pydantic import (
     BaseModel,
     model_validator,
 )
+
+from fastapi import HTTPException, status
 
 from src.core.database.base_crud import BaseMongo
 from src.core.utils.helpers import check_nid, calculate_age
@@ -48,7 +48,8 @@ class Gender(Enum):
     MEN = 'Man'
     WOMEN = 'Woman'
 
-# This class is commented because the implementation of its functionalities will not be done in this sprint.
+# This class is commented because the implementation of its functionalities
+# will not be done in this sprint.
 # class DeliveryHistory(Base, table=True):
 #     id: Optional[int] = Field(default=None, primary_key=True)
 #     delivery_date: date

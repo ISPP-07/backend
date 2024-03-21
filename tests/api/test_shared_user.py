@@ -1,10 +1,13 @@
-from fastapi.testclient import TestClient
 from uuid import uuid4
+
+from fastapi.testclient import TestClient
+
 from pymongo.database import Database
 
 import pytest_asyncio
 
 from src.core.config import settings
+
 
 @pytest_asyncio.fixture
 async def insert_user_mongo(mongo_db: Database):
@@ -35,6 +38,7 @@ def test_create_user(app_client: TestClient):
     assert response_data["email"] == user_data["email"]
     assert response_data["id"] is not None
 
+
 def test_update_user(app_client: TestClient, insert_user_mongo):
 
     user_id = str(insert_user_mongo["_id"])
@@ -53,6 +57,7 @@ def test_update_user(app_client: TestClient, insert_user_mongo):
     assert response_data["username"] == user_data["username"]
     assert response_data["email"] == user_data["email"]
     assert response_data["id"] is not None
+
 
 def test_delete_user(app_client: TestClient, insert_user_mongo):
 

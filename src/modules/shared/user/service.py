@@ -68,3 +68,24 @@ async def delete_user_service(db: DataBaseDep, user_id: UUID4) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
         )
+
+
+async def find_user_by_email(db: DataBaseDep, email: str) -> model.User:
+    query = {'email': email}
+    user = await model.User.get(db, query)
+    return user
+
+
+async def find_username_by_email(db: DataBaseDep, email: str) -> str:
+    query = {'email': email}
+    user = await model.User.get(db, query)
+    if user:
+        return user.username
+    else:
+        return None
+
+
+async def change_password_service(db: DataBaseDep, email: str, new_password: str) -> dict:
+    hashed_password = get_hashed_password(new_password)
+    await model.User.update(db, {'email': email}, {'password': hashed_password})
+    return {'detail': 'Your password has been changed successfully.'}
