@@ -25,7 +25,7 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
         )
     return result
 
-async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate) -> model.Person:
+async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate) -> model.Family:
     family = await service.get_family_service(db, query={'id': family_id})
     if family is None:
         raise HTTPException(
@@ -33,11 +33,23 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             detail='Family not found',
         )
     old_person = [person for person in family.members if person.nid == person_nid][0]
+    if old_person is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Person not found in family',
+        )
+    
+    if old_person.family_head == True and person.family_head == False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Cannot remove the family head',
+        )
     updated_person = model.Person(
         nid=old_person.nid if person.nid is None else person.nid,
         date_birth=old_person.date_birth if person.date_birth is None else person.date_birth,
         type=old_person.type if person.type is None else person.type,
         name=old_person.name if person.name is None else person.name,
+        family_head=old_person.family_head if person.family_head is None else person.family_head,
         surname=old_person.surname if person.surname is None else person.surname,
         nationality=old_person.nationality if person.nationality is None else person.nationality,
         gender=old_person.gender if person.gender is None else person.gender,
@@ -47,8 +59,8 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
     )
     family.members.remove(old_person)
     new_persons = family.members + [updated_person]
-    await service.update_family_service(db,family_id=family.id, family_update=model.FamilyUpdate(members=new_persons))
-    return family.members[-1]
+    family.members = new_persons
+    return await service.update_family_service(db,family_id=family.id, family_update=family)
 
 async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str) -> None:
     new_family = await service.get_family_service(db, query={'id': family_id})

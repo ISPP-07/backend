@@ -187,6 +187,7 @@ class PersonUpdate(BaseModel):
     type: Optional[PersonType] = None
     name: Optional[str] = None
     surname: Optional[str] = None
+    family_head: Optional[bool] = None
     nationality: Optional[str] = None
     nid: Optional[str] = None
     gender: Optional[Gender] = None
