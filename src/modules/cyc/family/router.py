@@ -62,7 +62,7 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
     """
     return await controller.get_family_details_controller(db, family_id)
 
-@router.put('/{family_id}/person/{person_nid}',
+@router.patch('/{family_id}/person/{person_nid}',
             status_code=status.HTTP_200_OK,
             response_model=model.Family,
             responses={
