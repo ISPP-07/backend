@@ -124,7 +124,7 @@ async def update_product_controller(
     if any(value > 1 for value in product_ids_count.values):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'There cannot be duplicated products'
+            detail='There cannot be duplicated products'
         )
     for product in update_products.products:
         warehouse = next(
