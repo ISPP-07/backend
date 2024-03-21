@@ -2,6 +2,7 @@ from uuid import uuid4
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from pymongo.database import Database
+from httpx import Response
 
 from src.core.config import settings
 
@@ -17,6 +18,7 @@ async def insert_warehouses_with_products(mongo_db: Database):
             "name": "Almacén 1",
             "products": [
                 {
+                    "id": uuid4(),
                     "name": "Producto 1",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
@@ -28,6 +30,7 @@ async def insert_warehouses_with_products(mongo_db: Database):
             "name": "Almacén 2",
             "products": [
                 {
+                    "id": uuid4(),
                     "name": "Producto 2",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
@@ -37,17 +40,19 @@ async def insert_warehouses_with_products(mongo_db: Database):
          }
     ]
     for warehouse in warehouses:
-        mongo_db['Warehouse'].insert_one({**warehouse, "id": warehouse["_id"]})
+        mongo_db['Warehouse'].insert_one(warehouse)
 
     yield warehouses
 
 
 def test_get_all_products_list(
-        app_client: TestClient,
-        insert_warehouses_with_products):
+    app_client: TestClient,
+    insert_warehouses_with_products
+):
     warehouses = insert_warehouses_with_products
     url_get = f'{settings.API_STR}cyc/warehouse/product'
-    response = app_client.get(url_get)
+    response: Response = app_client.get(url_get)
+    print(response.text)
     assert response.status_code == 200
     response_data = response.json()
 

@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import UUID4
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.family import controller
@@ -10,13 +10,15 @@ from src.modules.cyc.family.model import Family, FamilyCreate
 router = APIRouter(tags=['Family'])
 
 
-@router.get('',
-            status_code=status.HTTP_200_OK,
-            response_model=List[Family],
-            responses={
-                200: {"description": "Successful Response"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=List[Family],
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_families(db: DataBaseDep):
     """
     **Retrieve a list of all families.**
@@ -27,14 +29,16 @@ async def get_families(db: DataBaseDep):
     return await controller.get_families_controller(db)
 
 
-@router.post('',
-             status_code=status.HTTP_201_CREATED,
-             response_model=Family,
-             responses={
-                 201: {"description": "Family created successfully"},
-                 400: {"description": "Bad Request - Invalid data input for creating a family"},
-                 500: {"description": "Internal Server Error"}
-             })
+@router.post(
+    '',
+    status_code=status.HTTP_201_CREATED,
+    response_model=Family,
+    responses={
+        201: {"description": "Family created successfully"},
+        400: {"description": "Bad Request - Invalid data input for creating a family"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def create_family(db: DataBaseDep, family: FamilyCreate):
     """
     **Create a new family.**
@@ -45,14 +49,16 @@ async def create_family(db: DataBaseDep, family: FamilyCreate):
     return await controller.create_family_controller(db, family)
 
 
-@router.get('/{family_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=Family,
-            responses={
-                200: {"description": "Successful Response"},
-                404: {"description": "Family not found"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '/{family_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=Family,
+    responses={
+        200: {"description": "Successful Response"},
+        404: {"description": "Family not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_family_details(db: DataBaseDep, family_id: UUID4):
     """
     **Get detailed information about a specific family.**
@@ -61,3 +67,17 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
     This includes the family's ID, name, and other pertinent details.
     """
     return await controller.get_family_details_controller(db, family_id)
+
+
+# @router.post(
+#     '/excel',
+#     status_code=status.HTTP_204_NO_CONTENT,
+#     response_model=None,
+#     responses={
+#         200: {"description": "Families in excel created successfully"},
+#         404: {"description": "Family not found"},
+#         400: {"description": "The data was incorrect"},
+#     }
+# )
+# async def upload_excel_families(db: DataBaseDep, families: UploadFile):
+#     return await controller.upload_excel_families_controller(db, families)

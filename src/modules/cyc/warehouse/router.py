@@ -29,6 +29,26 @@ async def get_warehouses(db: DataBaseDep):
 
 
 @router.get(
+    '/product',
+    status_code=status.HTTP_200_OK,
+    response_model=list[model.ProductOut],
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def get_products(db: DataBaseDep):
+    """
+    **Retrieve a list of all products in all warehouses.**
+
+    Queries the database to return a list of all products across all warehouses,
+    including each product's name, quantity, expiration date, and the ID of the warehouse
+    it's stored in.
+    """
+    return await controller.get_products_controller(db)
+
+
+@router.get(
     '/{warehouse_id}',
     status_code=status.HTTP_200_OK,
     response_model=model.Warehouse,
@@ -86,26 +106,6 @@ async def delete_warehouse(db: DataBaseDep, warehouse_id: UUID4):
     return None
 
 
-@router.get(
-    '/product',
-    status_code=status.HTTP_200_OK,
-    response_model=list[model.ProductOut],
-    responses={
-        200: {"description": "Successful Response"},
-        500: {"description": "Internal Server Error"}
-    }
-)
-async def get_products(db: DataBaseDep):
-    """
-    **Retrieve a list of all products in all warehouses.**
-
-    Queries the database to return a list of all products across all warehouses,
-    including each product's name, quantity, expiration date, and the ID of the warehouse
-    it's stored in.
-    """
-    return await controller.get_products_controller(db)
-
-
 @router.post(
     '/product',
     status_code=status.HTTP_201_CREATED,
@@ -148,6 +148,15 @@ async def update_product(db: DataBaseDep, product_update: model.ProductUpdate):
     return await controller.update_product_controller(db, product_update)
 
 
-@router.post('/product/excel', status_code=status.HTTP_201_CREATED, response_model=None)
+@router.post(
+    '/product/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Products in excel created successfully"},
+        404: {"description": "Warehouse not found"},
+        400: {"description": "The data was incorrect"},
+    }
+)
 async def upload_excel_products(db: DataBaseDep, products: UploadFile):
     return await controller.upload_excel_products_controller(db, products)

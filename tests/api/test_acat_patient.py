@@ -4,6 +4,7 @@ from uuid import uuid4
 from pymongo.database import Database
 
 from fastapi.testclient import TestClient
+from httpx import Response
 
 from src.core.config import settings
 from src.core.utils.helpers import generate_alias
@@ -23,7 +24,7 @@ async def insert_patients_mongo(mongo_db: Database):
             "birth_date": "2023-02-28",
             "address": "Calle 1",
             "contact_phone": "123123123",
-            "alias": "Paciente 1 AAA BBB",
+            "alias": generate_alias("Paciente 1", "AAA", "BBB"),
             "nid": "12343456M",
             "first_technician": "string",
             "gender": "Man",
@@ -38,7 +39,7 @@ async def insert_patients_mongo(mongo_db: Database):
             "birth_date": "2023-02-28",
             "address": "Calle 1",
             "contact_phone": "123123123",
-            "alias": "Paciente 1 AAA BBB",
+            "alias": generate_alias('Paciente 2', 'AAA', 'BBB'),
             "nid": "12343456M",
             "first_technician": "string",
             "gender": "Man",
@@ -76,14 +77,13 @@ def test_create_patient(app_client: TestClient):
         "birth_date": "2023-02-28",
         "address": "Calle 1",
         "contact_phone": "123123123",
-        "alias": "Paciente 1 AAA BBB",
-        "nid": "12343456M",
+        "nid": "62890716E",
         "first_technician": "string",
         "gender": "Man",
         "observations": "string"
     }
 
-    response = app_client.post(url=url, json=patient_data)
+    response: Response = app_client.post(url=url, json=patient_data)
 
     assert response.status_code == 201
     response_data = response.json()

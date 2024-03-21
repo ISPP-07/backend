@@ -24,7 +24,7 @@ async def get_intervention_details_controller(db: DataBaseDep, intervention_id: 
 
 async def create_intervention_controller(db: DataBaseDep, intervention: model.InterventionCreate):
 
-    patient = await patient_service.get_patient_by_id(db, query={'id': intervention.patient_id})
+    patient = await patient_service.get_patient_service(db, query={'id': intervention.patient_id})
 
     if patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")

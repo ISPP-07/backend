@@ -11,6 +11,11 @@ class InsertOneResultMongo():
     inserted_id: Any
 
 
+class InsertResultMongo():
+    acknowledged: bool
+    inserted_ids: list[Any]
+
+
 class UpdateResult():
     matchedCount: int
     modifiedCount: int

@@ -1,11 +1,12 @@
 import os
 from uuid import UUID
-from pydantic import UUID4
+from pydantic import UUID4, ValidationError
 
 from fastapi import HTTPException, status, UploadFile
 import openpyxl
 
 from src.core.deps import DataBaseDep
+from src.core.utils.helpers import parse_validation_error
 from src.modules.cyc.warehouse import service
 from src.modules.cyc.warehouse import model
 
@@ -152,21 +153,26 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
             detail='The excel file is incorrect'
         )
     products_excel: dict[str, list[model.Product]] = {}
-    for row in ws.values:
-        row_values = [row[0], row[1], row[2], row[3]]
-        if all(value in fields_excel or value is None for value in row_values):
+    for row in ws.iter_rows(min_row=2, min_col=1, max_col=4, values_only=True):
+        if all(value is None for value in row):
             continue
-        if row_values[0] is None or row_values[1] is None or row_values[3] is None:
+        if row[0] is None or row[1] is None or row[3] is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
-        warehouse_name: str = row_values[3]
-        new_product = model.Product(
-            name=row_values[0],
-            quantity=row_values[1],
-            exp_date=row_values[2],
-        )
+        warehouse_name: str = row[3]
+        try:
+            new_product = model.Product(
+                name=row[0],
+                quantity=row[1],
+                exp_date=row[2],
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
         if not warehouse_name in products_excel:
             products_excel[warehouse_name] = []
         if new_product.name in [p.name for p in products_excel.get(warehouse_name)]:
