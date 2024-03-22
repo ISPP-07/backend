@@ -1,3 +1,5 @@
+
+from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
@@ -14,8 +16,8 @@ async def get_patients_service(db: DataBaseDep) -> list[model.Patient]:
     return await model.Patient.get_multi(db)
 
 
-async def create_patient_service(db: DataBaseDep, patient: model.PatientCreate) -> InsertOneResultMongo:
-
+async def create_patient_service(db: DataBaseDep,
+            patient: model.PatientCreate) -> InsertOneResultMongo:
     # Add alias to the patient
     patient_dict = patient.model_dump()
     patient_dict['alias'] = generate_alias(
@@ -44,3 +46,12 @@ async def get_patient_service(db: DataBaseDep, query: dict) -> model.PatientOut 
     patient_dict['age'] = patient.age()
 
     return model.PatientOut(**patient_dict)
+
+
+async def update_patient_service(db: DataBaseDep, patient_id: UUID4,
+                                 updated_patient_data: dict) -> model.Patient | None:
+    return await model.Patient.update(
+        db,
+        query={'id': patient_id},
+        data_to_update=updated_patient_data
+    )

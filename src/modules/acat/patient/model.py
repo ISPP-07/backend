@@ -46,6 +46,19 @@ class PatientCreate(BaseModel):
     first_technician: Optional[str] = None
     observations: Optional[str] = None
 
+class PatientUpdate(BaseModel):
+    name: Optional[str] = None
+    first_surname: Optional[str] = None
+    second_surname: Optional[str] = None
+    nid: Optional[str] = None
+    birth_date: Optional[PastDate] = None
+    gender: Optional[Gender] = None
+    address: Optional[str] = None
+    contact_phone: Optional[str] = None
+    dossier_number: Optional[str] = None
+    first_technician: Optional[str] = None
+    observations: Optional[str] = None
+
 
 class PatientOut(BaseModel):
     id: UUID4

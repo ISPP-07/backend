@@ -47,6 +47,22 @@ async def create_patient(db: DataBaseDep, patient: model.PatientCreate):
     contact phone, first technician, and any observations.
     """
     return await controller.create_patient_controller(db, patient)
+@router.put('/{patient_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=model.Patient,
+            responses={
+                200: {"description": "Patient updated successfully"},
+                404: {"description": "Patient not found"},
+                500: {"description": "Internal Server Error"}
+            })
+async def update_patient(db: DataBaseDep, patient_id: UUID4, patient: model.PatientUpdate):
+    """
+    **Update a patient.**
+
+    Accepts patient information and update his information in the database.
+
+    """
+    return await controller.update_patient_controller(db, patient_id, patient)
 
 
 @router.get('/{patient_id}',
