@@ -5,7 +5,6 @@ import pytest_asyncio
 from pymongo.database import Database
 
 from src.core.config import settings
-from src.modules.cyc.delivery import model
 
 URL_DELIVERY = f'{settings.API_STR}cyc/delivery'
 
