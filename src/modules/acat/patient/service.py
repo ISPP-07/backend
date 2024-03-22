@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
 from src.modules.acat.patient import model
-from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
 from src.core.utils.helpers import generate_alias
 
 
@@ -55,3 +55,18 @@ async def update_patient_service(db: DataBaseDep, patient_id: UUID4,
         query={'id': patient_id},
         data_to_update=updated_patient_data
     )
+
+async def delete_patient_service(db: DataBaseDep, query: dict) -> model.Patient:
+    mongo_delete: DeleteResultMongo = await model.Patient.delete(db, query)
+
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Patient not found',
+        )
+
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )

@@ -84,3 +84,17 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
     (if any), any observations, and the patient's calculated age.
     """
     return await controller.get_patient_details_controller(db, patient_id)
+
+@router.delete('/{patient_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               responses={
+                   204: {"description": "Patient deleted successfully"},
+                   404: {"description": "Patient not found"},
+                   500: {"description": "Patient Server Error"}
+               })
+async def delete_family(db: DataBaseDep, patient_id: UUID4):
+    """
+    **Delete a patient.**
+    Deletes a patient record from the database based on the patient's UUID.
+    """
+    return await controller.delete_patient_controller(db, patient_id)

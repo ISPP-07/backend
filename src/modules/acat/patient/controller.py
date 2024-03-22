@@ -77,3 +77,7 @@ async def update_patient_controller(db: DataBaseDep,
     updated_patient = await service.update_patient_service(db,patient_id, updated_patient_data)
 
     return updated_patient
+
+
+async def delete_patient_controller(db: DataBaseDep, patient_id: UUID4):
+    await service.delete_patient_service(db, query={'id': patient_id})
