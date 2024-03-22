@@ -46,6 +46,7 @@ class PatientCreate(BaseModel):
     first_technician: Optional[str] = None
     observations: Optional[str] = None
 
+
 class PatientUpdate(BaseModel):
     name: Optional[str] = None
     first_surname: Optional[str] = None
