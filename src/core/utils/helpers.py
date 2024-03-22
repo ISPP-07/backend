@@ -77,16 +77,10 @@ def generate_alias(name: str, first_surname: str, second_surname: str | None) ->
     if number_of_names > 1:
         alias = (
             f'{name_split[0][0]}{name_split[1][0]}'
-            f'{first_surname[:2]}{
-                second_surname[:2] if second_surname is not None
-                else ''
-            }'
+            f'{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}'
         )
     else:
-        alias = f'{name[:2]}{first_surname[:2]}{
-            second_surname[:2] if second_surname is not None
-            else ''
-        }'
+        alias = f'{name[:2]}{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}'
     return alias.lower()
 
 
@@ -102,8 +96,8 @@ def parse_validation_error(errors: list[dict]):
     result = ''
     for error in errors:
         result += (
-            f'Field "{error['loc']}", '
-            f'error "{error['msg']}", '
-            f'with input "{error['input']}"\n'
+            f'Field "{error["loc"]}", '
+            f'error "{error["msg"]}", '
+            f'with input "{error["input"]}"\n'
         )
     return result

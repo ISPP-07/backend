@@ -1,4 +1,6 @@
 import datetime
+from pathlib import Path
+import openpyxl
 import pytest_asyncio
 from uuid import uuid4
 from pymongo.database import Database
@@ -115,6 +117,51 @@ def test_get_patients(
         assert item["address"] == patient["address"]
         assert item["alias"] == patient["alias"]
         assert item["nid"] == patient["nid"]
+
+
+def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
+    # Ruta del endpoint
+    url = f'{settings.API_STR}acat/patient/excel'
+
+    # Cargar el archivo Excel de prueba
+    excel_file_path = Path(__file__).resolve(
+    ).parent.parent / 'excel_test' / 'Pacientes.xlsx'
+
+    # Enviar el archivo Excel al endpoint
+    with open(excel_file_path, 'rb') as file:
+        files = {"patients": (
+            "Pacientes.xlsx", file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+        response = app_client.post(url=url, files=files)
+
+    # Verificar que la respuesta sea exitosa
+    assert response.status_code == 204
+
+    # Cargar el archivo Excel en meoria
+    wb = openpyxl.load_workbook(excel_file_path)
+    ws = wb.active
+
+    # Obtener los datos de los pacientes de la base de datos
+    patients_db = list(mongo_db["Patient"].find())
+
+    # Verificar que se hayan creado los pacientes
+    assert len(patients_db) == ws.max_row
+
+    # Obtener el último paciente creado
+    last_patient = patients_db[-1]
+
+    # Comparar los datos del último paciente creado con los del archivo Excel
+    assert last_patient['name'] == ws.cell(row=2, column=1).value
+    assert last_patient['first_surname'] == ws.cell(row=2, column=2).value
+    assert last_patient['second_surname'] == ws.cell(row=2, column=3).value
+    assert last_patient['nid'] == ws.cell(row=2, column=4).value
+    assert last_patient['birth_date'] == ws.cell(row=2, column=5).value
+    assert last_patient['gender'] == ('Man' if ws.cell(
+        row=2, column=6).value == 'Hombre' else 'Woman')
+    assert last_patient['address'] == ws.cell(row=2, column=7).value
+    assert last_patient['contact_phone'] == str(ws.cell(row=2, column=8).value)
+    assert last_patient['dossier_number'] == ws.cell(row=2, column=9).value
+    assert last_patient['first_technician'] == ws.cell(row=2, column=10).value
+    assert last_patient['observations'] == ws.cell(row=2, column=11).value
 
 
 # @pytest.mark.asyncio

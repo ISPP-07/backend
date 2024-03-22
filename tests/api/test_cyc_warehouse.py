@@ -1,4 +1,6 @@
+from pathlib import Path
 from uuid import uuid4
+import openpyxl
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from pymongo.database import Database
@@ -13,6 +15,7 @@ async def insert_warehouses_with_products(mongo_db: Database):
 
     warehouse_id_1 = uuid4()
     warehouse_id_2 = uuid4()
+    warehouse_id_3 = uuid4()
     warehouses = [
         {"_id": warehouse_id_1,
             "name": "Almacén 1",
@@ -37,6 +40,10 @@ async def insert_warehouses_with_products(mongo_db: Database):
                     "warehouse_id": warehouse_id_2
                 }
             ]
+         },
+        {"_id": warehouse_id_3,
+            "name": "Sevilla Este",
+            "products": []
          }
     ]
     for warehouse in warehouses:
@@ -111,3 +118,38 @@ def test_create_warehouse(app_client: TestClient):
 
     for field in warehouse_data:
         assert str(result[field]) == str(warehouse_data[field])
+
+
+def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
+    # Ruta del endpoint
+    url = f'{settings.API_STR}cyc/warehouse/product/excel'
+
+    # Cargar el archivo Excel de prueba
+    excel_file_path = Path(__file__).resolve(
+    ).parent.parent / 'excel_test' / 'Almacenes.xlsx'
+
+    # Enviar el archivo Excel al endpoint
+    with open(excel_file_path, 'rb') as file:
+        files = {"products": (
+            "Almacenes.xlsx", file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+        response = app_client.post(url=url, files=files)
+
+    # Verificar que la respuesta sea exitosa
+    assert response.status_code == 204
+
+    # Cargar el archivo Excel en meoria
+    wb = openpyxl.load_workbook(excel_file_path)
+    ws = wb.active
+
+    # Obtener los datos de los productos de la base de datos
+    warehouse_db = mongo_db["Warehouse"].find_one(
+        {"name": ws.cell(row=2, column=4).value})
+    products_db = list(warehouse_db["products"])
+
+    # Obtener el primer producto creado
+    first_product = products_db[0]
+
+    # Comparar los datos del primer producto creado con los del archivo Excel
+    assert first_product['name'] == ws.cell(row=2, column=1).value
+    assert first_product['quantity'] == ws.cell(row=2, column=2).value
+    assert first_product['exp_date'] == ws.cell(row=2, column=3).value

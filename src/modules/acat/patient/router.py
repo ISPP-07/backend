@@ -79,5 +79,5 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
         400: {"description": "The data was incorrect"},
     }
 )
-async def upload_excel_products(db: DataBaseDep, products: UploadFile):
-    return await controller.upload_excel_patients_controller(db, products)
+async def upload_excel_patient(db: DataBaseDep, patients: UploadFile):
+    return await controller.upload_excel_patients_controller(db, patients)
