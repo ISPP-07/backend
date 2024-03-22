@@ -36,16 +36,14 @@ async def create_user_service(db: DataBaseDep, user: model.UserCreate) -> model.
 
 
 async def update_user_service(db: DataBaseDep, query: dict, user: model.UserUpdate) -> model.UserOut | None:
-    user_db = await model.User.get(db, query)
+    if user.password:
+        hashed_password = get_hashed_password(user.password)
+        user.password = hashed_password
+
+    user_db: model.User | None = await model.User.update(db, query, user.model_dump())
     if user_db is None:
         return None
-    hashed_password = get_hashed_password(user.password)
-    user.password = hashed_password
-    user_db = await model.User.update(
-        db,
-        query=query,
-        data_to_update=user.model_dump()
-    )
+
     result = model.UserOut(
         id=user_db.id,
         username=user_db.username,
