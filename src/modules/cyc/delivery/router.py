@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import UUID4
 
 from fastapi import APIRouter, status
@@ -12,12 +11,12 @@ router = APIRouter(tags=["Delivery"])
 
 @router.get("",
             status_code=status.HTTP_200_OK,
-            response_model=List[DeliveryOut],
+            response_model=list[DeliveryOut],
             responses={
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_deliveries(db: DataBaseDep) -> List[DeliveryOut]:
+async def get_deliveries(db: DataBaseDep) -> list[DeliveryOut]:
     """
     **Retrieve a list of all deliveries.**
 
@@ -76,7 +75,7 @@ async def create_delivery(db: DataBaseDep, delivery: DeliveryCreate):
 
 @router.get('/family/{family_id}',
             status_code=status.HTTP_200_OK,
-            response_model=List[DeliveryOut],
+            response_model=list[DeliveryOut],
             responses={
                 200: {"description": "Successful Response"},
                 404: {"description": "There are no deliveries for this family"},
@@ -84,11 +83,10 @@ async def create_delivery(db: DataBaseDep, delivery: DeliveryCreate):
             })
 async def get_family_deliveries_details(db: DataBaseDep, family_id: UUID4):
     """
-    **Get detailed information about a specific delivery.**
+    **Get deliveries information about a specific family.**
 
-    Fetches and returns detailed information about a specific delivery identified by its UUID.
-    The information includes the delivery's ID, the scheduled date, duration in months, item lines
-    with product ID, quantity,
-    and state (if specified), and the associated family ID.
+    Fetches and returns detailed information about deliveries identified a list.
+    Each element includes the delivery's ID, the scheduled date, duration in months, item lines
+    with product ID, quantity, state (if specified) and the associated family ID.
     """
     return await controller.get_family_deliveries_controller(db, family_id)

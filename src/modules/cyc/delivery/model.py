@@ -43,6 +43,6 @@ class DeliveryOut(BaseModel):
 class DeliveryCreate(BaseModel):
     date: FutureDatetime
     months: PositiveInt
-    state: Optional[State] = State.NEXT
+    state: State = State.NEXT
     lines: list[DeliveryLine]
     family_id: UUID4
