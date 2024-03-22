@@ -1,10 +1,9 @@
+from fastapi import APIRouter, status
 from pydantic import UUID4
 
-from fastapi import APIRouter, status
-
 from src.core.deps import DataBaseDep
-from src.modules.acat.patient import model
 from src.modules.acat.patient import controller
+from src.modules.acat.patient import model
 
 router = APIRouter(tags=['Patient'])
 
@@ -47,6 +46,8 @@ async def create_patient(db: DataBaseDep, patient: model.PatientCreate):
     contact phone, first technician, and any observations.
     """
     return await controller.create_patient_controller(db, patient)
+
+
 @router.put('/{patient_id}',
             status_code=status.HTTP_200_OK,
             response_model=model.Patient,
@@ -84,6 +85,7 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
     (if any), any observations, and the patient's calculated age.
     """
     return await controller.get_patient_details_controller(db, patient_id)
+
 
 @router.delete('/{patient_id}',
                status_code=status.HTTP_204_NO_CONTENT,
