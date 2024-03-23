@@ -1,7 +1,7 @@
 from typing import List
-from pydantic import UUID4
 
 from fastapi import APIRouter, status
+from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.family import controller
@@ -62,15 +62,19 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
     """
     return await controller.get_family_details_controller(db, family_id)
 
+
 @router.patch('/{family_id}/person/{person_nid}',
-            status_code=status.HTTP_200_OK,
-            response_model=model.Family,
-            responses={
-                200: {"description": "Person updated successfully"},
-                404: {"description": "Family or person not found"},
-                500: {"description": "Internal Server Error"}
-            })
-async def update_person(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate):
+              status_code=status.HTTP_200_OK,
+              response_model=model.Family,
+              responses={
+                  200: {"description": "Person updated successfully"},
+                  404: {"description": "Family or person not found"},
+                  500: {"description": "Internal Server Error"}
+              })
+async def update_person(db: DataBaseDep,
+                        family_id: UUID4,
+                        person_nid: str,
+                        person: model.PersonUpdate):
     """
     **Update a person in a family.**
 
@@ -78,19 +82,20 @@ async def update_person(db: DataBaseDep, family_id: UUID4, person_nid: str, pers
     """
     return await controller.update_person_controller(db, family_id, person_nid, person)
 
+
 @router.delete('/{family_id}/person/{person_id}',
-                status_code=status.HTTP_204_NO_CONTENT,
-                responses={
-                     204: {"description": "Person deleted successfully"},
-                     404: {"description": "Family or person not found"},
-                     400: {"description": "Bad Request - Cannot delete the family head"},
-                     500: {"description": "Internal Server Error"}
-                })
-async def delete_person(db: DataBaseDep, family_id: UUID4, person_nid: str):
+               status_code=status.HTTP_204_NO_CONTENT,
+               responses={
+                   204: {"description": "Person deleted successfully"},
+                   404: {"description": "Family or person not found"},
+                   400: {"description": "Bad Request - Cannot delete the family head"},
+                   500: {"description": "Internal Server Error"}
+               })
+async def delete_person(db: DataBaseDep, family_id: UUID4, person_id: str):
     """
     **Delete a person from a family.**
 
     Accepts the family and person ID and deletes the person from the specified family.
     """
-    await controller.delete_person_controller(db, family_id, person_nid)
+    await controller.delete_person_controller(db, family_id, person_id)
     return None

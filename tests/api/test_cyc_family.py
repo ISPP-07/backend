@@ -22,7 +22,7 @@ def insert_families_mongo(mongo_db: Database):
             "referred_organization": None,
             "next_renewal_date": "2025-03-08",
             "observation": None,
-            "number_of_people": 1,
+            "number_of_people": 2,
             "informed": False,
             "members": [
                 {
@@ -33,6 +33,19 @@ def insert_families_mongo(mongo_db: Database):
                     "nationality": "Spain",
                     "nid": "07344702C",
                     "family_head": True,
+                    "gender": "Man",
+                    "functional_diversity": True,
+                    "food_intolerances": [],
+                    "homeless": False
+                },
+                {
+                    "date_birth": "2023-03-08",
+                    "type": "Child",
+                    "name": "Jose",
+                    "surname": "Cast",
+                    "nationality": "Spain",
+                    "nid": "37210711T",
+                    "family_head": False,
                     "gender": "Man",
                     "functional_diversity": True,
                     "food_intolerances": [],
@@ -126,12 +139,13 @@ def test_update_person(app_client: TestClient, insert_families_mongo):
     response = app_client.patch(url=url, json=person_data)
     assert response.status_code == 200
     result = response.json()
-    assert result['members'][0]['name'] == person_data['name']
+    last_member_index = len(result['members']) - 1
+    assert result['members'][last_member_index]['name'] == person_data['name']
 
 
 def test_delete_person(app_client: TestClient, insert_families_mongo):
     family = insert_families_mongo[0]
-    person = family['members'][0]
+    person = family['members'][1]  # Cambiado a 1 para eliminar el segundo miembro
     person_nid = person['nid']
     family_id = family['_id']
 
