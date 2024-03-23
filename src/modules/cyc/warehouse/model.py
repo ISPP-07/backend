@@ -9,7 +9,7 @@ class Product(BaseModel):
     id: UUID4
     name: str
     quantity: NonNegativeInt
-    exp_date: Optional[FutureDate] = None
+    exp_date: Optional[date] = None
 
 
 class ProductWithoutId(BaseModel):

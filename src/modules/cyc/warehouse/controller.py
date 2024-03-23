@@ -10,19 +10,8 @@ from src.modules.cyc.warehouse import model
 
 
 async def get_products_controller(db: DataBaseDep) -> list[model.ProductOut]:
-    warehouses = await service.get_warehouses_service(db, query=None)
-    result = [
-        model.ProductOut(
-            id=product.id,
-            name=product.name,
-            quantity=product.quantity,
-            exp_date=product.exp_date,
-            warehouse_id=warehouse.id,
-        )
-        for warehouse in warehouses
-        for product in warehouse.products
-    ]
-    return result
+    products = await service.get_products_service(db)
+    return products
 
 
 async def get_warehouses_controller(db: DataBaseDep) -> list[model.Warehouse]:

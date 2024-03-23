@@ -46,3 +46,11 @@ class DeliveryCreate(BaseModel):
     state: State = State.NEXT
     lines: list[DeliveryLine]
     family_id: UUID4
+
+
+class DeliveryUpdate(BaseModel):
+    date: Optional[FutureDatetime] = None
+    months: Optional[PositiveInt] = None
+    state: Optional[State] = None
+    lines: Optional[list[DeliveryLine]] = None
+    family_id: Optional[UUID4] = None
