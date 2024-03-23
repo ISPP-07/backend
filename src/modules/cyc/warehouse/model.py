@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import date
 from pydantic import PositiveInt, FutureDate, UUID4, BaseModel, NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
@@ -14,7 +15,7 @@ class Product(BaseModel):
 class ProductWithoutId(BaseModel):
     name: str
     quantity: NonNegativeInt
-    exp_date: Optional[FutureDate] = None
+    exp_date: Optional[date] = None
 
 
 class ProductOut(Product):
