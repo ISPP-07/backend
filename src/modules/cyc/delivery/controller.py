@@ -68,7 +68,8 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
 
 async def get_family_deliveries_controller(db: DataBaseDep, family_id: int) -> list[DeliveryOut]:
     deliveries = await service.get_deliveries_service(db)
-    result = [delivery for delivery in deliveries if delivery.family_id == family_id]
+    result = [
+        delivery for delivery in deliveries if delivery.family_id == family_id]
     warehouses = await product_service.get_warehouses_service(db, query=None)
     product_to_name = {
         product.id: product.name for warehouse in warehouses for product in warehouse.products}

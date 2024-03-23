@@ -158,7 +158,9 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
     assert result["family_id"] == data["family_id"]
 
 
-def test_get_family_deliveries(app_client: TestClient, insert_deliveries_mongo: list):
+def test_get_family_deliveries(
+        app_client: TestClient,
+        insert_deliveries_mongo: list):
     family_id = str(insert_deliveries_mongo[0]['family_id'])
     url = f'{URL_DELIVERY}/family/{family_id}'
     response = app_client.get(url=url)
