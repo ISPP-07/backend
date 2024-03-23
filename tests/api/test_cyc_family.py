@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 from pymongo.database import Database
 
 from src.core.config import settings
@@ -110,3 +110,34 @@ def test_get_family_details(app_client: TestClient, insert_families_mongo):
             assert str(result['id']) == str(family[field])
         else:
             assert str(result[field]) == str(family[field])
+
+
+def test_update_person(app_client: TestClient, insert_families_mongo):
+    family = insert_families_mongo[0]
+    person = family['members'][0]
+    person_nid = person['nid']
+    family_id = family['_id']
+
+    url = f'{settings.API_STR}cyc/family/{family_id}/person/{person_nid}'
+    person_data = person.copy()
+    person_data['name'] = 'Juan'
+    person_data['surname'] = 'Pérez'
+
+    response = app_client.patch(url=url, json=person_data)
+    assert response.status_code == 200
+    result = response.json()
+    assert result['members'][0]['name'] == person_data['name']
+
+
+def test_delete_person(app_client: TestClient, insert_families_mongo):
+    family = insert_families_mongo[0]
+    person = family['members'][0]
+    person_nid = person['nid']
+    family_id = family['_id']
+
+    print(type(family_id), type(person_nid))
+
+    url = f'{settings.API_STR}cyc/family/{family_id}/person/{person_nid}'
+
+    response = app_client.delete(url=url)
+    assert response.status_code == 204
