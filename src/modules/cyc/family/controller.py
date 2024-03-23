@@ -25,6 +25,7 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
         )
     return result
 
+
 async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate) -> model.Family:
     family = await service.get_family_service(db, query={'id': family_id})
     if family is None:
@@ -32,14 +33,15 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Family not found',
         )
-    old_person = [person for person in family.members if person.nid == person_nid][0]
+    old_person = [
+        person for person in family.members if person.nid == person_nid][0]
     if old_person is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Person not found in family',
         )
-    
-    if old_person.family_head == True and person.family_head == False:
+
+    if old_person.family_head and person.family_head == False:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Cannot remove the family head',
@@ -60,7 +62,8 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
     family.members.remove(old_person)
     new_persons = family.members + [updated_person]
     family.members = new_persons
-    return await service.update_family_service(db,family_id=family.id, family_update=family)
+    return await service.update_family_service(db, family_id=family.id, family_update=family)
+
 
 async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str) -> None:
     new_family = await service.get_family_service(db, query={'id': family_id})
@@ -69,18 +72,20 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Family not found',
         )
-    
+
     if person_nid not in [person.nid for person in new_family.members]:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Person not found in family',
         )
-    
-    head_person = [person for person in new_family.members if person.family_head][0]
+
+    head_person = [
+        person for person in new_family.members if person.family_head][0]
     if head_person.nid == person_nid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Cannot delete the family head',
         )
-    new_family.members = [person for person in new_family.members if person.nid != person_nid]
+    new_family.members = [
+        person for person in new_family.members if person.nid != person_nid]
     await service.update_family_service(db, family_id, new_family)

@@ -85,12 +85,10 @@ async def update_person(db: DataBaseDep,
 
 @router.delete('/{family_id}/person/{person_id}',
                status_code=status.HTTP_204_NO_CONTENT,
-               responses={
-                   204: {"description": "Person deleted successfully"},
-                   404: {"description": "Family or person not found"},
-                   400: {"description": "Bad Request - Cannot delete the family head"},
-                   500: {"description": "Internal Server Error"}
-               })
+               responses={204: {"description": "Person deleted successfully"},
+                          404: {"description": "Family or person not found"},
+                          400: {"description": "Bad Request - Cannot delete the family head"},
+                          500: {"description": "Internal Server Error"}})
 async def delete_person(db: DataBaseDep, family_id: UUID4, person_id: str):
     """
     **Delete a person from a family.**

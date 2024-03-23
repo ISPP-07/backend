@@ -26,6 +26,7 @@ async def create_family_service(
         )
     return result
 
+
 async def update_family_service(
     db: DataBaseDep,
     family_id: UUID4,
@@ -37,6 +38,7 @@ async def update_family_service(
         data_to_update=family_update.model_dump()
     )
 
+
 async def udpate_person_service(
     db: DataBaseDep,
     family_id: UUID4,
@@ -44,7 +46,8 @@ async def udpate_person_service(
     person: model.PersonUpdate
 ) -> model.Person | None:
     family = await model.Family.get(db, query={'id': family_id})
-    old_person = [person for person in family.members if person.nid == person_nid][0]
+    old_person = [
+        person for person in family.members if person.nid == person_nid][0]
     updated_person = model.Person(**person.dict())
     if family is None:
         raise HTTPException(
