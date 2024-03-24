@@ -26,54 +26,39 @@ async def get_patient_details_controller(db: DataBaseDep, patient_id: UUID4):
     return result
 
 
-async def update_patient_controller(db: DataBaseDep,
-                                    patient_id: UUID4,
-                                    patient: model.PatientUpdate) -> model.Patient:
-    existing_patient = await service.get_patient_service(db, query={'id': patient_id})
-    if existing_patient is None:
+async def update_patient_controller(
+    db: DataBaseDep,
+    patient_id: UUID4,
+    patient: model.PatientUpdate
+) -> model.Patient:
+    patient_db = await service.get_patient_service(db, query={'id': patient_id})
+    if patient_db is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Patient not found',
         )
-
-    updated_patient_data = {
-        'name': existing_patient.name
-        if patient.name is None
-        else patient.name,
-        'first_surname': existing_patient.first_surname
-        if patient.first_surname is None
-        else patient.first_surname,
-        'second_surname': existing_patient.second_surname
-        if patient.second_surname is None
-        else patient.second_surname,
-        'nid': existing_patient.nid
-        if patient.nid is None
-        else patient.nid,
-        'birth_date': existing_patient.birth_date
-        if patient.birth_date is None
-        else patient.birth_date,
-        'gender': existing_patient.gender
-        if patient.gender is None
-        else patient.gender,
-        'address': existing_patient.address
-        if patient.address is None
-        else patient.address,
-        'contact_phone': existing_patient.contact_phone
-        if patient.contact_phone is None
-        else patient.contact_phone,
-        'dossier_number': existing_patient.dossier_number
-        if patient.dossier_number is None
-        else patient.dossier_number,
-        'first_technician': existing_patient.first_technician
-        if patient.first_technician is None
-        else patient.first_technician,
-        'observations': existing_patient.observations
-        if patient.observations is None
-        else patient.observations,
-    }
-
-    updated_patient = await service.update_patient_service(db, patient_id, updated_patient_data)
-
+    if patient.nid is not None:
+        check_nid = await service.get_patient_service(db, query={'nid': patient.nid})
+        if check_nid is not None and check_nid.id != patient_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'There is already a patient with nid {patient.nid}',
+            )
+    none_fields = [
+        'second_surname', 'gender', 'address',
+        'contact_phone', 'first_technician', 'observation'
+    ]
+    request_none_fields = [
+        field for field in none_fields
+        if field in patient.update_fields_to_none
+    ]
+    update_data = patient.model_dump()
+    for field in update_data.copy():
+        if field in request_none_fields:
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
+    updated_patient = await service.update_patient_service(db, patient_id, update_data)
     return updated_patient
 
 

@@ -52,16 +52,20 @@ async def create_product_controller(
             name=product.name,
             quantity=product.quantity,
             exp_date=product.exp_date
-        )
+        ).model_dump()
+        new_products = [
+            p.model_dump() for p
+            in warehouse.products
+        ]
         await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update=model.WarehouseUpdate(
-                products=warehouse.products + [new_product]
-            )
+            warehouse_update={
+                'products': new_products + [new_product]
+            }
         )
         result.append(model.ProductOut(
-            id=new_product.id,
+            id=new_product['id'],
             warehouse_id=warehouse.id,
             name=product.name,
             quantity=product.quantity,

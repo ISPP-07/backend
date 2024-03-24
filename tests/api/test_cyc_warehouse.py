@@ -61,8 +61,9 @@ def test_get_all_products_list(
 
 
 def test_create_product(
-        app_client: TestClient,
-        insert_warehouses_with_products):
+    app_client: TestClient,
+    insert_warehouses_with_products
+):
     warehouse_id = str(insert_warehouses_with_products[0]["_id"])
     product_url = f'{settings.API_STR}cyc/warehouse/product/'
 

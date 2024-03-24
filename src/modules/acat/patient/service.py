@@ -47,8 +47,11 @@ async def get_patient_service(db: DataBaseDep, query: dict) -> model.PatientOut 
     return model.PatientOut(**patient_dict)
 
 
-async def update_patient_service(db: DataBaseDep, patient_id: UUID4,
-                                 updated_patient_data: dict) -> model.Patient | None:
+async def update_patient_service(
+    db: DataBaseDep,
+    patient_id: UUID4,
+    updated_patient_data: dict
+) -> model.Patient | None:
     return await model.Patient.update(
         db,
         query={'id': patient_id},
@@ -58,15 +61,13 @@ async def update_patient_service(db: DataBaseDep, patient_id: UUID4,
 
 async def delete_patient_service(db: DataBaseDep, query: dict) -> model.Patient:
     mongo_delete: DeleteResultMongo = await model.Patient.delete(db, query)
-
-    if mongo_delete.deleted_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Patient not found',
-        )
-
     if not mongo_delete.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
+        )
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Patient not found',
         )

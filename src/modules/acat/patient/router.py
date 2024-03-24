@@ -48,14 +48,17 @@ async def create_patient(db: DataBaseDep, patient: model.PatientCreate):
     return await controller.create_patient_controller(db, patient)
 
 
-@router.put('/{patient_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=model.Patient,
-            responses={
-                200: {"description": "Patient updated successfully"},
-                404: {"description": "Patient not found"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.patch(
+    '/{patient_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.Patient,
+    responses={
+        200: {"description": "Patient updated successfully"},
+        400: {"description": "NID is duplicated"},
+        404: {"description": "Patient not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def update_patient(db: DataBaseDep, patient_id: UUID4, patient: model.PatientUpdate):
     """
     **Update a patient.**
@@ -87,13 +90,15 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
     return await controller.get_patient_details_controller(db, patient_id)
 
 
-@router.delete('/{patient_id}',
-               status_code=status.HTTP_204_NO_CONTENT,
-               responses={
-                   204: {"description": "Patient deleted successfully"},
-                   404: {"description": "Patient not found"},
-                   500: {"description": "Patient Server Error"}
-               })
+@router.delete(
+    '/{patient_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        204: {"description": "Patient deleted successfully"},
+        404: {"description": "Patient not found"},
+        500: {"description": "Patient Server Error"}
+    }
+)
 async def delete_family(db: DataBaseDep, patient_id: UUID4):
     """
     **Delete a patient.**
