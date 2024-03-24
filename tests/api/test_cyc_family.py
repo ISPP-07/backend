@@ -145,7 +145,8 @@ def test_update_person(app_client: TestClient, insert_families_mongo):
 
 def test_delete_person(app_client: TestClient, insert_families_mongo):
     family = insert_families_mongo[0]
-    person = family['members'][1]  # Cambiado a 1 para eliminar el segundo miembro
+    # Cambiado a 1 para eliminar el segundo miembro
+    person = family['members'][1]
     person_nid = person['nid']
     family_id = family['_id']
 

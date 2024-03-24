@@ -173,6 +173,7 @@ class FamilyCreate(BaseModel):
     observation: Optional[str] = None
     members: list[Person]
 
+
 class FamilyUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
@@ -181,6 +182,7 @@ class FamilyUpdate(BaseModel):
     next_renewal_date: Optional[FutureDate] = None
     observation: Optional[str] = None
     members: Optional[list[Person]] = None
+
 
 class PersonUpdate(BaseModel):
     date_birth: Optional[PastDate] = None
