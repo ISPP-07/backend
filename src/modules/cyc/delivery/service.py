@@ -1,5 +1,4 @@
 from fastapi import HTTPException, status
-from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.delivery import model
