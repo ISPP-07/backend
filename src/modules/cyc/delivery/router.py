@@ -111,9 +111,9 @@ async def update_delivery(db: DataBaseDep, delivery_id: UUID4, delivery: model.D
 
 
 @router.delete('/{delivery_id}',
-               status_code=status.HTTP_200_OK,
+               status_code=status.HTTP_204_NO_CONTENT,
                responses={
-                   200: {"description": "Delivery deleted successfully"},
+                   204: {"description": "Delivery deleted successfully"},
                    404: {"description": "Delivery not found"},
                    500: {"description": "Internal Server Error"}
                },
