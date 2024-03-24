@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import UUID4
 
-from fastapi import APIRouter, status, UploadFile
+from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.family import controller
