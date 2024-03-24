@@ -62,7 +62,6 @@ def test_get_all_products_list(
     warehouses = insert_warehouses_with_products
     url = f'{URL_WAREHOUSE}/product'
     response: Response = app_client.get(url=url)
-    print(response.text)
     assert response.status_code == 200
     response_data = response.json()
     inserted_products = [
