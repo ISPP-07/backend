@@ -1,15 +1,21 @@
-from uuid import uuid4
 from typing import Optional
+from datetime import date
 from pydantic import PositiveInt, FutureDate, UUID4, BaseModel, NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
 
 
 class Product(BaseModel):
-    id: UUID4 = uuid4()
+    id: UUID4
     name: str
     quantity: NonNegativeInt
     exp_date: Optional[FutureDate] = None
+
+
+class ProductWithoutId(BaseModel):
+    name: str
+    quantity: NonNegativeInt
+    exp_date: Optional[date] = None
 
 
 class ProductOut(Product):
@@ -48,7 +54,7 @@ class Warehouse(BaseMongo):
 
 class WarehouseCreate(BaseModel):
     name: str
-    products: list[Product]
+    products: list[ProductWithoutId]
 
 
 class WarehouseUpdate(BaseModel):
