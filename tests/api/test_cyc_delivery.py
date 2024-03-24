@@ -6,6 +6,8 @@ from pymongo.database import Database
 
 from src.core.config import settings
 
+URL_DELIVERY = f'{settings.API_STR}cyc/delivery'
+
 
 @pytest_asyncio.fixture
 async def insert_deliveries_mongo(mongo_db: Database):
@@ -60,6 +62,7 @@ async def insert_deliveries_mongo(mongo_db: Database):
             "_id": uuid4(),
             "date": "2025-03-08",
             "months": 1,
+            "state": "next",
             "lines": [
                 {
                     "product_id": warehouse["products"][0]["id"],
@@ -73,6 +76,7 @@ async def insert_deliveries_mongo(mongo_db: Database):
             "_id": uuid4(),
             "date": "2025-03-08",
             "months": 2,
+            "state": "next",
             "lines": [
                 {
                     "product_id": warehouse["products"][0]["id"],
@@ -91,8 +95,7 @@ async def insert_deliveries_mongo(mongo_db: Database):
 
 
 def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
-    url = f'{settings.API_STR}cyc/delivery/'
-    response = app_client.get(url=url)
+    response = app_client.get(url=URL_DELIVERY)
     assert response.status_code == 200
     result = response.json()
     assert isinstance(result, list)
@@ -114,7 +117,7 @@ def test_get_delivery_detail(
         app_client: TestClient,
         insert_deliveries_mongo):
     delivery_id = str(insert_deliveries_mongo[0]["_id"])
-    url = f'{settings.API_STR}cyc/delivery/{delivery_id}'
+    url = f'{URL_DELIVERY}/{delivery_id}'
     response = app_client.get(url=url)
     assert response.status_code == 200
     result = response.json()
@@ -130,7 +133,6 @@ def test_get_delivery_detail(
 
 
 def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
-    url = f'{settings.API_STR}cyc/delivery/'
     data = {
         "date": "2025-03-08",
         "months": 1,
@@ -144,7 +146,7 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
         "family_id": str(
             insert_deliveries_mongo[0]["family_id"]),
     }
-    response = app_client.post(url=url, json=data)
+    response = app_client.post(url=URL_DELIVERY, json=data)
     print(response.json(), "BBBBBBBBBBBBBBBB")
     assert response.status_code == 201
     result = response.json()
@@ -154,3 +156,14 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
     assert result["lines"][0]["quantity"] == data["lines"][0]["quantity"]
     assert result["lines"][0]["state"] == data["lines"][0]["state"]
     assert result["family_id"] == data["family_id"]
+
+
+def test_get_family_deliveries(
+        app_client: TestClient,
+        insert_deliveries_mongo: list):
+    family_id = str(insert_deliveries_mongo[0]['family_id'])
+    url = f'{URL_DELIVERY}/family/{family_id}'
+    response = app_client.get(url=url)
+    assert response.status_code == 200
+    result = response.json()
+    assert len(result) == 2

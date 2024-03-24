@@ -1,0 +1,33 @@
+name: Send Detailed Changelog to Telegram
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  send-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get detailed commit log
+        id: get_commits
+        run: |
+          changelog=$(git log ${{ github.event.before }}..${{ github.event.after }} --pretty=format:"🚀 *Commit*: %h by %an on %ad%n%n*Message*:%n%s%n%n*Details*:%n" --no-merges --name-status)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$changelog"
+
+
+      - name: Send to Telegram via curl
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          CHANGELOG: ${{ steps.get_commits.outputs.changelog }}
+        run: |
+          curl -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHANNEL" -d text="$CHANGELOG" -d parse_mode="Markdown"

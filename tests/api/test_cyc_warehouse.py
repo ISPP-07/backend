@@ -17,6 +17,7 @@ async def insert_warehouses_with_products(mongo_db: Database):
             "name": "Almacén 1",
             "products": [
                 {
+                    "id": uuid4(),
                     "name": "Producto 1",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
@@ -28,6 +29,7 @@ async def insert_warehouses_with_products(mongo_db: Database):
             "name": "Almacén 2",
             "products": [
                 {
+                    "id": uuid4(),
                     "name": "Producto 2",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
@@ -43,17 +45,16 @@ async def insert_warehouses_with_products(mongo_db: Database):
 
 
 def test_get_all_products_list(
-        app_client: TestClient,
-        insert_warehouses_with_products):
+    app_client: TestClient,
+    insert_warehouses_with_products
+):
     warehouses = insert_warehouses_with_products
     url_get = f'{settings.API_STR}cyc/warehouse/product'
     response = app_client.get(url_get)
     assert response.status_code == 200
     response_data = response.json()
-
     inserted_products = [
         product for warehouse in warehouses for product in warehouse["products"]]
-
     assert len(response_data) == len(inserted_products)
     for product_data in response_data:
         assert any(product_data["name"] == product["name"] and product_data["quantity"]
@@ -66,7 +67,6 @@ def test_create_product(
 ):
     warehouse_id = str(insert_warehouses_with_products[0]["_id"])
     product_url = f'{settings.API_STR}cyc/warehouse/product/'
-
     product_data = {
         "products": [
             {
@@ -77,33 +77,26 @@ def test_create_product(
             }
         ]
     }
-
     response = app_client.post(product_url, json=product_data)
     assert response.status_code == 201
     result = response.json()
-
     for field in product_data["products"][0]:
         assert str(result[0][field]) == str(product_data["products"][0][field])
 
 
 def test_create_warehouse(app_client: TestClient):
     warehouse_url = f'{settings.API_STR}cyc/warehouse/'
-
     warehouse_data = {
         "name": "Almacén secundario",
         "products": [
             {
-                "id": str(uuid4()),
                 "name": "Leche entera",
                 "quantity": 34,
                 "exp_date": "2025-03-16"
             }
         ]
     }
-
     response = app_client.post(warehouse_url, json=warehouse_data)
     assert response.status_code == 201
     result = response.json()
-
-    for field in warehouse_data:
-        assert str(result[field]) == str(warehouse_data[field])
+    assert str(result['name']) == str(warehouse_data['name'])

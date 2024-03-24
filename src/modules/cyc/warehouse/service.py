@@ -17,10 +17,11 @@ async def get_warehouse_service(db: DataBaseDep, query: dict) -> model.Warehouse
 
 async def create_warehouse_service(
     db: DataBaseDep,
-    warehouse: model.WarehouseCreate
+    warehouse: dict
 ) -> InsertOneResultMongo:
     result: InsertOneResultMongo = await model.Warehouse.create(
-        db, obj_to_create=warehouse.model_dump())
+        db, obj_to_create=warehouse
+    )
     if not result.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
