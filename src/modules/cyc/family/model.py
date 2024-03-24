@@ -1,6 +1,7 @@
 from sys import maxsize
 from typing import Optional, Dict, Literal, Self
 from enum import Enum
+from datetime import date
 from pydantic import (
     PastDate,
     FutureDate,
@@ -119,13 +120,38 @@ class Person(BaseModel):
         return get_age_rank(self.age)
 
 
-class Family(BaseMongo):
+class FamilyValidator:
+    @classmethod
+    def validate_family_members(cls, members: list['Person']):
+        if len(members) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    'field': 'members',
+                    'msg': 'A family must have at least one member'
+                }
+            )
+        check_family_head = list(filter(
+            lambda p: p.family_head,
+            members
+        ))
+        if len(check_family_head) != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    'field': 'members',
+                    'msg': 'A family can only have one head of household'
+                }
+            )
+
+
+class Family(BaseMongo, FamilyValidator):
     id: UUID4
     name: str
     phone: str
     address: str
     referred_organization: Optional[str]
-    next_renewal_date: Optional[FutureDate]
+    next_renewal_date: Optional[date]
     derecognition_state: DerecognitionStatus = DerecognitionStatus.ACTIVE
     observation: Optional[str]
     number_of_people: PositiveInt = None
@@ -137,33 +163,15 @@ class Family(BaseMongo):
 
     @model_validator(mode='after')
     @classmethod
-    def validate_family(cls, data: Self):
-        if len(data.members) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    'field': 'members',
-                    'msg': 'A family must have at least one member'
-                }
-            )
-        check_family_head = list(filter(
-            lambda p: p.family_head,
-            data.members
-        ))
-        if len(check_family_head) != 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    'field': 'members',
-                    'msg': 'A family can only have one head of household'
-                }
-            )
+    def validate_family(cls, data: 'Self'):
+        cls.validate_family_members(data.members)
         data.number_of_people = len(data.members)
         return data
 
-
 # VALIDAR phone, SI NOS DICEN CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR
 # EL CAMPO Y AÑADIRLO NOSOTROS
+
+
 class FamilyCreate(BaseModel):
     name: str
     phone: str
@@ -172,3 +180,24 @@ class FamilyCreate(BaseModel):
     next_renewal_date: Optional[FutureDate] = None
     observation: Optional[str] = None
     members: list[Person]
+
+
+class FamilyUpdate(BaseModel, FamilyValidator):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    referred_organization: Optional[str] = None
+    next_renewal_date: Optional[FutureDate] = None
+    derecognition_state: Optional[DerecognitionStatus] = None
+    observation: Optional[str] = None
+    number_of_people: Optional[PositiveInt] = None
+    informed: Optional[bool] = None
+    members: Optional[list[Person]] = None
+
+    @model_validator(mode='after')
+    @classmethod
+    def validate_family_update(cls, data: 'Self'):
+        if data.members is not None:
+            cls.validate_family_members(data.members)
+            data.number_of_people = len(data.members)
+        return data

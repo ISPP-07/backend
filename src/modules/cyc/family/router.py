@@ -5,7 +5,7 @@ from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.family import controller
-from src.modules.cyc.family.model import Family, FamilyCreate
+from src.modules.cyc.family.model import Family, FamilyCreate, FamilyUpdate
 
 router = APIRouter(tags=['Family'])
 
@@ -61,3 +61,38 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
     This includes the family's ID, name, and other pertinent details.
     """
     return await controller.get_family_details_controller(db, family_id)
+
+
+@router.patch('/{family_id}',
+              status_code=status.HTTP_200_OK,
+              response_model=Family,
+              responses={
+                  200: {"description": "Family updated successfully"},
+                  400: {"description": "Bad Request - Invalid data input for updating a family"},
+                  404: {"description": "Family not found"},
+                  500: {"description": "Internal Server Error"}
+              })
+async def update_family(db: DataBaseDep, family_id: UUID4, family: FamilyUpdate):
+    """
+    **Update an existing family.**
+
+    Accepts updated family information and updates the corresponding family record in the database.
+    The family information includes the family's name and other relevant details.
+    """
+    return await controller.update_family_controller(db, family_id, family)
+
+
+@router.delete('/{family_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               responses={
+                   204: {"description": "Family deleted successfully"},
+                   404: {"description": "Family not found"},
+                   500: {"description": "Internal Server Error"}
+               })
+async def delete_family(db: DataBaseDep, family_id: UUID4):
+    """
+    **Delete a family.**
+
+    Deletes a family record from the database based on the family's UUID.
+    """
+    return await controller.delete_family_controller(db, family_id)

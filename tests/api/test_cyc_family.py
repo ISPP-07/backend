@@ -110,3 +110,38 @@ def test_get_family_details(app_client: TestClient, insert_families_mongo):
             assert str(result['id']) == str(family[field])
         else:
             assert str(result[field]) == str(family[field])
+
+
+def test_update_family(app_client: TestClient, insert_families_mongo):
+    family = insert_families_mongo[0]
+    family_id = family['_id']
+    url = f'{settings.API_STR}cyc/family/{family_id}'
+
+    # Solo actualizo algunos campos de la familia
+    family_data = {
+        "name": "La Familia Rodriguez",
+        "address": "Calle Principal 456",
+        "referred_organization": "Hospital ABC"
+    }
+
+    response = app_client.patch(url=url, json=family_data)
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["name"] == family_data["name"]
+    assert response_data["address"] == family_data["address"]
+    assert response_data["referred_organization"] == family_data["referred_organization"]
+
+
+def test_delete_family(app_client: TestClient, insert_families_mongo):
+    family = insert_families_mongo[0]
+    family_id = family['_id']
+    url = f'{settings.API_STR}cyc/family/{family_id}'
+
+    response = app_client.delete(url)
+    assert response.status_code == 204
+
+    response = app_client.get(url)
+    assert response.status_code == 404
+    response_data = response.json()
+    assert response_data["detail"] == "Family not found"
