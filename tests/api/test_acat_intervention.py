@@ -25,7 +25,7 @@ async def insert_interventions_mongo(mongo_db: Database):
         "contact_phone": "666666666",
         "dossier_number": "1",
         "first_technician": "John Doe",
-        "observations": "Observations"
+        "observation": "Observations"
     }
 
     patient["alias"] = generate_alias(

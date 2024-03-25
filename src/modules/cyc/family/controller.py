@@ -27,7 +27,17 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
 
 
 async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: model.FamilyUpdate) -> model.Family:
-    result = await service.update_family_service(db, family_id, family.model_dump())
+    request_none_fields = [
+        field for field in model.FAMILY_NONE_FIELDS
+        if field in family.update_fields_to_none
+    ]
+    update_data = family.model_dump(exclude='update_fields_to_none')
+    for field in update_data.copy():
+        if field in request_none_fields:
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
+    result = await service.update_family_service(db, family_id=family_id, family_update=update_data)
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

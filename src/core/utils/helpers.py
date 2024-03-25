@@ -26,15 +26,14 @@ def check_all_keys(data: dict, key: Any) -> bool:
 def change_invalid_types_mongo(data: dict) -> None:
     for key, value in data.items():
         if isinstance(value, date):
-            data[key] = datetime.combine(value, datetime.min.time())
+            data[key] = value.isoformat()
         if isinstance(value, Enum):
             data[key] = value.value
         if isinstance(value, list):
             if any(isinstance(v, date) for v in value):
                 value = [
-                    datetime.combine(
-                        item, datetime.min.time()
-                    ) if isinstance(item, date) else item
+                    item.isoformat()
+                    if isinstance(item, date) else item
                     for item in value
                 ]
             if any(isinstance(v, Enum) for v in value):
