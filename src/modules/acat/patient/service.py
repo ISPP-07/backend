@@ -6,8 +6,8 @@ from src.modules.acat.patient import model
 from src.core.database.mongo_types import InsertOneResultMongo, UpdateResult
 
 
-async def get_patient_by_id(db: DataBaseDep, id: UUID4):
-    return await model.Patient.get(db, query={'id': id})
+async def get_patient_by_id(db: DataBaseDep, patient_id: UUID4):
+    return await model.Patient.get(db, query={'id': patient_id})
 
 
 async def get_patients_service(db: DataBaseDep, query=None) -> list[model.Patient]:

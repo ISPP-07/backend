@@ -216,7 +216,7 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=parse_validation_error(e.errors())
             )
-        if not warehouse_name in products_excel:
+        if warehouse_name not in products_excel:
             products_excel[warehouse_name] = []
         if new_product.name in [p.name for p in products_excel.get(warehouse_name)]:
             raise HTTPException(

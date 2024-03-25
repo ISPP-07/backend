@@ -17,6 +17,6 @@ class InsertResultMongo():
 
 
 class UpdateResult():
-    matchedCount: int
-    modifiedCount: int
-    upsertedId: Any | None
+    matched_count: int
+    modified_count: int
+    upserted_id: Any | None
