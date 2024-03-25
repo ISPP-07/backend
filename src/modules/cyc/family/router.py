@@ -1,24 +1,22 @@
 from typing import List
-from pydantic import UUID4
 
 from fastapi import APIRouter, status
+from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.family import controller
-from src.modules.cyc.family.model import Family, FamilyCreate, FamilyUpdate
+from src.modules.cyc.family import model
 
 router = APIRouter(tags=['Family'])
 
 
-@router.get(
-    '',
-    status_code=status.HTTP_200_OK,
-    response_model=List[Family],
-    responses={
-        200: {"description": "Successful Response"},
-        500: {"description": "Internal Server Error"}
-    }
-)
+@router.get('',
+            status_code=status.HTTP_200_OK,
+            response_model=List[model.Family],
+            responses={
+                200: {"description": "Successful Response"},
+                500: {"description": "Internal Server Error"}
+            })
 async def get_families(db: DataBaseDep):
     """
     **Retrieve a list of all families.**
@@ -31,11 +29,13 @@ async def get_families(db: DataBaseDep):
 
 @router.post('',
              status_code=status.HTTP_201_CREATED,
-             response_model=Family,
-             responses={201: {"description": "Family created successfully"},
-                        400: {"description": "Bad Request - Invalid data input for creating a family"},
-                        500: {"description": "Internal Server Error"}})
-async def create_family(db: DataBaseDep, family: FamilyCreate):
+             response_model=model.Family,
+             responses={
+                 201: {"description": "Family created successfully"},
+                 400: {"description": "Bad Request - Invalid data input for creating a family"},
+                 500: {"description": "Internal Server Error"}
+             })
+async def create_family(db: DataBaseDep, family: model.FamilyCreate):
     """
     **Create a new family.**
 
@@ -45,16 +45,14 @@ async def create_family(db: DataBaseDep, family: FamilyCreate):
     return await controller.create_family_controller(db, family)
 
 
-@router.get(
-    '/{family_id}',
-    status_code=status.HTTP_200_OK,
-    response_model=Family,
-    responses={
-        200: {"description": "Successful Response"},
-        404: {"description": "Family not found"},
-        500: {"description": "Internal Server Error"}
-    }
-)
+@router.get('/{family_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=model.Family,
+            responses={
+                200: {"description": "Successful Response"},
+                404: {"description": "Family not found"},
+                500: {"description": "Internal Server Error"}
+            })
 async def get_family_details(db: DataBaseDep, family_id: UUID4):
     """
     **Get detailed information about a specific family.**
@@ -67,14 +65,14 @@ async def get_family_details(db: DataBaseDep, family_id: UUID4):
 
 @router.patch('/{family_id}',
               status_code=status.HTTP_200_OK,
-              response_model=Family,
+              response_model=model.Family,
               responses={
                   200: {"description": "Family updated successfully"},
                   400: {"description": "Bad Request - Invalid data input for updating a family"},
                   404: {"description": "Family not found"},
                   500: {"description": "Internal Server Error"}
               })
-async def update_family(db: DataBaseDep, family_id: UUID4, family: FamilyUpdate):
+async def update_family(db: DataBaseDep, family_id: UUID4, family: model.FamilyUpdate):
     """
     **Update an existing family.**
 
@@ -98,3 +96,39 @@ async def delete_family(db: DataBaseDep, family_id: UUID4):
     Deletes a family record from the database based on the family's UUID.
     """
     return await controller.delete_family_controller(db, family_id)
+
+
+@router.patch('/{family_id}/person/{person_nid}',
+              status_code=status.HTTP_200_OK,
+              response_model=model.Family,
+              responses={
+                  200: {"description": "Person updated successfully"},
+                  404: {"description": "Family or person not found"},
+                  500: {"description": "Internal Server Error"}
+              })
+async def update_person(db: DataBaseDep,
+                        family_id: UUID4,
+                        person_nid: str,
+                        person: model.PersonUpdate):
+    """
+    **Update a person in a family.**
+
+    Accepts information about a person and updates the details of the person in the specified family.
+    """
+    return await controller.update_person_controller(db, family_id, person_nid, person)
+
+
+@router.delete('/{family_id}/person/{person_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               responses={204: {"description": "Person deleted successfully"},
+                          404: {"description": "Family or person not found"},
+                          400: {"description": "Bad Request - Cannot delete the family head"},
+                          500: {"description": "Internal Server Error"}})
+async def delete_person(db: DataBaseDep, family_id: UUID4, person_id: str):
+    """
+    **Delete a person from a family.**
+
+    Accepts the family and person ID and deletes the person from the specified family.
+    """
+    await controller.delete_person_controller(db, family_id, person_id)
+    return None
