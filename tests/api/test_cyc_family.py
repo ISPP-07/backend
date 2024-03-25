@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 from pymongo.database import Database
 
 from src.core.config import settings
@@ -22,7 +22,7 @@ def insert_families_mongo(mongo_db: Database):
             "referred_organization": None,
             "next_renewal_date": "2025-03-08",
             "observation": None,
-            "number_of_people": 1,
+            "number_of_people": 2,
             "informed": False,
             "members": [
                 {
@@ -33,6 +33,19 @@ def insert_families_mongo(mongo_db: Database):
                     "nationality": "Spain",
                     "nid": "07344702C",
                     "family_head": True,
+                    "gender": "Man",
+                    "functional_diversity": True,
+                    "food_intolerances": [],
+                    "homeless": False
+                },
+                {
+                    "date_birth": "2023-03-08",
+                    "type": "Child",
+                    "name": "Jose",
+                    "surname": "Cast",
+                    "nationality": "Spain",
+                    "nid": "37210711T",
+                    "family_head": False,
                     "gender": "Man",
                     "functional_diversity": True,
                     "food_intolerances": [],
