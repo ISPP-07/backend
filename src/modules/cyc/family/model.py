@@ -1,3 +1,6 @@
+from src.core.utils.helpers import check_nid, calculate_age
+from src.core.database.base_crud import BaseMongo
+from fastapi import HTTPException, status
 from sys import maxsize
 from typing import Optional, Dict, Literal, Self
 from enum import Enum
@@ -11,10 +14,10 @@ from pydantic import (
     model_validator,
 )
 
-from fastapi import HTTPException, status
+FAMILY_NONE_FIELDS = [
+    'referred_organization', 'next_renewal_date', 'observation'
+]
 
-from src.core.database.base_crud import BaseMongo
-from src.core.utils.helpers import check_nid, calculate_age
 
 AGE_RANGES: Dict[
     Literal['baby', 'child', 'adult', 'senior', 'old'],
@@ -193,6 +196,7 @@ class FamilyUpdate(BaseModel, FamilyValidator):
     number_of_people: Optional[PositiveInt] = None
     informed: Optional[bool] = None
     members: Optional[list[Person]] = None
+    update_fields_to_none: list[str] = []
 
     @model_validator(mode='after')
     @classmethod

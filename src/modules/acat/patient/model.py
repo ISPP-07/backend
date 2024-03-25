@@ -7,6 +7,11 @@ from pydantic import BaseModel, UUID4, PastDate
 from src.core.database.base_crud import BaseMongo
 from src.core.utils.helpers import calculate_age
 
+PATIENT_NONE_FIELDS = [
+    'second_surname', 'gender', 'address',
+    'contact_phone', 'first_technician', 'observation'
+]
+
 
 class Gender(Enum):
     MEN = 'Man'

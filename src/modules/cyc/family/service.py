@@ -29,12 +29,12 @@ async def create_family_service(
 async def update_family_service(
     db: DataBaseDep,
     query: dict,
-    family: FamilyUpdate,
+    family: dict,
 ) -> Family:
     result = await Family.update(
         db,
         query=query,
-        data_to_update=family.model_dump()
+        data_to_update=family
     )
     return result
 

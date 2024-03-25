@@ -44,15 +44,11 @@ async def update_patient_controller(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'There is already a patient with nid {patient.nid}',
             )
-    none_fields = [
-        'second_surname', 'gender', 'address',
-        'contact_phone', 'first_technician', 'observation'
-    ]
     request_none_fields = [
-        field for field in none_fields
+        field for field in model.PATIENT_NONE_FIELDS
         if field in patient.update_fields_to_none
     ]
-    update_data = patient.model_dump()
+    update_data = patient.model_dump(exclude='update_fields_to_none')
     for field in update_data.copy():
         if field in request_none_fields:
             continue

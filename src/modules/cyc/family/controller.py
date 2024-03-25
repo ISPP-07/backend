@@ -3,7 +3,7 @@ from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.modules.cyc.family.model import Family, FamilyCreate, FamilyUpdate
+from src.modules.cyc.family.model import Family, FamilyCreate, FamilyUpdate, FAMILY_NONE_FIELDS
 from src.modules.cyc.family import service
 
 
@@ -28,7 +28,17 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> Fami
 
 
 async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: FamilyUpdate) -> Family:
-    result = await service.update_family_service(db, query={'id': family_id}, family=family)
+    request_none_fields = [
+        field for field in FAMILY_NONE_FIELDS
+        if field in family.update_fields_to_none
+    ]
+    update_data = family.model_dump(exclude='update_fields_to_none')
+    for field in update_data.copy():
+        if field in request_none_fields:
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
+    result = await service.update_family_service(db, query={'id': family_id}, family=update_data)
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
