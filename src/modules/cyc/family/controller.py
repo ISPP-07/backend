@@ -1,3 +1,5 @@
+from pydantic import UUID4
+
 from fastapi import HTTPException, status
 
 from pydantic import UUID4
@@ -26,7 +28,21 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
     return result
 
 
-async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate) -> model.Family:
+async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: model.FamilyUpdate) -> model.Family:
+    result = await service.update_family_service(db, family_id, family)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Family not found',
+        )
+    return result
+
+
+async def delete_family_controller(db: DataBaseDep, family_id: UUID4):
+    await service.delete_family_service(db, query={'id': family_id})
+
+
+async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str, person: model.PersonUpdate) -> model.Person:
     family = await service.get_family_service(db, query={'id': family_id})
     if family is None:
         raise HTTPException(
@@ -65,6 +81,7 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
     return await service.update_family_service(db, family_id=family.id, family_update=family)
 
 
+
 async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str) -> None:
     new_family = await service.get_family_service(db, query={'id': family_id})
     if new_family is None:
@@ -86,6 +103,5 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Cannot delete the family head',
         )
-    new_family.members = [
-        person for person in new_family.members if person.nid != person_nid]
+    new_family.members = [person for person in new_family.members if person.nid != person_nid]
     await service.update_family_service(db, family_id, new_family)

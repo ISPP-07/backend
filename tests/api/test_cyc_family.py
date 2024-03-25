@@ -125,34 +125,36 @@ def test_get_family_details(app_client: TestClient, insert_families_mongo):
             assert str(result[field]) == str(family[field])
 
 
-def test_update_person(app_client: TestClient, insert_families_mongo):
+def test_update_family(app_client: TestClient, insert_families_mongo):
     family = insert_families_mongo[0]
-    person = family['members'][0]
-    person_nid = person['nid']
     family_id = family['_id']
+    url = f'{settings.API_STR}cyc/family/{family_id}'
 
-    url = f'{settings.API_STR}cyc/family/{family_id}/person/{person_nid}'
-    person_data = person.copy()
-    person_data['name'] = 'Juan'
-    person_data['surname'] = 'Pérez'
+    # Solo actualizo algunos campos de la familia
+    family_data = {
+        "name": "La Familia Rodriguez",
+        "address": "Calle Principal 456",
+        "referred_organization": "Hospital ABC"
+    }
 
-    response = app_client.patch(url=url, json=person_data)
+    response = app_client.patch(url=url, json=family_data)
+
     assert response.status_code == 200
-    result = response.json()
-    last_member_index = len(result['members']) - 1
-    assert result['members'][last_member_index]['name'] == person_data['name']
+    response_data = response.json()
+    assert response_data["name"] == family_data["name"]
+    assert response_data["address"] == family_data["address"]
+    assert response_data["referred_organization"] == family_data["referred_organization"]
 
 
-def test_delete_person(app_client: TestClient, insert_families_mongo):
+def test_delete_family(app_client: TestClient, insert_families_mongo):
     family = insert_families_mongo[0]
-    # Cambiado a 1 para eliminar el segundo miembro
-    person = family['members'][1]
-    person_nid = person['nid']
     family_id = family['_id']
+    url = f'{settings.API_STR}cyc/family/{family_id}'
 
-    print(type(family_id), type(person_nid))
-
-    url = f'{settings.API_STR}cyc/family/{family_id}/person/{person_nid}'
-
-    response = app_client.delete(url=url)
+    response = app_client.delete(url)
     assert response.status_code == 204
+
+    response = app_client.get(url)
+    assert response.status_code == 404
+    response_data = response.json()
+    assert response_data["detail"] == "Family not found"

@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 
 from pydantic import UUID4
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
 from src.modules.cyc.family import model
 
 
@@ -26,6 +26,21 @@ async def create_family_service(
         )
     return result
 
+
+async def delete_family_service(db: DataBaseDep, query: dict) -> model.Family:
+    mongo_delete: DeleteResultMongo = await model.Family.delete(db, query)
+
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Family not found'
+        )
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    
 
 async def update_family_service(
     db: DataBaseDep,
