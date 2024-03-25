@@ -45,29 +45,10 @@ async def delete_family_service(db: DataBaseDep, query: dict) -> model.Family:
 async def update_family_service(
     db: DataBaseDep,
     family_id: UUID4,
-    family_update: model.FamilyUpdate
+    family_update: dict
 ) -> model.Family | None:
     return await model.Family.update(
         db,
         query={'id': family_id},
-        data_to_update=family_update.model_dump()
+        data_to_update=family_update
     )
-
-
-async def udpate_person_service(
-    db: DataBaseDep,
-    family_id: UUID4,
-    person_nid: str,
-    person: model.PersonUpdate
-) -> model.Person | None:
-    family = await model.Family.get(db, query={'id': family_id})
-    old_person = [
-        person for person in family.members if person.nid == person_nid][0]
-    updated_person = model.Person(**person.dict())
-    if family is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Family not found',
-        )
-    family.members.remove(old_person)
-    family.members.append(updated_person)

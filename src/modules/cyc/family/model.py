@@ -27,6 +27,11 @@ AGE_RANGES: Dict[
     'old': {'min': 60, 'max': maxsize, },
 }
 
+PERSON_NONE_FIELDS = [
+    'type', 'name', 'surname', 'nationality',
+    'nid', 'gender', 'functional_diversity', 'homeless'
+]
+
 
 def get_age_rank(age: int) -> str:
     for key, entry in AGE_RANGES.items():
@@ -120,6 +125,20 @@ class Person(BaseModel):
         return get_age_rank(self.age)
 
 
+class PersonUpdate(BaseModel):
+    date_birth: Optional[PastDate] = None
+    type: Optional[PersonType] = None
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    nationality: Optional[str] = None
+    nid: Optional[str] = None
+    gender: Optional[Gender] = None
+    functional_diversity: Optional[bool] = None
+    food_intolerances: Optional[list[str]] = None
+    homeless: Optional[bool] = None
+    update_fields_to_none: list[str] = []
+
+
 class FamilyValidator:
     @classmethod
     def validate_family_members(cls, members: list['Person']):
@@ -203,17 +222,3 @@ class FamilyUpdate(BaseModel, FamilyValidator):
         return data
     observation: Optional[str] = None
     members: Optional[list[Person]] = None
-
-
-class PersonUpdate(BaseModel):
-    date_birth: Optional[PastDate] = None
-    type: Optional[PersonType] = None
-    name: Optional[str] = None
-    surname: Optional[str] = None
-    family_head: Optional[bool] = None
-    nationality: Optional[str] = None
-    nid: Optional[str] = None
-    gender: Optional[Gender] = None
-    functional_diversity: Optional[bool] = None
-    food_intolerances: Optional[list[str]] = None
-    homeless: Optional[bool] = None
