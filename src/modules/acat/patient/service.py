@@ -1,10 +1,8 @@
 from fastapi import HTTPException, status
 from pydantic import UUID4
 
-from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo, UpdateResult
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo, UpdateResult
-from src.core.utils.helpers import generate_alias
 from src.modules.acat.patient import model
 
 

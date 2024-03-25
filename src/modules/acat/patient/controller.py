@@ -153,9 +153,6 @@ async def update_patient_controller(
         if field in patient.update_fields_to_none
     ]
     update_data = patient.model_dump(exclude='update_fields_to_none')
-    patient.first_surname
-    patient.second_surname
-    patient.name
     for field in update_data.copy():
         if field in request_none_fields:
             continue

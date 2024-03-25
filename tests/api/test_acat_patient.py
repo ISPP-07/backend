@@ -6,7 +6,6 @@ from datetime import date
 import pytest_asyncio
 from pymongo.database import Database
 from fastapi.testclient import TestClient
-from httpx import Response
 
 from src.core.config import settings
 from src.core.utils.helpers import generate_alias

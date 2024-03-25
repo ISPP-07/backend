@@ -1,11 +1,11 @@
-from typing import Optional, Self
+from typing import Optional
 from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel, UUID4, PastDate, model_validator
+from pydantic import BaseModel, UUID4, PastDate
 
 from src.core.database.base_crud import BaseMongo
-from src.core.utils.helpers import calculate_age, generate_alias
+from src.core.utils.helpers import calculate_age
 
 PATIENT_NONE_FIELDS = [
     'second_surname', 'gender', 'address',
