@@ -158,7 +158,10 @@ def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
         assert result[field] == patient[field]
 
 
-def test_delete_patient(app_client: TestClient, insert_patient_to_delete, mongo_db: Database):
+def test_delete_patient(
+        app_client: TestClient,
+        insert_patient_to_delete,
+        mongo_db: Database):
     url = f'{URL_PATIENT}/{insert_patient_to_delete['_id']}'
     response = app_client.delete(url=url)
     assert response.status_code == 204
