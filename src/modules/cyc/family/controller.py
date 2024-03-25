@@ -81,7 +81,6 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
     return await service.update_family_service(db, family_id=family.id, family_update=family)
 
 
-
 async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid: str) -> None:
     new_family = await service.get_family_service(db, query={'id': family_id})
     if new_family is None:
@@ -103,5 +102,6 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Cannot delete the family head',
         )
-    new_family.members = [person for person in new_family.members if person.nid != person_nid]
+    new_family.members = [
+        person for person in new_family.members if person.nid != person_nid]
     await service.update_family_service(db, family_id, new_family)
