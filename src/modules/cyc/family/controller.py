@@ -11,6 +11,7 @@ async def get_families_controller(db: DataBaseDep):
 
 
 async def create_family_controller(db: DataBaseDep, family: model.FamilyCreate) -> model.Family:
+    # VAMOS A TENER QUE REVISAR QUE NO HAYA DNIs DUPLICADOS
     mongo_insert = await service.create_family_service(db, family)
     result = await service.get_family_service(db, query={'id': mongo_insert.inserted_id})
     return result
@@ -56,6 +57,11 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Person not found in family',
         )
+    # VAMOS A TENER QUE REVISAR QUE NO HAYA DNIs DUPLICADOS
+    # if person.nid is not None:
+    #     persons = await service.get_persons_service(db)
+    #     check_nid = [p for p in persons if p.nid == person.nid]
+    #     if len(check_nid) > 0
     request_none_fields = [
         field for field in model.PERSON_NONE_FIELDS
         if field in person.update_fields_to_none
@@ -71,7 +77,7 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
         p.model_dump() for p in family.members
         if p.nid != old_person.nid
     ]
-    members = members + [update_data]
+    members.append(update_data)
     return await service.update_family_service(
         db,
         family_id=family.id,

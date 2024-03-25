@@ -139,6 +139,10 @@ class PersonUpdate(BaseModel):
     update_fields_to_none: list[str] = []
 
 
+class PersonWithFamilyId(Person):
+    family_id: UUID4
+
+
 class FamilyValidator:
     @classmethod
     def validate_family_members(cls, members: list['Person']):

@@ -14,6 +14,19 @@ async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | Non
     return await model.Family.get(db, query)
 
 
+async def get_persons_service(db: DataBaseDep) -> list[model.PersonWithFamilyId]:
+    families: list[model.Family] = await model.Family.get_multi(db)
+    result = [
+        model.PersonWithFamilyId(
+            **person,
+            family_id=family.id
+        )
+        for family in families
+        for person in family.members
+    ]
+    return result
+
+
 async def create_family_service(
     db: DataBaseDep,
     family: model.FamilyCreate,
