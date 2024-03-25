@@ -129,8 +129,11 @@ def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
 
     # Enviar el archivo Excel al endpoint
     with open(excel_file_path, 'rb') as file:
-        files = {"patients": (
-            "Pacientes.xlsx", file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+        files = {
+            "patients": (
+                "Pacientes.xlsx",
+                file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
         response = app_client.post(url=url, files=files)
 
     # Verificar que la respuesta sea exitosa

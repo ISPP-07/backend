@@ -118,8 +118,11 @@ def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
     ).parent.parent / 'excel_test' / 'Almacenes.xlsx'
     # Send excel file to endpoint
     with open(excel_file_path, 'rb') as file:
-        files = {"products": (
-            "Almacenes.xlsx", file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+        files = {
+            "products": (
+                "Almacenes.xlsx",
+                file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
         response: Response = app_client.post(url=url, files=files)
     # Verify response
     assert response.status_code == 204

@@ -47,22 +47,35 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
             )
         )
     fields_excel = [
-        'nombre', 'primer apellido', 'segundo apellido', 'dni', 'fecha nacimiento',
-        'genero', 'direccion', 'telefono', 'numero expediente', 'tecnico', 'observacion'
-    ]
+        'nombre',
+        'primer apellido',
+        'segundo apellido',
+        'dni',
+        'fecha nacimiento',
+        'genero',
+        'direccion',
+        'telefono',
+        'numero expediente',
+        'tecnico',
+        'observacion']
     wb = openpyxl.load_workbook(patients.file)
     ws = wb.active
     first_row = [
         ws.cell(row=1, column=i).value
         for i in range(1, len(fields_excel) + 1)
     ]
-    if len(first_row) != len(fields_excel) and not all(field in fields_excel for field in first_row):
+    if len(first_row) != len(fields_excel) and not all(
+            field in fields_excel for field in first_row):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='The excel file is incorrect'
         )
     patients_excel: list[model.PatientCreate] = []
-    for row in ws.iter_rows(min_row=2, min_col=1, max_col=11, values_only=True):
+    for row in ws.iter_rows(
+            min_row=2,
+            min_col=1,
+            max_col=11,
+            values_only=True):
         if all(value is None for value in row):
             continue
         if row[0] is None or row[1] is None or row[3] is None or row[4] is None or row[8] is None:
