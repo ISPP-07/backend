@@ -60,7 +60,7 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
         field for field in model.PERSON_NONE_FIELDS
         if field in person.update_fields_to_none
     ]
-    update_data = person.model_dump()
+    update_data = person.model_dump(exclude=['update_fields_to_none'])
     old_person_data = old_person.model_dump()
     for field in old_person_data:
         if field in request_none_fields:
@@ -71,7 +71,7 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
         p.model_dump() for p in family.members
         if p.nid != old_person.nid
     ]
-    members = members + [update_data]
+    members.append(update_data)
     return await service.update_family_service(
         db,
         family_id=family.id,
