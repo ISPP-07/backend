@@ -168,9 +168,6 @@ class BaseMongo(BaseModel):
             data_to_update.pop('id')
         if '_id' in data_to_update:
             data_to_update.pop('_id')
-        for key, value in copy.deepcopy(data_to_update).items():
-            if value is None:
-                data_to_update.pop(key)
         change_invalid_types_mongo(data_to_update)
         update = {'$set': data_to_update}
         result = await collection.find_one_and_update(

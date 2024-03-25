@@ -137,16 +137,20 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: DeliveryC
     for line in create_delivery.lines:
         warehouse, product = product_to_warehouse[line.product_id]
         updated_products = [
-            p for p in warehouse.products if p.id != line.product_id] + [
+            p for p in warehouse.products
+            if p.id != line.product_id
+        ] + [
             Product(
                 id=product.id,
                 name=product.name,
                 quantity=product.quantity - line.quantity,
-                exp_date=product.exp_date)]
+                exp_date=product.exp_date
+            ).model_dump()
+        ]
         await product_service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update=WarehouseUpdate(products=updated_products)
+            warehouse_update={'products': updated_products}
         )
 
     # Create and retrieve the delivery

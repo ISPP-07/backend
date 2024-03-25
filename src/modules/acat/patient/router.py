@@ -1,10 +1,9 @@
+from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
-from fastapi import APIRouter, status, UploadFile
-
 from src.core.deps import DataBaseDep
-from src.modules.acat.patient import model
 from src.modules.acat.patient import controller
+from src.modules.acat.patient import model
 
 router = APIRouter(tags=['Patient'])
 
@@ -49,6 +48,27 @@ async def create_patient(db: DataBaseDep, patient: model.PatientCreate):
     return await controller.create_patient_controller(db, patient)
 
 
+@router.patch(
+    '/{patient_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.Patient,
+    responses={
+        200: {"description": "Patient updated successfully"},
+        400: {"description": "NID is duplicated"},
+        404: {"description": "Patient not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def update_patient(db: DataBaseDep, patient_id: UUID4, patient: model.PatientUpdate):
+    """
+    **Update a patient.**
+
+    Accepts patient information and update his information in the database.
+
+    """
+    return await controller.update_patient_controller(db, patient_id, patient)
+
+
 @router.get('/{patient_id}',
             status_code=status.HTTP_200_OK,
             response_model=model.PatientOut,
@@ -81,3 +101,20 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
 )
 async def upload_excel_patient(db: DataBaseDep, patients: UploadFile):
     return await controller.upload_excel_patients_controller(db, patients)
+
+
+@router.delete(
+    '/{patient_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        204: {"description": "Patient deleted successfully"},
+        404: {"description": "Patient not found"},
+        500: {"description": "Patient Server Error"}
+    }
+)
+async def delete_family(db: DataBaseDep, patient_id: UUID4):
+    """
+    **Delete a patient.**
+    Deletes a patient record from the database based on the patient's UUID.
+    """
+    return await controller.delete_patient_controller(db, patient_id)

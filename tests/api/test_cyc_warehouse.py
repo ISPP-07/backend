@@ -73,8 +73,9 @@ def test_get_all_products_list(
 
 
 def test_create_product(
-        app_client: TestClient,
-        insert_warehouses_with_products):
+    app_client: TestClient,
+    insert_warehouses_with_products
+):
     warehouse_id = str(insert_warehouses_with_products[0]["_id"])
     url = f'{URL_WAREHOUSE}/product/'
     product_data = {
@@ -137,4 +138,6 @@ def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
     # Compare db data with excel data
     assert first_product['name'] == ws.cell(row=2, column=1).value
     assert first_product['quantity'] == ws.cell(row=2, column=2).value
-    assert first_product['exp_date'] == ws.cell(row=2, column=3).value
+    assert first_product['exp_date'] == ws.cell(
+        row=2, column=3
+    ).value.date().isoformat()

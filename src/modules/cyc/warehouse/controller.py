@@ -31,7 +31,7 @@ async def create_product_controller(
     result = []
     warehouses_id = [p.warehouse_id for p in create_products.products]
     warehouses = await service.get_warehouses_service(db, query={'id': {'$in': warehouses_id}})
-    products_by_warehouse: dict[UUID4, list[model.Product]] = {}
+    products_by_warehouse: dict[UUID4, list[dict]] = {}
     products_count = Counter([p.name for p in create_products.products])
     if any(count > 1 for count in products_count.values()):
         raise HTTPException(
@@ -59,12 +59,12 @@ async def create_product_controller(
             name=product.name,
             quantity=product.quantity,
             exp_date=product.exp_date
-        )
+        ).model_dump()
         if warehouse.id not in products_by_warehouse:
             products_by_warehouse[warehouse.id] = []
         products_by_warehouse[warehouse.id].append(new_product)
         result.append(model.ProductOut(
-            id=new_product.id,
+            id=new_product['id'],
             warehouse_id=warehouse.id,
             name=product.name,
             quantity=product.quantity,
@@ -72,12 +72,14 @@ async def create_product_controller(
         ))
     for key, value in products_by_warehouse.items():
         warehouse = [w for w in warehouses if w.id == key][0]
+        warehouse_products = [
+            p.model_dump() for p
+            in warehouse.products
+        ]
         await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update=model.WarehouseUpdate(
-                products=warehouse.products + value
-            )
+            warehouse_update={'products': warehouse_products + value}
         )
     return result
 
@@ -195,7 +197,7 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='The excel file is incorrect'
         )
-    products_excel: dict[str, list[model.Product]] = {}
+    products_excel: dict[str, list[dict]] = {}
     for row in ws.iter_rows(min_row=2, min_col=1, max_col=4, values_only=True):
         if all(value is None for value in row):
             continue
@@ -220,12 +222,12 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
         if warehouse_name not in products_excel:
             products_excel[warehouse_name] = []
         if new_product.name in [
-                p.name for p in products_excel.get(warehouse_name)]:
+                p['name'] for p in products_excel.get(warehouse_name)]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='There cannot be duplicated products'
             )
-        products_excel.get(warehouse_name).append(new_product)
+        products_excel.get(warehouse_name).append(new_product.model_dump())
     for key, value in products_excel.items():
         warehouse = await service.get_warehouse_service(db, query={'name': key})
         if warehouse is None:
@@ -233,20 +235,20 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f'Warehouse {key} not found'
             )
-        products_names = [p.name for p in value]
+        products_names = [p['name'] for p in value]
         updated = []
         for product in warehouse.products:
             if product.name in products_names:
                 new_p = next(
-                    (p for p in value if p.name == product.name),
+                    (p for p in value if p['name'] == product.name),
                     None
                 )
                 p = model.Product(
                     id=product.id,
-                    name=new_p.name,
-                    quantity=new_p.quantity,
-                    exp_date=new_p.exp_date,
-                )
+                    name=new_p['name'],
+                    quantity=new_p['quantity'],
+                    exp_date=new_p['exp_date'],
+                ).model_dump()
                 updated.append(p)
                 value.remove(new_p)
                 continue
@@ -255,7 +257,5 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
         await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update=model.WarehouseUpdate(
-                products=new_products
-            )
+            warehouse_update={'products': new_products}
         )

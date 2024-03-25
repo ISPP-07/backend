@@ -4,10 +4,10 @@ import os
 from fastapi import HTTPException, status, UploadFile
 import openpyxl
 
-from src.core.utils.helpers import parse_validation_error
-from src.modules.acat.patient import service
-from src.modules.acat.patient import model
+from src.core.utils.helpers import parse_validation_error, generate_alias
 from src.core.deps import DataBaseDep
+from src.modules.acat.patient import model
+from src.modules.acat.patient import service
 
 
 async def get_patients_controller(db: DataBaseDep):
@@ -20,6 +20,10 @@ async def create_patient_controller(db: DataBaseDep, patient: model.PatientCreat
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f'There is already one patient with nid {patient.nid}'
+        )
+    if patient.alias is None:
+        patient.alias = generate_alias(
+            patient.name, patient.first_surname, patient.second_surname
         )
     mongo_insert = await service.create_patient_service(db, patient)
     result = await service.get_patient_service(db, query={'id': mongo_insert.inserted_id})
@@ -93,6 +97,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 name=row[0],
                 first_surname=row[1],
                 second_surname=row[2],
+                alias=generate_alias(row[0], row[1], row[2]),
                 nid=row[3],
                 birth_date=row[4],
                 gender='Man' if row[5] == 'Hombre' else 'Woman',
@@ -100,7 +105,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 contact_phone=str(row[7]),
                 dossier_number=row[8],
                 first_technician=row[9],
-                observations=row[10],
+                observation=row[10],
             )
         except ValidationError as e:
             raise HTTPException(
@@ -123,3 +128,42 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                     update=update_patient,
                     upsert=True,
                 )
+
+
+async def update_patient_controller(
+    db: DataBaseDep,
+    patient_id: UUID4,
+    patient: model.PatientUpdate
+) -> model.Patient:
+    patient_db = await service.get_patient_service(db, query={'id': patient_id})
+    if patient_db is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Patient not found',
+        )
+    if patient.nid is not None:
+        check_nid = await service.get_patient_service(db, query={'nid': patient.nid})
+        if check_nid is not None and check_nid.id != patient_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'There is already a patient with nid {patient.nid}',
+            )
+    request_none_fields = [
+        field for field in model.PATIENT_NONE_FIELDS
+        if field in patient.update_fields_to_none
+    ]
+    update_data = patient.model_dump(exclude='update_fields_to_none')
+    patient.first_surname
+    patient.second_surname
+    patient.name
+    for field in update_data.copy():
+        if field in request_none_fields:
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
+    updated_patient = await service.update_patient_service(db, patient_id, update_data)
+    return updated_patient
+
+
+async def delete_patient_controller(db: DataBaseDep, patient_id: UUID4):
+    await service.delete_patient_service(db, query={'id': patient_id})
