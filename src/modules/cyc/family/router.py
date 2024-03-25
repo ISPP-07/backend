@@ -29,16 +29,12 @@ async def get_families(db: DataBaseDep):
     return await controller.get_families_controller(db)
 
 
-@router.post(
-    '',
-    status_code=status.HTTP_201_CREATED,
-    response_model=Family,
-    responses={
-        201: {"description": "Family created successfully"},
-        400: {"description": "Bad Request - Invalid data input for creating a family"},
-        500: {"description": "Internal Server Error"}
-    }
-)
+@router.post('',
+             status_code=status.HTTP_201_CREATED,
+             response_model=Family,
+             responses={201: {"description": "Family created successfully"},
+                        400: {"description": "Bad Request - Invalid data input for creating a family"},
+                        500: {"description": "Internal Server Error"}})
 async def create_family(db: DataBaseDep, family: FamilyCreate):
     """
     **Create a new family.**

@@ -189,7 +189,8 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
         ws.cell(row=1, column=i).value
         for i in range(1, len(fields_excel) + 1)
     ]
-    if len(first_row) != len(fields_excel) and not all(field in fields_excel for field in first_row):
+    if len(first_row) != len(fields_excel) and not all(
+            field in fields_excel for field in first_row):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='The excel file is incorrect'
@@ -218,7 +219,8 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
             )
         if warehouse_name not in products_excel:
             products_excel[warehouse_name] = []
-        if new_product.name in [p.name for p in products_excel.get(warehouse_name)]:
+        if new_product.name in [
+                p.name for p in products_excel.get(warehouse_name)]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='There cannot be duplicated products'
