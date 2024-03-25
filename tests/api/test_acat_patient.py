@@ -133,7 +133,7 @@ def test_get_patients(app_client: TestClient, insert_patients_mongo):
 
 def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
     patient = insert_patients_mongo[0]
-    url = f'{URL_PATIENT}/{patient['_id']}'
+    url = f"{URL_PATIENT}/{patient['_id']}"
     updated_fields = ['name', 'gender', 'second_surname', 'birth_date']
     not_updated_fields = [
         'dossier_number', 'first_surname', 'address', 'contact_phone',
@@ -162,7 +162,7 @@ def test_delete_patient(
         app_client: TestClient,
         insert_patient_to_delete,
         mongo_db: Database):
-    url = f'{URL_PATIENT}/{insert_patient_to_delete['_id']}'
+    url = f"{URL_PATIENT}/{insert_patient_to_delete['_id']}"
     response = app_client.delete(url=url)
     assert response.status_code == 204
     deleted_patient = mongo_db["Patient"].find_one(
