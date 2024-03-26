@@ -21,17 +21,13 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      mongodb:
-        image: mongo:latest
-        env:
-          MONGO_INITDB_ROOT_USERNAME: mongouser
-          MONGO_INITDB_ROOT_PASSWORD: mongopass
-        ports:
-          - 27017:27017
-        options: --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongo localhost:27017/test --username mongouser --password mongopass --authenticationDatabase admin" --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@v1
+      with:
+        mongodb-port: 27017
+        mongodb-username: 'mongouser'
+        mongodb-password: 'mongopass' 
     - uses: actions/checkout@v3
     - name: Set up Python ${{matrix.pyversion}}
       uses: actions/setup-python@v4
