@@ -1,0 +1,209 @@
+{
+    "Patient": [
+        {
+            "_id": "e99312b0-db90-4e49-bac5-763844e89398",
+            "name": "Eva Mar\u00eda",
+            "first_surname": "Corbacho",
+            "second_surname": "Osuna",
+            "alias": "emcoos",
+            "nid": "2951073N",
+            "birth_date": "1990-01-21T00:00:00",
+            "gender": "Woman",
+            "address": "Calle Albano Gonzalez 11\nSevilla, 23762",
+            "contact_phone": "+34 744 25 66 06",
+            "dossier_number": "AykaG-4887091",
+            "first_technician": "Mar\u00eda Vilaplana Colomer",
+            "observations": "Muestra signos de ansiedad, es necesario ajustar el tratamiento."
+        },
+        {
+            "_id": "2dde0b45-61e5-4368-b9bc-d9aac8e5eb53",
+            "name": "Cebri\u00e1n",
+            "first_surname": "Murcia",
+            "second_surname": "G\u00e1mez",
+            "alias": "cemug\u00e1",
+            "nid": "23659072F",
+            "birth_date": "1956-10-21T00:00:00",
+            "gender": "Woman",
+            "address": "Avenida Te\u00f3filo Calleja 172\nGuip\u00fazcoa, 00715",
+            "contact_phone": "+34 702 73 85 26",
+            "dossier_number": "sJEcX-5476048",
+            "first_technician": "Marianela del Arenas",
+            "observations": "Paciente muestra una actitud positiva hacia el tratamiento."
+        },
+        {
+            "_id": "54e809a6-5b33-4bc2-8ef7-98285f4bcbf0",
+            "name": "Xavier",
+            "first_surname": "Prats",
+            "second_surname": "Carretero",
+            "alias": "xaprca",
+            "nid": "54194274H",
+            "birth_date": "1970-05-22T00:00:00",
+            "gender": "Man",
+            "address": "Callej\u00f3n Manola Aramburu 59\nValladolid, 64319",
+            "contact_phone": "+34 733 98 52 25",
+            "dossier_number": "sOsuF-0909255",
+            "first_technician": "Mar\u00eda Carmen Rosa Dom\u00ednguez",
+            "observations": "Ha compartido experiencias personales en las sesiones, lo que contribuye a su proceso de recuperaci\u00f3n."
+        },
+        {
+            "_id": "ae2d1cd2-d048-47b9-b87c-872ba63a06ef",
+            "name": "Abel",
+            "first_surname": "Chico",
+            "second_surname": "Arranz",
+            "alias": "abchar",
+            "nid": "59309320W",
+            "birth_date": "1940-05-05T00:00:00",
+            "gender": "Man",
+            "address": "Callej\u00f3n de Mariana Exp\u00f3sito 9\nCuenca, 82129",
+            "contact_phone": "+34 688 966 444",
+            "dossier_number": "uvmTY-0644888",
+            "first_technician": "Rosa Mar\u00eda Cifuentes Aguado",
+            "observations": "Paciente muestra una actitud positiva hacia el tratamiento."
+        },
+        {
+            "_id": "b3a5713a-c8c4-47e5-934d-ad38e6628c8b",
+            "name": "Maricela",
+            "first_surname": "Vidal",
+            "second_surname": "Cort\u00e9s",
+            "alias": "mavico",
+            "nid": "88735048J",
+            "birth_date": "2018-09-04T00:00:00",
+            "gender": "Man",
+            "address": "Calle de Chita Requena 630 Puerta 2 \nSanta Cruz de Tenerife, 70393",
+            "contact_phone": "+34 826 19 73 78",
+            "dossier_number": "rqBWZ-0985603",
+            "first_technician": "Jose Francisco de Paula Santander",
+            "observations": "Se observa una notable mejora en el comportamiento y en la interacci\u00f3n con el grupo."
+        }
+    ],
+    "User": [
+        {
+            "_id": "679c787b-7b28-413e-bfce-53d04b59c21b",
+            "username": "root",
+            "password": "$2b$12$mIuh2biooN3X0F2IexgS0O42dIFpv0mXTbhH7ow8.twcpimC4XcWK",
+            "email": "root@root.com"
+        }
+    ],
+    "Intervention": [
+        {
+            "_id": "94a40c42-9c7a-4d38-887b-3a0f91b0082c",
+            "date": "2019-10-10T00:00:00",
+            "reason": "Consulta urgente",
+            "typology": "Consulta m\u00e9dica",
+            "observations": "El paciente acude a la sesi\u00f3n con actitud positiva, dispuesto a participar activamente.",
+            "technician": "Mar\u00eda Vilaplana Colomer",
+            "patient": {
+                "id": "e99312b0-db90-4e49-bac5-763844e89398",
+                "name": "Eva Mar\u00eda",
+                "first_surname": "Corbacho",
+                "second_surname": "Osuna",
+                "alias": "emcoos",
+                "nid": "2951073N",
+                "birth_date": "1990-01-21T00:00:00",
+                "gender": "Woman",
+                "address": "Calle Albano Gonzalez 11\nSevilla, 23762",
+                "contact_phone": "+34 744 25 66 06",
+                "dossier_number": "AykaG-4887091",
+                "first_technician": "Mar\u00eda Vilaplana Colomer",
+                "registration_date": "2024-03-21T00:00:00",
+                "observations": "Muestra signos de ansiedad, es necesario ajustar el tratamiento."
+            }
+        },
+        {
+            "_id": "fca46342-fa47-4cf2-a1ae-27c18c9a8d89",
+            "date": "2020-03-21T00:00:00",
+            "reason": "Seguimiento mensual",
+            "typology": "Consulta m\u00e9dica",
+            "observations": "Muestra inter\u00e9s en las terapias grupales, se siente m\u00e1s c\u00f3modo en las sesiones.",
+            "technician": "Marianela del Arenas",
+            "patient": {
+                "id": "2dde0b45-61e5-4368-b9bc-d9aac8e5eb53",
+                "name": "Cebri\u00e1n",
+                "first_surname": "Murcia",
+                "second_surname": "G\u00e1mez",
+                "alias": "cemug\u00e1",
+                "nid": "23659072F",
+                "birth_date": "1956-10-21T00:00:00",
+                "gender": "Woman",
+                "address": "Avenida Te\u00f3filo Calleja 172\nGuip\u00fazcoa, 00715",
+                "contact_phone": "+34 702 73 85 26",
+                "dossier_number": "sJEcX-5476048",
+                "first_technician": "Marianela del Arenas",
+                "registration_date": "2024-03-21T00:00:00",
+                "observations": "Paciente muestra una actitud positiva hacia el tratamiento."
+            }
+        },
+        {
+            "_id": "cd249649-3cde-4e89-a055-f84e4053cbc1",
+            "date": "2020-11-29T00:00:00",
+            "reason": "Primera visita",
+            "typology": "Consulta m\u00e9dica",
+            "observations": "El paciente refiere sentirse m\u00e1s animado y con ganas de seguir adelante con el tratamiento.",
+            "technician": "Mar\u00eda Carmen Rosa Dom\u00ednguez",
+            "patient": {
+                "id": "54e809a6-5b33-4bc2-8ef7-98285f4bcbf0",
+                "name": "Xavier",
+                "first_surname": "Prats",
+                "second_surname": "Carretero",
+                "alias": "xaprca",
+                "nid": "54194274H",
+                "birth_date": "1970-05-22T00:00:00",
+                "gender": "Man",
+                "address": "Callej\u00f3n Manola Aramburu 59\nValladolid, 64319",
+                "contact_phone": "+34 733 98 52 25",
+                "dossier_number": "sOsuF-0909255",
+                "first_technician": "Mar\u00eda Carmen Rosa Dom\u00ednguez",
+                "registration_date": "2024-03-21T00:00:00",
+                "observations": "Ha compartido experiencias personales en las sesiones, lo que contribuye a su proceso de recuperaci\u00f3n."
+            }
+        },
+        {
+            "_id": "79adac5c-32d2-4e6f-ad8f-e3bfdb75d279",
+            "date": "2020-08-15T00:00:00",
+            "reason": "Primera visita",
+            "typology": "Consulta m\u00e9dica",
+            "observations": "El paciente refiere sentirse m\u00e1s animado y con ganas de seguir adelante con el tratamiento.",
+            "technician": "Rosa Mar\u00eda Cifuentes Aguado",
+            "patient": {
+                "id": "ae2d1cd2-d048-47b9-b87c-872ba63a06ef",
+                "name": "Abel",
+                "first_surname": "Chico",
+                "second_surname": "Arranz",
+                "alias": "abchar",
+                "nid": "59309320W",
+                "birth_date": "1940-05-05T00:00:00",
+                "gender": "Man",
+                "address": "Callej\u00f3n de Mariana Exp\u00f3sito 9\nCuenca, 82129",
+                "contact_phone": "+34 688 966 444",
+                "dossier_number": "uvmTY-0644888",
+                "first_technician": "Rosa Mar\u00eda Cifuentes Aguado",
+                "registration_date": "2024-03-21T00:00:00",
+                "observations": "Paciente muestra una actitud positiva hacia el tratamiento."
+            }
+        },
+        {
+            "_id": "6592f7c1-5943-4c59-b36d-d21b9ba7c8f3",
+            "date": "2015-08-15T00:00:00",
+            "reason": "Primera visita",
+            "typology": "Consulta urgente",
+            "observations": "El paciente acude a la sesi\u00f3n con actitud positiva, dispuesto a participar activamente.",
+            "technician": "Jose Francisco de Paula Santander",
+            "patient": {
+                "id": "b3a5713a-c8c4-47e5-934d-ad38e6628c8b",
+                "name": "Maricela",
+                "first_surname": "Vidal",
+                "second_surname": "Cort\u00e9s",
+                "alias": "mavico",
+                "nid": "88735048J",
+                "birth_date": "2018-09-04T00:00:00",
+                "gender": "Man",
+                "address": "Calle de Chita Requena 630 Puerta 2 \nSanta Cruz de Tenerife, 70393",
+                "contact_phone": "+34 826 19 73 78",
+                "dossier_number": "rqBWZ-0985603",
+                "first_technician": "Jose Francisco de Paula Santander",
+                "registration_date": "2024-03-21T00:00:00",
+                "observations": "Se observa una notable mejora en el comportamiento y en la interacci\u00f3n con el grupo."
+            }
+        }
+    ]
+}

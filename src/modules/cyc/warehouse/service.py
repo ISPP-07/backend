@@ -17,10 +17,11 @@ async def get_warehouse_service(db: DataBaseDep, query: dict) -> model.Warehouse
 
 async def create_warehouse_service(
     db: DataBaseDep,
-    warehouse: model.WarehouseCreate
+    warehouse: dict
 ) -> InsertOneResultMongo:
     result: InsertOneResultMongo = await model.Warehouse.create(
-        db, obj_to_create=warehouse.model_dump())
+        db, obj_to_create=warehouse
+    )
     if not result.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -32,12 +33,12 @@ async def create_warehouse_service(
 async def update_warehouse_service(
     db: DataBaseDep,
     warehouse_id: UUID4,
-    warehouse_update: model.WarehouseUpdate
+    warehouse_update: dict
 ) -> model.Warehouse | None:
     return await model.Warehouse.update(
         db,
         query={'id': warehouse_id},
-        data_to_update=warehouse_update.model_dump()
+        data_to_update=warehouse_update
     )
 
 
@@ -48,3 +49,19 @@ async def delete_warehouse_service(db: DataBaseDep, warehouse_id: UUID4) -> None
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
         )
+
+
+async def get_products_service(db: DataBaseDep) -> list[model.ProductOut]:
+    warehouses = await get_warehouses_service(db, query=None)
+    result = [
+        model.ProductOut(
+            id=product.id,
+            name=product.name,
+            quantity=product.quantity,
+            exp_date=product.exp_date,
+            warehouse_id=warehouse.id,
+        )
+        for warehouse in warehouses
+        for product in warehouse.products
+    ]
+    return result
