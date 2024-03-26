@@ -53,21 +53,22 @@ async def delete_delivery_service(db: DataBaseDep, query: dict) -> model.Deliver
         product.id: (
             warehouse,
             product) for warehouse in warehouses for product in warehouse.products}
-    for line in delivery.lines:
-        warehouse, product = product_to_warehouse[line.product_id]
-        updated_products = [
-            p for p in warehouse.products if p.id != line.product_id] + [
-            warehouse_model.Product(
-                id=product.id,
-                name=product.name,
-                quantity=product.quantity + line.quantity,
-                exp_date=product.exp_date)]
-        await warehouse_service.update_warehouse_service(
-            db,
-            warehouse_id=warehouse.id,
-            warehouse_update=warehouse_model.WarehouseUpdate(
-                products=updated_products)
-        )
+    if delivery.state != model.State.DELIVERED:
+        for line in delivery.lines:
+            warehouse, product = product_to_warehouse[line.product_id]
+            updated_products = [
+                p for p in warehouse.products if p.id != line.product_id] + [
+                warehouse_model.Product(
+                    id=product.id,
+                    name=product.name,
+                    quantity=product.quantity + line.quantity,
+                    exp_date=product.exp_date)]
+            await warehouse_service.update_warehouse_service(
+                db,
+                warehouse_id=warehouse.id,
+                warehouse_update=warehouse_model.WarehouseUpdate(
+                    products=updated_products)
+            )
 
     mongo_delete: DeleteResultMongo = await model.Delivery.delete(db, query)
     if mongo_delete.deleted_count == 0:
