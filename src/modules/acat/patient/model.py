@@ -65,6 +65,7 @@ class PatientUpdate(BaseModel):
     address: Optional[str] = None
     contact_phone: Optional[str] = None
     dossier_number: Optional[str] = None
+    is_rehabilitated: Optional[bool] = None
     first_technician: Optional[str] = None
     registration_date: Optional[date] = None
     observation: Optional[str] = None
