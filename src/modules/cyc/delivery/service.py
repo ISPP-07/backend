@@ -31,9 +31,9 @@ async def create_delivery_service(
 async def update_delivery_service(
     db: DataBaseDep,
     query: dict,
-    delivery: model.DeliveryUpdate,
+    delivery: dict,
 ) -> model.Delivery | None:
-    delivery_db: model.Delivery | None = await model.Delivery.update(db, query, delivery.model_dump())
+    delivery_db: model.Delivery | None = await model.Delivery.update(db, query, delivery)
     if delivery_db is None:
         return None
     result = model.Delivery(id=delivery_db.id,
