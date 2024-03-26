@@ -107,7 +107,9 @@ def test_create_intervention(app_client: TestClient, insert_patients_mongo):
     assert response_data["technician"] == intervention_data["technician"]
 
 
-def test_update_intervention(app_client: TestClient, insert_interventions_mongo: list):
+def test_update_intervention(
+        app_client: TestClient,
+        insert_interventions_mongo: list):
     # Select an intervention to update
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
@@ -135,7 +137,10 @@ def test_update_intervention(app_client: TestClient, insert_interventions_mongo:
     assert result["technician"] == updated_data["technician"]
 
 
-def test_delete_intervention(app_client: TestClient, insert_interventions_mongo, mongo_db: Database):
+def test_delete_intervention(
+        app_client: TestClient,
+        insert_interventions_mongo,
+        mongo_db: Database):
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
     url = f"{settings.API_STR}acat/intervention/{intervention_id}"
