@@ -33,12 +33,12 @@ async def create_warehouse_service(
 async def update_warehouse_service(
     db: DataBaseDep,
     warehouse_id: UUID4,
-    warehouse_update: model.WarehouseUpdate
+    warehouse_update: dict
 ) -> model.Warehouse | None:
     return await model.Warehouse.update(
         db,
         query={'id': warehouse_id},
-        data_to_update=warehouse_update.model_dump()
+        data_to_update=warehouse_update
     )
 
 

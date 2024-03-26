@@ -25,7 +25,7 @@ async def create_product_controller(
     result = []
     warehouses_id = [p.warehouse_id for p in create_products.products]
     warehouses = await service.get_warehouses_service(db, query={'id': {'$in': warehouses_id}})
-    products_by_warehouse: dict[UUID4, list[model.Product]] = {}
+    products_by_warehouse: dict[UUID4, list[dict]] = {}
     products_count = Counter([p.name for p in create_products.products])
     if any(count > 1 for count in products_count.values()):
         raise HTTPException(
@@ -53,12 +53,12 @@ async def create_product_controller(
             name=product.name,
             quantity=product.quantity,
             exp_date=product.exp_date
-        )
+        ).model_dump()
         if warehouse.id not in products_by_warehouse:
             products_by_warehouse[warehouse.id] = []
         products_by_warehouse[warehouse.id].append(new_product)
         result.append(model.ProductOut(
-            id=new_product.id,
+            id=new_product['id'],
             warehouse_id=warehouse.id,
             name=product.name,
             quantity=product.quantity,
@@ -66,12 +66,14 @@ async def create_product_controller(
         ))
     for key, value in products_by_warehouse.items():
         warehouse = [w for w in warehouses if w.id == key][0]
+        warehouse_products = [
+            p.model_dump() for p
+            in warehouse.products
+        ]
         await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update=model.WarehouseUpdate(
-                products=warehouse.products + value
-            )
+            warehouse_update={'products': warehouse_products + value}
         )
     return result
 
