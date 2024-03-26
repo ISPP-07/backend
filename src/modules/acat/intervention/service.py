@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
 from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
@@ -37,15 +38,14 @@ async def create_intervention_service(db: DataBaseDep, intervention_data: model.
 
 async def update_intervention_service(
     db: DataBaseDep,
-    query: dict,
-    intervention: model.InterventionUpdate,
-) -> model.Intervention:
-    result = await model.Intervention.update(
+    intervention_id: UUID4,
+    updated_intervention_data: dict,
+) -> model.Intervention | None:
+    return await model.Intervention.update(
         db,
-        query=query,
-        data_to_update=intervention.model_dump()
+        query={'id': intervention_id},
+        data_to_update=updated_intervention_data
     )
-    return result
 
 
 async def delete_intervention_service(db: DataBaseDep, query: dict) -> model.Intervention:
