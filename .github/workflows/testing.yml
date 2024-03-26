@@ -12,7 +12,6 @@ on:
       CODACY_PROJECT_TOKEN:
         required: true
 
-
 jobs:
   build:
     if: ${{ github.event.label.name == 'ready' }}
@@ -23,23 +22,21 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:16.1
+      mongodb:
+        image: mongo:latest
         env:
-          POSTGRES_USER: postgreuser
-          POSTGRES_PASSWORD: 123
-          POSTGRES_DB: test_db
+          MONGO_INITDB_ROOT_USERNAME: mongouser
+          MONGO_INITDB_ROOT_PASSWORD: mongopass
         ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+          - 27017:27017
+        options: --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongo localhost:27017/test --username mongouser --password mongopass --authenticationDatabase admin" --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{matrix.pyversion}}
       uses: actions/setup-python@v4
       with:
         python-version: ${{matrix.pyversion}}
-    - name: psycopg prerequisites
-      run: sudo apt-get install libpq-dev
     - name: Install pipenv
       run: pip install pipenv
     - name: Env setup
