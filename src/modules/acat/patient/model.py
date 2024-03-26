@@ -61,6 +61,7 @@ class PatientOut(BaseModel):
     address: Optional[str]
     contact_phone: Optional[str]
     dossier_number: str
+    is_rehabilitated: bool
     registration_date: date
     first_technician: Optional[str]
     observations: Optional[str]
