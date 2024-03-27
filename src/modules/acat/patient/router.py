@@ -112,7 +112,7 @@ async def upload_excel_patient(db: DataBaseDep, patients: UploadFile):
         500: {"description": "Patient Server Error"}
     }
 )
-async def delete_family(db: DataBaseDep, patient_id: UUID4):
+async def delete_patient(db: DataBaseDep, patient_id: UUID4):
     """
     **Delete a patient.**
     Deletes a patient record from the database based on the patient's UUID.

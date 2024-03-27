@@ -80,3 +80,19 @@ async def delete_warehouse_service(db: DataBaseDep, warehouse_id: UUID4) -> None
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
         )
+
+
+async def get_products_service(db: DataBaseDep) -> list[model.ProductOut]:
+    warehouses = await get_warehouses_service(db, query=None)
+    result = [
+        model.ProductOut(
+            id=product.id,
+            name=product.name,
+            quantity=product.quantity,
+            exp_date=product.exp_date,
+            warehouse_id=warehouse.id,
+        )
+        for warehouse in warehouses
+        for product in warehouse.products
+    ]
+    return result

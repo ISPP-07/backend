@@ -34,12 +34,12 @@ async def login_service(db: DataBaseDep,
     return user
 
 
-async def create_user_secret(db: DataBaseDep, model: model.UserSecretCreate) -> model.UserSecretOut | None:
-    user = await model.UserSecret.get(db, query={'email': model.email})
+async def create_user_secret(db: DataBaseDep, user_create: model.UserSecretCreate) -> model.UserSecretOut | None:
+    user = await model.UserSecret.get(db, query={'email': user_create.email})
     if user:
-        result = await model.UserSecret.update(db, {'email': model.email}, model.model_dump())
+        result = await model.UserSecret.update(db, {'email': user_create.email}, user_create.model_dump())
     else:
-        insert_mongo: InsertOneResultMongo = await model.UserSecret.create(db, model.model_dump())
+        insert_mongo: InsertOneResultMongo = await model.UserSecret.create(db, user_create.model_dump())
         if not insert_mongo.acknowledged:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

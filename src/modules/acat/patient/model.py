@@ -30,6 +30,7 @@ class Patient(BaseMongo):
     address: Optional[str]
     contact_phone: Optional[str]
     dossier_number: str
+    is_rehabilitated: bool = False
     first_technician: Optional[str]
     registration_date: date = date.today()  # Must be auto-generated
     observation: Optional[str]
@@ -49,6 +50,7 @@ class PatientCreate(BaseModel):
     address: Optional[str] = None
     contact_phone: Optional[str] = None
     dossier_number: str
+    is_rehabilitated: bool = False
     first_technician: Optional[str] = None
     observation: Optional[str] = None
 
@@ -64,6 +66,7 @@ class PatientUpdate(BaseModel):
     address: Optional[str] = None
     contact_phone: Optional[str] = None
     dossier_number: Optional[str] = None
+    is_rehabilitated: Optional[bool] = None
     first_technician: Optional[str] = None
     registration_date: Optional[date] = None
     observation: Optional[str] = None
@@ -82,6 +85,7 @@ class PatientOut(BaseModel):
     address: Optional[str]
     contact_phone: Optional[str]
     dossier_number: str
+    is_rehabilitated: bool
     registration_date: date
     first_technician: Optional[str]
     observation: Optional[str]
