@@ -24,6 +24,19 @@ async def create_user(db: DataBaseDep, user: model.UserCreate):
     return await controller.create_user_controller(db, user)
 
 
+@router.get('/',
+            status_code=status.HTTP_200_OK,
+            responses={
+                status.HTTP_200_OK: {"description": "User found"}
+            },
+            response_model=list[model.UserOut])
+async def get_user(db: DataBaseDep):
+    '''
+    Get all users
+    '''
+    return await controller.get_users_controller(db)
+
+
 @router.get('/{user_id}',
             status_code=status.HTTP_200_OK,
             responses={
