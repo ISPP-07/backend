@@ -27,7 +27,7 @@ async def create_user(db: DataBaseDep, user: model.UserCreate):
 @router.get('/',
             status_code=status.HTTP_200_OK,
             responses={
-                status.HTTP_200_OK: {"description": "User found"}
+                status.HTTP_200_OK: {"description": "Successful Response"}
             },
             response_model=list[model.UserOut])
 async def get_user(db: DataBaseDep):
@@ -40,8 +40,7 @@ async def get_user(db: DataBaseDep):
 @router.get('/{user_id}',
             status_code=status.HTTP_200_OK,
             responses={
-                status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-                status.HTTP_200_OK: {"description": "User found"}
+                status.HTTP_200_OK: {"description": "Successful Response"}
             },
             response_model=model.UserOut)
 async def get_user(db: DataBaseDep, user_id: UUID4):
