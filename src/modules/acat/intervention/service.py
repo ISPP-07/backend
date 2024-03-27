@@ -51,14 +51,14 @@ async def update_intervention_service(
 async def delete_intervention_service(db: DataBaseDep, query: dict) -> model.Intervention:
     mongo_delete: DeleteResultMongo = await model.Intervention.delete(db, query)
 
-    if mongo_delete.deleted_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Intervention not found',
-        )
-
     if not mongo_delete.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
+        )
+
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Intervention not found',
         )

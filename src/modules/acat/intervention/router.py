@@ -94,7 +94,7 @@ async def update_intervention(db: DataBaseDep, intervention_id: UUID4, intervent
                    404: {"description": "Intervention not found"},
                    500: {"description": "Internal Server Error"}
                })
-async def delete_family(db: DataBaseDep, intervention_id: UUID4):
+async def delete_intervention(db: DataBaseDep, intervention_id: UUID4):
     """
     **Delete an intervention.**
 
