@@ -1,12 +1,14 @@
 import datetime
 import pytest_asyncio
 from uuid import uuid4
-from pymongo.database import Database
 
+from pymongo.database import Database
 from fastapi.testclient import TestClient
 
 from src.core.config import settings
 from src.core.utils.helpers import generate_alias
+
+URL_INTERVENTION = f'{settings.API_STR}acat/intervention'
 
 
 @pytest_asyncio.fixture
@@ -63,11 +65,33 @@ async def insert_interventions_mongo(mongo_db: Database):
     yield result
 
 
+@pytest_asyncio.fixture()
+async def insert_patient_mongo(mongo_db: Database):
+    patient = {
+        "_id": uuid4(),
+        "name": "Paciente 1",
+        "first_surname": "AAA",
+        "second_surname": "BBB",
+        "alias": "Paciente 1 AAA BBB",
+        "nid": "12343456M",
+        "birth_date": "2023-02-28",
+        "gender": "Man",
+        "address": "Calle 1",
+        "contact_phone": "123123123",
+        "dossier_number": "1",
+        "first_technician": "string",
+        "registration_date": datetime.date.today().isoformat(),
+        "observation": "string"
+    }
+    mongo_db['Patient'].insert_one(patient)
+    yield patient
+
+
 def test_get_intervention_detail(
         app_client: TestClient,
         insert_interventions_mongo):
     intervention_id = str(insert_interventions_mongo[0]["_id"])
-    url = f'{settings.API_STR}acat/intervention/{intervention_id}'
+    url = f'{URL_INTERVENTION}/{intervention_id}'
     response = app_client.get(url=url)
     assert response.status_code == 200
     result = response.json()
@@ -86,9 +110,8 @@ def test_get_intervention_detail(
     assert result["patient"]["birth_date"] == "2003-03-08"
 
 
-def test_create_intervention(app_client: TestClient, insert_patients_mongo):
-    patient_id = str(insert_patients_mongo[0]["_id"])
-    url = f'{settings.API_STR}acat/intervention/'
+def test_create_intervention(app_client: TestClient, insert_patient_mongo):
+    patient_id = str(insert_patient_mongo["_id"])
     intervention_data = {
         "date": "2023-03-03T00:00:00",
         "reason": "Food intervention",
@@ -97,7 +120,7 @@ def test_create_intervention(app_client: TestClient, insert_patients_mongo):
         "patient_id": patient_id,
         "technician": "John Doe"
     }
-    response = app_client.post(url=url, json=intervention_data)
+    response = app_client.post(url=URL_INTERVENTION, json=intervention_data)
     assert response.status_code == 201
     response_data = response.json()
     assert response_data["date"] == intervention_data["date"]
@@ -107,11 +130,13 @@ def test_create_intervention(app_client: TestClient, insert_patients_mongo):
     assert response_data["technician"] == intervention_data["technician"]
 
 
-def test_update_intervention(app_client: TestClient, insert_interventions_mongo: list):
+def test_update_intervention(
+        app_client: TestClient,
+        insert_interventions_mongo: list):
     # Select an intervention to update
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
-    url = f"{settings.API_STR}acat/intervention/{intervention_id}"
+    url = f"{URL_INTERVENTION}/{intervention_id}"
 
     # Data to update
     updated_data = {
@@ -135,10 +160,13 @@ def test_update_intervention(app_client: TestClient, insert_interventions_mongo:
     assert result["technician"] == updated_data["technician"]
 
 
-def test_delete_intervention(app_client: TestClient, insert_interventions_mongo, mongo_db: Database):
+def test_delete_intervention(
+        app_client: TestClient,
+        insert_interventions_mongo,
+        mongo_db: Database):
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
-    url = f"{settings.API_STR}acat/intervention/{intervention_id}"
+    url = f"{URL_INTERVENTION}/{intervention_id}"
 
     response = app_client.delete(url=url)
     assert response.status_code == 204

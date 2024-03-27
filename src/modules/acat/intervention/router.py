@@ -68,15 +68,19 @@ async def create_intervention(db: DataBaseDep, intervention: model.InterventionC
     return await controller.create_intervention_controller(db, intervention)
 
 
-@router.patch('/{intervention_id}',
-              status_code=status.HTTP_200_OK,
-              response_model=model.Intervention,
-              responses={
-                  200: {"description": "Intervention updated successfully"},
-                  400: {"description": "Bad Request - Invalid data input for updating a intervention"},
-                  404: {"description": "Intervention not found"},
-                  500: {"description": "Internal Server Error"}
-              })
+@router.patch(
+    '/{intervention_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.Intervention,
+    responses={
+        200: {
+            "description": "Intervention updated successfully"},
+        400: {
+            "description": "Bad Request - Invalid data input for updating a intervention"},
+        404: {
+            "description": "Intervention not found"},
+        500: {
+            "description": "Internal Server Error"}})
 async def update_intervention(db: DataBaseDep, intervention_id: UUID4, intervention: model.InterventionUpdate):
     """
     **Update an existing invervention.**
