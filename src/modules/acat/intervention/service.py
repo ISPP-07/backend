@@ -1,7 +1,8 @@
 from fastapi import HTTPException, status
+from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
 from src.modules.acat.intervention import model
 from src.modules.acat.patient import model as patient_model
 
@@ -33,3 +34,31 @@ async def create_intervention_service(db: DataBaseDep, intervention_data: model.
             detail='DB error'
         )
     return result
+
+
+async def update_intervention_service(
+    db: DataBaseDep,
+    intervention_id: UUID4,
+    updated_intervention_data: dict,
+) -> model.Intervention | None:
+    return await model.Intervention.update(
+        db,
+        query={'id': intervention_id},
+        data_to_update=updated_intervention_data
+    )
+
+
+async def delete_intervention_service(db: DataBaseDep, query: dict) -> model.Intervention:
+    mongo_delete: DeleteResultMongo = await model.Intervention.delete(db, query)
+
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Intervention not found',
+        )

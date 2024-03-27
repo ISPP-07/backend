@@ -33,3 +33,33 @@ async def create_intervention_controller(db: DataBaseDep, intervention: model.In
     result = await service.get_intervention_service(db, query={'id': mongo_insert.inserted_id})
 
     return result
+
+
+async def update_intervention_controller(
+    db: DataBaseDep,
+    intervention_id: UUID4,
+    intervention: model.InterventionUpdate
+) -> model.Intervention:
+    intervention_db = await service.get_intervention_service(db, query={'id': intervention_id})
+    if intervention_db is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Intervention not found',
+        )
+    request_none_fields = [
+        field for field in model.INTERVENTION_NONE_FIELDS
+        if field in intervention.update_fields_to_none
+    ]
+    update_data = intervention.model_dump(exclude='update_fields_to_none')
+    for field in update_data.copy():
+        if field in request_none_fields:
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
+    updated_intervention = await service.update_intervention_service(db,
+                                                                     intervention_id, update_data)
+    return updated_intervention
+
+
+async def delete_intervention_controller(db: DataBaseDep, intervention_id: UUID4):
+    await service.delete_intervention_service(db, query={'id': intervention_id})
