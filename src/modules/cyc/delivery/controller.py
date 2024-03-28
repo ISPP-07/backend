@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import Dict
 from pydantic import UUID4
 
 from fastapi import HTTPException, status
@@ -60,7 +61,7 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
 
 
 async def create_delivery_controller(db: DataBaseDep, create_delivery: model.DeliveryCreate) -> model.Delivery:
-    # Validate product uniqueness in lines
+    # Validar la unicidad del producto en las líneas
     products_count = Counter(line.product_id for line in create_delivery.lines)
     if any(count > 1 for count in products_count.values()):
         raise HTTPException(
@@ -69,7 +70,7 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
             'Please put them in a single line'
         )
 
-    # Ensure family exists
+    # Asegurar que la familia existe
     family = await family_service.get_family_service(db, query={'id': create_delivery.family_id})
     if family is None:
         raise HTTPException(
@@ -77,23 +78,22 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
             detail=f'Family {create_delivery.family_id} not found'
         )
 
-    # Fetch warehouses and validate all products exist and have enough stock
+    # Recuperar almacenes y validar que todos los productos existan y tengan
+    # suficiente stock
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_warehouse = {
-        product.id: (
-            warehouse,
-            product) for warehouse in warehouses for product in warehouse.products}
+    product_to_warehouse: Dict[str, tuple] = {product.id: (
+        warehouse, product) for warehouse in warehouses for product in warehouse.products}
 
-    missing_products = [product_id for product_id in products_count
-                        if product_id not in product_to_warehouse]
+    missing_products = [
+        product_id for product_id in products_count if product_id not in product_to_warehouse]
     if missing_products:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Product not found in any warehouse'
         )
 
-    for product_id, required_quantity in ((line.product_id, line.quantity)
-                                          for line in create_delivery.lines):
+    for product_id, required_quantity in (
+            (line.product_id, line.quantity) for line in create_delivery.lines):
         warehouse, product = product_to_warehouse.get(product_id, (None, None))
         if not warehouse or product.quantity < required_quantity:
             raise HTTPException(
@@ -101,25 +101,33 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
                 detail=f'Not enough stock for product {product.name}. ' +
                 f'There is only {product.quantity} left' if warehouse else 'Product not found')
 
-    # Proceed with updating the product quantities in their respective
-    # warehouses
+    # Preparar las actualizaciones por producto
+    product_updates = {}  # Diccionario para acumular actualizaciones
     for line in create_delivery.lines:
         warehouse, product = product_to_warehouse[line.product_id]
-        updated_products = [
-            p.model_dump() for p in warehouse.products if p.id != line.product_id] + [
-            product_model.Product(
-                id=product.id,
-                name=product.name,
-                quantity=product.quantity - line.quantity,
-                exp_date=product.exp_date).model_dump()]
+        if product.id not in product_updates:
+            product_updates[product.id] = product.quantity - line.quantity
+        else:
+            product_updates[product.id] -= line.quantity
+    for warehouse in warehouses:
+        updated_products = []
+        for product in warehouse.products:
+            if product.id in product_updates:
+                updated_product = product_model.Product(
+                    id=product.id,
+                    name=product.name,
+                    quantity=product_updates[product.id],
+                    exp_date=product.exp_date
+                )
+            else:
+                updated_product = product
+            updated_products.append(updated_product.model_dump())
+
         await product_service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
             warehouse_update={'products': updated_products}
         )
-
-    # Create and retrieve the delivery
-    print(create_delivery.dict())
     mongo_insert = await service.create_delivery_service(db, create_delivery)
     result = await service.get_delivery_service(db, query={'id': mongo_insert.inserted_id})
     return result
@@ -127,17 +135,19 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
 
 async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delivery: model.DeliveryUpdate) -> model.Delivery:
     delivery_actual = await service.get_delivery_service(db, query={'id': delivery_id})
-    if delivery_actual.state == model.State.DELIVERED and delivery.state is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Cannot update a delivered delivery'
-        )
     if delivery_actual is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Delivery not found'
         )
-    # Validate product uniqueness in lines
+
+    if delivery_actual.state == model.State.DELIVERED and delivery.state is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Cannot update a delivered delivery'
+        )
+
+    # Validar la unicidad del producto en las líneas
     products_count = Counter(line.product_id for line in delivery.lines)
     if any(count > 1 for count in products_count.values()):
         raise HTTPException(
@@ -146,7 +156,7 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
             'Please put them in a single line'
         )
 
-    # Ensure family exists
+    # Asegurar que la familia existe
     family = await family_service.get_family_service(db, query={'id': delivery.family_id})
     if family is None:
         raise HTTPException(
@@ -160,41 +170,57 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
             warehouse,
             product) for warehouse in warehouses for product in warehouse.products}
 
-    missing_products = [product_id for product_id in products_count
-                        if product_id not in product_to_warehouse]
+    missing_products = [
+        product_id for product_id in products_count if product_id not in product_to_warehouse]
     if missing_products:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Product not found in any warehouse'
         )
 
-    for product_id, new_quantity in ((line.product_id, line.quantity)
-                                     for line in delivery.lines):
-        warehouse, product = product_to_warehouse.get(product_id, (None, None))
-        # Ensure there is no expired product
-        if product.exp_date < delivery.date.date():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Product {product.name} is expired'
-            )
+    # Preparar las actualizaciones por producto
+    product_updates = {}  # Diccionario para acumular diferencias de cantidad
+    for line in delivery.lines:
+        warehouse, product = product_to_warehouse.get(
+            line.product_id, (None, None))
+        if not warehouse or product is None:
+            continue  # Omitir si el producto no se encuentra en ningún almacén
 
-        # update the product quantity
-        old_line = [
-            line.quantity for line in delivery_actual.lines if line.product_id == product.id][0]
-        product_total_quantity = product.quantity + old_line
-        if product_total_quantity < new_quantity:
+        # Calcula la diferencia de cantidad basada en la entrega actual y la
+        # nueva
+        old_quantity = next(
+            (old_line.quantity for old_line in delivery_actual.lines if old_line.product_id == line.product_id),
+            0)
+        quantity_difference = old_quantity - line.quantity
+
+        if product.id not in product_updates:
+            product_updates[product.id] = product.quantity + \
+                quantity_difference
+        else:
+            product_updates[product.id] += quantity_difference
+
+        if product_updates[product.id] < 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Not enough stock for product {product.name}. ' +
-                f'There is only {product_total_quantity} left')
-        product_quantity = product_total_quantity - new_quantity
-        updated_products = [
-            p.model_dump() for p in warehouse.products if p.id != product_id] + [
-            product_model.Product(
-                id=product.id,
-                name=product.name,
-                quantity=product_quantity,
-                exp_date=product.exp_date).model_dump()]
+                detail=f'Not enough stock for product {product.name}.' +
+                f' There is only {product.quantity} left')
+
+    # Proceder con la actualización de las cantidades de los productos en sus
+    # respectivos almacenes
+    for warehouse in warehouses:
+        updated_products = []
+        for product in warehouse.products:
+            if product.id in product_updates:
+                updated_product = product_model.Product(
+                    id=product.id,
+                    name=product.name,
+                    quantity=product_updates[product.id],
+                    exp_date=product.exp_date
+                )
+            else:
+                updated_product = product
+            updated_products.append(updated_product.model_dump())
+
         await product_service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
