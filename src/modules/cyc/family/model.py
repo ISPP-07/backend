@@ -71,7 +71,7 @@ class Person(BaseModel):
     name: Optional[str]
     surname: Optional[str]
     nationality: Optional[str]
-    nid: Optional[str]
+    nid: str
     family_head: bool = False
     gender: Optional[Gender]
     functional_diversity: Optional[bool] = False
