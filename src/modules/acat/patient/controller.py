@@ -4,7 +4,7 @@ import os
 from fastapi import HTTPException, status, UploadFile
 import openpyxl
 
-from src.core.utils.helpers import parse_validation_error, generate_alias
+from src.core.utils.helpers import parse_validation_error, generate_alias, get_valid_mongo_obj
 from src.core.deps import DataBaseDep
 from src.modules.acat.patient import model
 from src.modules.acat.patient import service
@@ -87,7 +87,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
-        if row[5] not in ['Hombre', 'Mujer']:
+        if row[5] is not None and row[5] not in ['Hombre', 'Mujer']:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
@@ -100,7 +100,9 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 alias=generate_alias(row[0], row[1], row[2]),
                 nid=row[3],
                 birth_date=row[4],
-                gender='Man' if row[5] == 'Hombre' else 'Woman',
+                gender=(
+                    'Man' if row[5] == 'Hombre' else 'Woman'
+                ) if row[5] is not None else None,
                 address=row[6],
                 contact_phone=str(row[7]),
                 dossier_number=row[8],
@@ -113,21 +115,24 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 detail=parse_validation_error(e.errors())
             )
         patients_excel.append(new_patient)
-        patients_db = await service.get_patients_service(db, query={'nid': {'$in': [p.nid for p in patients_excel]}})
-        for patient in patients_excel:
-            patient_db: model.Patient | None = next(
-                (p for p in patients_db if p.nid == patient.nid), None
-            )
-            if patient_db is None:
-                await service.create_patient_service(db, patient)
-            else:
-                update_patient = model.PatientUpdate(**patient.model_dump())
-                await service.update_one_patient_service(
-                    db,
-                    query={'nid': patient.nid},
-                    update=update_patient,
-                    upsert=True,
-                )
+    patients_db = await service.get_patients_service(db, query={'nid': {'$in': [p.nid for p in patients_excel]}})
+    nids_db = [p.nid for p in patients_db]
+    patients_create = list(filter(
+        lambda p: p.nid not in nids_db,
+        patients_excel
+    ))
+    patients_update = [
+        (
+            model.Patient.prepare_query({'nid': p.nid}),
+            {'$set': get_valid_mongo_obj(p.model_dump())}
+        )
+        for p in patients_excel
+        if p.nid in nids_db
+    ]
+    if len(patients_create) > 0:
+        await service.bulk_create_service(db, patients=patients_create, ordered=False)
+    if len(patients_update) > 0:
+        await service.bulk_update_service(db, query_and_data=patients_update, ordered=False)
 
 
 async def update_patient_controller(
@@ -158,7 +163,7 @@ async def update_patient_controller(
             continue
         if update_data[field] is None:
             update_data.pop(field)
-    updated_patient = await service.update_patient_service(db, patient_id, update_data)
+    updated_patient = await service.update_patient_service(db, {'id': patient_id}, update_data)
     return updated_patient
 
 

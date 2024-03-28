@@ -1,14 +1,22 @@
-import copy
 from typing import Any, Self
 from uuid import uuid4
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
+from pymongo import (
+    InsertOne,
+    DeleteMany,
+    DeleteOne,
+    ReplaceOne,
+    UpdateOne,
+    UpdateMany,
+)
 
 from src.core.database.mongo_types import (
     DeleteResultMongo,
     InsertOneResultMongo,
     UpdateResult,
     InsertResultMongo,
+    BulkWriteResult,
 )
 from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
 
@@ -191,9 +199,6 @@ class BaseMongo(BaseModel):
             data_to_update.pop('id')
         if '_id' in data_to_update:
             data_to_update.pop('_id')
-        for key, value in copy.deepcopy(data_to_update).items():
-            if value is None:
-                data_to_update.pop(key)
         change_invalid_types_mongo(data_to_update)
         update = {'$set': data_to_update}
         result = await collection.update_many(
@@ -251,6 +256,17 @@ class BaseMongo(BaseModel):
             db: AsyncIOMotorDatabase
     ) -> AsyncIOMotorCollection:
         return db[cls._get_collection_name()]
+
+    @classmethod
+    async def bulk_operation(
+        cls: Self,
+        db: AsyncIOMotorDatabase,
+        operations: list[InsertOne | DeleteMany | DeleteOne | ReplaceOne | UpdateOne | UpdateMany],
+        **kwargs: Any
+    ) -> BulkWriteResult:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        result = await collection.bulk_write(requests=operations, **kwargs)
+        return result
 
     @classmethod
     def from_mongo(cls: Self, data: dict | None):
