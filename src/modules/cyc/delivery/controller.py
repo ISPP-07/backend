@@ -78,10 +78,11 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
             detail=f'Family {create_delivery.family_id} not found'
         )
 
-    # Recuperar almacenes y validar que todos los productos existan y tengan suficiente stock
+    # Recuperar almacenes y validar que todos los productos existan y tengan
+    # suficiente stock
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_warehouse: Dict[str, tuple] = {
-        product.id: (warehouse, product) for warehouse in warehouses for product in warehouse.products}
+    product_to_warehouse: Dict[str, tuple] = {product.id: (
+        warehouse, product) for warehouse in warehouses for product in warehouse.products}
 
     missing_products = [
         product_id for product_id in products_count if product_id not in product_to_warehouse]
@@ -91,7 +92,8 @@ async def create_delivery_controller(db: DataBaseDep, create_delivery: model.Del
             detail='Product not found in any warehouse'
         )
 
-    for product_id, required_quantity in ((line.product_id, line.quantity) for line in create_delivery.lines):
+    for product_id, required_quantity in (
+            (line.product_id, line.quantity) for line in create_delivery.lines):
         warehouse, product = product_to_warehouse.get(product_id, (None, None))
         if not warehouse or product.quantity < required_quantity:
             raise HTTPException(
@@ -164,7 +166,9 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
 
     warehouses = await product_service.get_warehouses_service(db, query=None)
     product_to_warehouse = {
-        product.id: (warehouse, product) for warehouse in warehouses for product in warehouse.products}
+        product.id: (
+            warehouse,
+            product) for warehouse in warehouses for product in warehouse.products}
 
     missing_products = [
         product_id for product_id in products_count if product_id not in product_to_warehouse]
@@ -182,9 +186,11 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
         if not warehouse or product is None:
             continue  # Omitir si el producto no se encuentra en ningún almacén
 
-        # Calcula la diferencia de cantidad basada en la entrega actual y la nueva
+        # Calcula la diferencia de cantidad basada en la entrega actual y la
+        # nueva
         old_quantity = next(
-            (old_line.quantity for old_line in delivery_actual.lines if old_line.product_id == line.product_id), 0)
+            (old_line.quantity for old_line in delivery_actual.lines if old_line.product_id == line.product_id),
+            0)
         quantity_difference = old_quantity - line.quantity
 
         if product.id not in product_updates:
@@ -199,7 +205,8 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
                 detail=f'Not enough stock for product {product.name}.' +
                 f' There is only {product.quantity} left')
 
-    # Proceder con la actualización de las cantidades de los productos en sus respectivos almacenes
+    # Proceder con la actualización de las cantidades de los productos en sus
+    # respectivos almacenes
     for warehouse in warehouses:
         updated_products = []
         for product in warehouse.products:
