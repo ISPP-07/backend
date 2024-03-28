@@ -7,7 +7,12 @@ from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMong
 from src.modules.shared.user import model
 
 
-async def get_user_service(db: DataBaseDep, query: dict) -> model.UserOut | None:
+async def get_users_service(db: DataBaseDep, query: dict = None) -> list[model.User]:
+    result: list[model.User] = await model.User.get_multi(db, query)
+    return result
+
+
+async def get_user_service(db: DataBaseDep, query: dict) -> model.User | None:
     return await model.User.get(db, query)
 
 
