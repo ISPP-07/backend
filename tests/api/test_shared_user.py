@@ -33,7 +33,7 @@ def test_get_all_user(app_client: TestClient, insert_user_mongo):
 
 
 def test_get_user(app_client: TestClient, insert_user_mongo):
-    url = f'{USER_URL}/{insert_user_mongo['_id']}'
+    url = f"{USER_URL}/{insert_user_mongo['_id']}"
     response = app_client.get(url=url)
     assert response.status_code == 200
     result = response.json()
