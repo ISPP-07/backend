@@ -48,6 +48,11 @@ def change_invalid_types_mongo(data: dict) -> None:
             change_invalid_types_mongo(value)
 
 
+def get_valid_mongo_obj(data: dict) -> dict:
+    change_invalid_types_mongo(data)
+    return data
+
+
 def check_nid(nid: str):
     if len(nid) != 9 or not nid[:7].isdigit():
         return False
@@ -81,7 +86,8 @@ def generate_alias(
             f'{name_split[0][0]}{name_split[1][0]}'
             f'{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}')
     else:
-        alias = f'{name[:2]}{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}'
+        alias = f'{name[:2]}{first_surname[:2]}{
+            second_surname[:2] if second_surname is not None else ""}'
     return alias.lower()
 
 
