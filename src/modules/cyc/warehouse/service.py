@@ -1,18 +1,35 @@
+from typing import Any
 from pydantic import UUID4
 
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo, UpdateResult
 from src.modules.cyc.warehouse import model
 
 
-async def get_warehouses_service(db: DataBaseDep, query: dict) -> list[model.Warehouse]:
+async def get_warehouses_service(db: DataBaseDep, query: dict = None) -> list[model.Warehouse]:
     return await model.Warehouse.get_multi(db, query)
 
 
 async def get_warehouse_service(db: DataBaseDep, query: dict) -> model.Warehouse | None:
     return await model.Warehouse.get(db, query)
+
+
+async def get_products_service(db: DataBaseDep, query: dict = None) -> list[model.ProductOut]:
+    warehouses: list[model.Warehouse] = await model.Warehouse.get_multi(db, query)
+    result = [
+        model.ProductOut(
+            id=product.id,
+            name=product.name,
+            quantity=product.quantity,
+            exp_date=product.exp_date,
+            warehouse_id=warehouse.id,
+        )
+        for warehouse in warehouses
+        for product in warehouse.products
+    ]
+    return result
 
 
 async def create_warehouse_service(
@@ -39,6 +56,20 @@ async def update_warehouse_service(
         db,
         query={'id': warehouse_id},
         data_to_update=warehouse_update
+    )
+
+
+async def update_many_warehouse_service(
+    db: DataBaseDep,
+    query: dict,
+    warehouse_update: model.WarehouseProductUpdate,
+    **kwargs: Any,
+) -> UpdateResult:
+    return await model.Warehouse.update_many(
+        db,
+        query=query,
+        data_to_update=warehouse_update,
+        **kwargs
     )
 
 

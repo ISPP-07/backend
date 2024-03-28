@@ -18,6 +18,7 @@ bcrypt = "*"
 gunicorn = "*"
 motor = "*"
 pydantic = {extras = ["email"], version = "*"}
+openpyxl = "*"
 
 [dev-packages]
 pytest = "*"

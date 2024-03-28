@@ -1,7 +1,6 @@
-from typing import List
 from pydantic import UUID4
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.warehouse import controller
@@ -10,13 +9,15 @@ from src.modules.cyc.warehouse import model
 router = APIRouter(tags=['Warehouse'])
 
 
-@router.get('',
-            status_code=status.HTTP_200_OK,
-            response_model=List[model.Warehouse],
-            responses={
-                200: {"description": "Successful Response"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=list[model.Warehouse],
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_warehouses(db: DataBaseDep):
     """
     **Retrieve a list of all warehouses.**
@@ -27,48 +28,15 @@ async def get_warehouses(db: DataBaseDep):
     return await controller.get_warehouses_controller(db)
 
 
-@router.post('',
-             status_code=status.HTTP_201_CREATED,
-             response_model=model.Warehouse,
-             responses={
-                 201: {"description": "Warehouse created successfully"},
-                 400: {"description": "Bad Request - Warehouse already exists"},
-                 500: {"description": "Internal Server Error"}
-             })
-async def create_warehouse(db: DataBaseDep, warehouse: model.WarehouseCreate):
-    """
-    **Create a new warehouse.**
-
-    Accepts warehouse information and creates a new warehouse record in the database.
-    The warehouse information includes its name, location, and initial products if any.
-    """
-    return await controller.create_warehouse_controller(db, warehouse)
-
-
-@router.delete('/{warehouse_id}',
-               status_code=status.HTTP_204_NO_CONTENT,
-               responses={
-                   204: {"description": "Warehouse successfully deleted"},
-                   404: {"description": "Warehouse not found"},
-                   500: {"description": "Internal Server Error"}
-               })
-async def delete_warehouse(db: DataBaseDep, warehouse_id: UUID4):
-    """
-    **Delete a warehouse by its ID.**
-
-    Deletes the warehouse identified by the given UUID from the database.
-    """
-    await controller.delete_warehouse_controller(db, warehouse_id)
-    return None
-
-
-@router.get('/product',
-            status_code=status.HTTP_200_OK,
-            response_model=List[model.ProductOut],
-            responses={
-                200: {"description": "Successful Response"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '/product',
+    status_code=status.HTTP_200_OK,
+    response_model=list[model.ProductOut],
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_products(db: DataBaseDep):
     """
     **Retrieve a list of all products in all warehouses.**
@@ -80,15 +48,75 @@ async def get_products(db: DataBaseDep):
     return await controller.get_products_controller(db)
 
 
-@router.post('/product',
-             status_code=status.HTTP_201_CREATED,
-             response_model=List[model.ProductOut],
-             responses={
-                 201: {"description": "Products created successfully"},
-                 400: {"description": "Bad Request - Product already exists"},
-                 404: {"description": "Warehouse not found"},
-                 500: {"description": "Internal Server Error"}
-             })
+@router.get(
+    '/{warehouse_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.Warehouse,
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def get_warehouse(db: DataBaseDep, warehouse_id: UUID4):
+    """
+    **Retrieve a warehouses by its ID.**
+
+    Queries the database and returns a warehouses, which include
+    its name, location, and the products it stores.
+    """
+    return await controller.get_warehouse_controller(db, warehouse_id)
+
+
+@router.post(
+    '',
+    status_code=status.HTTP_201_CREATED,
+    response_model=model.Warehouse,
+    responses={
+        201: {"description": "Warehouse created successfully"},
+        400: {"description": "Bad Request - Warehouse already exists"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def create_warehouse(db: DataBaseDep, warehouse: model.WarehouseCreate):
+    """
+    **Create a new warehouse.**
+
+    Accepts warehouse information and creates a new warehouse record in the database.
+    The warehouse information includes its name, location, and initial products if any.
+    """
+    return await controller.create_warehouse_controller(db, warehouse)
+
+
+@router.delete(
+    '/{warehouse_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        204: {"description": "Warehouse successfully deleted"},
+        404: {"description": "Warehouse not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def delete_warehouse(db: DataBaseDep, warehouse_id: UUID4):
+    """
+    **Delete a warehouse by its ID.**
+
+    Deletes the warehouse identified by the given UUID from the database.
+    """
+    await controller.delete_warehouse_controller(db, warehouse_id)
+    return None
+
+
+@router.post(
+    '/product',
+    status_code=status.HTTP_201_CREATED,
+    response_model=list[model.ProductOut],
+    responses={
+        201: {"description": "Products created successfully"},
+        400: {"description": "Bad Request - Product already exists"},
+        404: {"description": "Warehouse not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def create_product(db: DataBaseDep, product: model.ProductCreate):
     """
     **Create new products within a warehouse.**
@@ -99,14 +127,16 @@ async def create_product(db: DataBaseDep, product: model.ProductCreate):
     return await controller.create_product_controller(db, product)
 
 
-@router.patch('/product',
-              status_code=status.HTTP_200_OK,
-              response_model=List[model.ProductOut],
-              responses={
-                  200: {"description": "Products updated successfully"},
-                  404: {"description": "Warehouse or product not found"},
-                  500: {"description": "Internal Server Error"}
-              })
+@router.patch(
+    '/product',
+    status_code=status.HTTP_200_OK,
+    response_model=list[model.ProductOut],
+    responses={
+        200: {"description": "Products updated successfully"},
+        404: {"description": "Warehouse or product not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def update_product(db: DataBaseDep, product_update: model.ProductUpdate):
     """
     **Update existing products within a warehouse.**
@@ -116,3 +146,17 @@ async def update_product(db: DataBaseDep, product_update: model.ProductUpdate):
     and can update the product's name, quantity, and expiration date.
     """
     return await controller.update_product_controller(db, product_update)
+
+
+@router.post(
+    '/product/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Products in excel created successfully"},
+        404: {"description": "Warehouse not found"},
+        400: {"description": "The data was incorrect"},
+    }
+)
+async def upload_excel_products(db: DataBaseDep, products: UploadFile):
+    return await controller.upload_excel_products_controller(db, products)
