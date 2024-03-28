@@ -56,8 +56,9 @@ async def delete_delivery_service(db: DataBaseDep, query: dict) -> None:
     if delivery.state != model.State.DELIVERED:
         warehouses = await warehouse_service.get_warehouses_service(db, query=None)
         product_to_warehouse = {
-            product.id: (warehouse, product) for warehouse in warehouses for product in warehouse.products
-        }
+            product.id: (
+                warehouse,
+                product) for warehouse in warehouses for product in warehouse.products}
         product_updates = {}
         for line in delivery.lines:
             if line.product_id in product_to_warehouse:
