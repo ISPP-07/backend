@@ -112,7 +112,7 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
             detail='Cannot delete the family head',
         )
     members = [
-        person for person in new_family.members
+        person.model_dump() for person in new_family.members
         if person.nid != person_nid
     ]
     await service.update_family_service(
