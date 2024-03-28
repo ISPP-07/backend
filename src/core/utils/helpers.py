@@ -70,16 +70,18 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def generate_alias(name: str, first_surname: str, second_surname: str) -> str:
+def generate_alias(
+        name: str,
+        first_surname: str,
+        second_surname: str | None) -> str:
     name_split = name.split()
     number_of_names = len(name_split)
     if number_of_names > 1:
         alias = (
             f'{name_split[0][0]}{name_split[1][0]}'
-            f'{first_surname[:2]}{second_surname[:2]}'
-        )
+            f'{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}')
     else:
-        alias = f'{name[:2]}{first_surname[:2]}{second_surname[:2]}'
+        alias = f'{name[:2]}{first_surname[:2]}{second_surname[:2] if second_surname is not None else ""}'
     return alias.lower()
 
 
@@ -89,3 +91,14 @@ def calculate_age(birth_date: date) -> int:
     return today.year - birth_date.year - (
         (today.month, today.day) < (birth_date.month, birth_date.day)
     )
+
+
+def parse_validation_error(errors: list[dict]):
+    result = ''
+    for error in errors:
+        result += (
+            f'Field "{error["loc"]}", '
+            f'error "{error["msg"]}", '
+            f'with input "{error["input"]}"\n'
+        )
+    return result

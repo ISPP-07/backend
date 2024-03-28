@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
@@ -88,6 +88,19 @@ async def get_patient_details(db: DataBaseDep, patient_id: UUID4):
     (if any), any observations, and the patient's calculated age.
     """
     return await controller.get_patient_details_controller(db, patient_id)
+
+
+@router.post(
+    '/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Patients in excel created successfully"},
+        400: {"description": "The data was incorrect"},
+    }
+)
+async def upload_excel_patient(db: DataBaseDep, patients: UploadFile):
+    return await controller.upload_excel_patients_controller(db, patients)
 
 
 @router.delete(

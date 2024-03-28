@@ -4,7 +4,12 @@ from uuid import uuid4
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 
-from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.database.mongo_types import (
+    DeleteResultMongo,
+    InsertOneResultMongo,
+    UpdateResult,
+    InsertResultMongo,
+)
 from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
 
 
@@ -103,8 +108,40 @@ class BaseMongo(BaseModel):
             obj_to_create.pop('id')
         if '_id' in obj_to_create:
             obj_to_create.pop('_id')
-        obj = cls(**obj_to_create, id=uuid4())
+        obj: Self = cls(**obj_to_create, id=uuid4())
         return await collection.insert_one(obj.mongo(), **kwargs)
+
+    @classmethod
+    async def create_many(
+        cls: Self,
+        db: AsyncIOMotorDatabase,
+        objs_to_create: list[dict],
+        **kwargs: Any,
+    ) -> InsertResultMongo:
+        """
+        Asynchronously creates a new documents in the specified MongoDB database.
+
+        This method creates new documents in the MongoDB collection associated with the class.
+        It generates a unique identifier for the documents and inserts it into the collection.
+
+        Parameters:
+        - db (AsyncIOMotorDatabase): The MongoDB database to operate on.
+        - objs_to_create (list): The list containing the data for the new documents.
+        - **kwargs (Any): Additional keyword arguments to be passed to the insert operation.
+
+        Returns:
+        InsertOneResultMongo: An object representing the result of the insert operation.
+        """
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        objs_insert = []
+        for obj in objs_to_create:
+            if 'id' in obj:
+                obj.pop('id')
+            if '_id' in obj:
+                obj.pop('_id')
+            obj = cls(**obj, id=uuid4())
+            objs_insert.append(obj.mongo())
+        return await collection.insert_many(objs_insert, **kwargs)
 
     @classmethod
     async def update(
@@ -140,6 +177,31 @@ class BaseMongo(BaseModel):
             **kwargs
         )
         return cls.from_mongo(result)
+
+    @classmethod
+    async def update_many(
+        cls: Self,
+        db: AsyncIOMotorDatabase,
+        query: dict,
+        data_to_update: dict,
+        **kwargs: Any,
+    ) -> UpdateResult:
+        collection: AsyncIOMotorCollection = db[cls._get_collection_name()]
+        if 'id' in data_to_update:
+            data_to_update.pop('id')
+        if '_id' in data_to_update:
+            data_to_update.pop('_id')
+        for key, value in copy.deepcopy(data_to_update).items():
+            if value is None:
+                data_to_update.pop(key)
+        change_invalid_types_mongo(data_to_update)
+        update = {'$set': data_to_update}
+        result = await collection.update_many(
+            cls.prepare_query(query),
+            update,
+            **kwargs
+        )
+        return result
 
     @classmethod
     async def delete(
