@@ -12,7 +12,6 @@ on:
       CODACY_PROJECT_TOKEN:
         required: true
 
-
 jobs:
   build:
     if: ${{ github.event.label.name == 'ready' }}
@@ -22,24 +21,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16.1
-        env:
-          POSTGRES_USER: postgreuser
-          POSTGRES_PASSWORD: 123
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@v1
+      with:
+        mongodb-port: 27017
+        mongodb-username: 'mongouser'
+        mongodb-password: 'mongopass' 
     - uses: actions/checkout@v3
     - name: Set up Python ${{matrix.pyversion}}
       uses: actions/setup-python@v4
       with:
         python-version: ${{matrix.pyversion}}
-    - name: psycopg prerequisites
-      run: sudo apt-get install libpq-dev
     - name: Install pipenv
       run: pip install pipenv
     - name: Env setup
