@@ -7,7 +7,7 @@ import openpyxl
 from pydantic import UUID4, ValidationError
 
 from src.core.deps import DataBaseDep
-from src.core.utils.helpers import parse_validation_error
+from src.core.utils.helpers import parse_validation_error, get_valid_mongo_obj
 from src.modules.cyc.warehouse import service
 from src.modules.cyc.warehouse import model
 
@@ -197,7 +197,7 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='The excel file is incorrect'
         )
-    products_excel: dict[str, list[dict]] = {}
+    products_excel: dict[str, model.WarehouseUpdate] = {}
     for row in ws.iter_rows(min_row=2, min_col=1, max_col=4, values_only=True):
         if all(value is None for value in row):
             continue
@@ -206,7 +206,7 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
-        warehouse_name: str = row[3]
+        warehouse_name: str = str(row[3])
         try:
             new_product = model.Product(
                 id=uuid4(),
@@ -220,14 +220,16 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 detail=parse_validation_error(e.errors())
             )
         if warehouse_name not in products_excel:
-            products_excel[warehouse_name] = []
+            products_excel[warehouse_name] = model.WarehouseUpdate(products=[])
         if new_product.name in [
-                p['name'] for p in products_excel.get(warehouse_name)]:
+            p.name for p in products_excel.get(warehouse_name).products
+        ]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='There cannot be duplicated products'
             )
-        products_excel.get(warehouse_name).append(new_product.model_dump())
+        products_excel.get(warehouse_name).products.append(new_product)
+    update_data: list[tuple[dict, dict]] = []
     for key, value in products_excel.items():
         warehouse = await service.get_warehouse_service(db, query={'name': key})
         if warehouse is None:
@@ -235,27 +237,32 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f'Warehouse {key} not found'
             )
-        products_names = [p['name'] for p in value]
-        updated = []
+        products_names = [p.name for p in value.products]
+        update_and_old_products: list[dict] = []
         for product in warehouse.products:
             if product.name in products_names:
                 new_p = next(
-                    (p for p in value if p['name'] == product.name),
+                    (p for p in value.products if p.name == product.name),
                     None
                 )
-                p = model.Product(
-                    id=product.id,
-                    name=new_p['name'],
-                    quantity=new_p['quantity'],
-                    exp_date=new_p['exp_date'],
-                ).model_dump()
-                updated.append(p)
-                value.remove(new_p)
+                new_p.id = product.id
+                update_and_old_products.append(
+                    get_valid_mongo_obj(new_p.model_dump()))
+                value.products.remove(new_p)
                 continue
-            updated.append(product)
-        new_products = updated + value
-        await service.update_warehouse_service(
-            db,
-            warehouse_id=warehouse.id,
-            warehouse_update={'products': new_products}
+            update_and_old_products.append(
+                get_valid_mongo_obj(product.model_dump())
+            )
+        new_products = update_and_old_products + [
+            get_valid_mongo_obj(p.model_dump()) for p in value.products
+        ]
+        update_data.append(
+            (
+                model.Warehouse.prepare_query({'id': warehouse.id}),
+                {'$set': {'products': new_products}}
+            )
         )
+    await service.bulk_update_service(
+        db,
+        query_and_data=update_data
+    )
