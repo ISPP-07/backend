@@ -10,7 +10,7 @@ from src.core.deps import DataBaseDep
 from src.modules.acat.patient import model
 
 
-async def get_patient_by_id(db: DataBaseDep, patient_id: UUID4):
+async def get_patient_by_id(db: DataBaseDep, patient_id: UUID4) -> model.Patient | None:
     return await model.Patient.get(db, query={'id': patient_id})
 
 
