@@ -30,7 +30,7 @@ async def create_user(db: DataBaseDep, user: model.UserCreate):
                 status.HTTP_200_OK: {"description": "Successful Response"}
             },
             response_model=list[model.UserOut])
-async def get_user(db: DataBaseDep):
+async def get_users(db: DataBaseDep):
     '''
     Get all users
     '''
@@ -43,7 +43,7 @@ async def get_user(db: DataBaseDep):
                 status.HTTP_200_OK: {"description": "Successful Response"}
             },
             response_model=model.UserOut)
-async def get_user(db: DataBaseDep, user_id: UUID4):
+async def get_user_details(db: DataBaseDep, user_id: UUID4):
     '''
     Get user by id
     '''
