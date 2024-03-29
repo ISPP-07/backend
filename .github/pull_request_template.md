@@ -10,12 +10,11 @@
 - [ ] I have made corresponding changes to the documentation if necessary.
 - [ ] My code follows the project's code style guidelines.
 
-## Reviewers
-- @reviewer1
-- @reviewer2
+## Reviewer
+- @reviewer
 
 ## Tester (if applicable)
-- @tester1
+- @tester
 
 ## Screenshots (if applicable)
 [Add screenshots or GIFs to visually demonstrate the changes, if applicable]
