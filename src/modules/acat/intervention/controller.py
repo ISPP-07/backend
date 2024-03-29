@@ -50,22 +50,28 @@ async def update_intervention_controller(
         field for field in model.INTERVENTION_NONE_FIELDS
         if field in intervention.update_fields_to_none
     ]
-
-    update_data = intervention.model_dump(exclude={'update_fields_to_none'})
-
-    for field in request_none_fields:
-        update_data[field] = None
-
-    for field in list(update_data):
-        if update_data[field] is None and field not in request_none_fields:
-            del update_data[field]
-
+    update_data = intervention.model_dump(
+        exclude={'update_fields_to_none', 'patient_id'}
+    )
+    if intervention.patient_id is not None:
+        patient_db = await patient_service.get_patient_by_id(db, intervention.patient_id)
+        if patient_db is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Patient not found',
+            )
+        update_data['patient'] = patient_db.model_dump()
+    for field in update_data.copy():
+        if field in request_none_fields:
+            update_data[field] = None
+            continue
+        if update_data[field] is None:
+            update_data.pop(field)
     updated_intervention = await service.update_intervention_service(
         db,
         intervention_id,
         update_data
     )
-
     return updated_intervention
 
 

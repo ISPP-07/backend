@@ -262,7 +262,8 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 {'$set': {'products': new_products}}
             )
         )
-    await service.bulk_update_service(
-        db,
-        query_and_data=update_data
-    )
+    if len(update_data) > 0:
+        await service.bulk_update_service(
+            db,
+            query_and_data=update_data
+        )
