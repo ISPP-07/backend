@@ -4,10 +4,11 @@ from fastapi import APIRouter, status
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
+from src.server import dependencies
 from src.modules.cyc.family import controller
 from src.modules.cyc.family import model
 
-router = APIRouter(tags=['Family'])
+router = APIRouter(tags=['Family'], dependencies=dependencies)
 
 
 @router.get('',

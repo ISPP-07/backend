@@ -3,11 +3,12 @@ from pydantic import UUID4
 from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
+from src.server import dependencies
 from src.modules.acat.intervention import controller
 from src.modules.acat.intervention import model
 
 
-router = APIRouter(tags=['Intervention'])
+router = APIRouter(tags=['Intervention'], dependencies=dependencies)
 
 
 @router.get('',

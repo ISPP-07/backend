@@ -4,10 +4,11 @@ from fastapi import APIRouter, status
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
+from src.server import dependencies
 from src.modules.shared.user import model
 from src.modules.shared.user import controller
 
-router = APIRouter(tags=['User'])
+router = APIRouter(tags=['User'], dependencies=dependencies)
 
 
 @router.post('/',
