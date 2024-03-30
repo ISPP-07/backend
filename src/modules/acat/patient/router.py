@@ -2,10 +2,11 @@ from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
+from src.server import dependencies
 from src.modules.acat.patient import controller
 from src.modules.acat.patient import model
 
-router = APIRouter(tags=['Patient'])
+router = APIRouter(tags=['Patient'], dependencies=dependencies)
 
 
 @router.get('',

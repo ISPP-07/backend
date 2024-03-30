@@ -3,10 +3,11 @@ from pydantic import UUID4
 from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
+from src.server import dependencies
 from src.modules.cyc.delivery import controller
 from src.modules.cyc.delivery import model
 
-router = APIRouter(tags=["Delivery"])
+router = APIRouter(tags=["Delivery"], dependencies=dependencies)
 
 
 @router.get("",

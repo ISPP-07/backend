@@ -22,7 +22,7 @@ dependencies: List[Depends] = [
     Depends(get_current_user)
 ] if settings.STAGING else []
 
-app = FastAPI(**settings.fastapi_kwargs, dependencies=dependencies)
+app = FastAPI(**settings.fastapi_kwargs)
 
 app.add_event_handler('startup', connect_and_init_db)
 app.add_event_handler('shutdown', close_db_connection)

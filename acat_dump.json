@@ -76,14 +76,6 @@
             "observations": "Se observa una notable mejora en el comportamiento y en la interacci\u00f3n con el grupo."
         }
     ],
-    "User": [
-        {
-            "_id": "679c787b-7b28-413e-bfce-53d04b59c21b",
-            "username": "root",
-            "password": "$2b$12$mIuh2biooN3X0F2IexgS0O42dIFpv0mXTbhH7ow8.twcpimC4XcWK",
-            "email": "root@root.com"
-        }
-    ],
     "Intervention": [
         {
             "_id": "94a40c42-9c7a-4d38-887b-3a0f91b0082c",
