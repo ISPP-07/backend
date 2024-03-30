@@ -1,6 +1,10 @@
-from fastapi import HTTPException, status
-from pydantic import UUID4
+from pydantic import UUID4, ValidationError
+import os
 
+from fastapi import HTTPException, status, UploadFile
+import openpyxl
+
+from src.core.utils.helpers import parse_validation_error, generate_alias, get_valid_mongo_obj
 from src.core.deps import DataBaseDep
 from src.modules.acat.patient import model
 from src.modules.acat.patient import service
@@ -11,6 +15,16 @@ async def get_patients_controller(db: DataBaseDep):
 
 
 async def create_patient_controller(db: DataBaseDep, patient: model.PatientCreate) -> model.Patient:
+    check_patient = await service.get_patient_service(db, query={'nid': patient.nid})
+    if check_patient is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'There is already one patient with nid {patient.nid}'
+        )
+    if patient.alias is None:
+        patient.alias = generate_alias(
+            patient.name, patient.first_surname, patient.second_surname
+        )
     mongo_insert = await service.create_patient_service(db, patient)
     result = await service.get_patient_service(db, query={'id': mongo_insert.inserted_id})
     return result
@@ -24,6 +38,101 @@ async def get_patient_details_controller(db: DataBaseDep, patient_id: UUID4):
             detail='Patient not found',
         )
     return result
+
+
+async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile) -> None:
+    [_, extension] = os.path.splitext(patients.filename)
+    if extension[1:] not in ['xlsx', 'xlsm']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'The files with extension ',
+                f'"{extension[1:]}" are not supported.'
+            )
+        )
+    fields_excel = [
+        'nombre',
+        'primer apellido',
+        'segundo apellido',
+        'dni',
+        'fecha nacimiento',
+        'genero',
+        'direccion',
+        'telefono',
+        'numero expediente',
+        'tecnico',
+        'observacion']
+    wb = openpyxl.load_workbook(patients.file)
+    ws = wb.active
+    first_row = [
+        ws.cell(row=1, column=i).value
+        for i in range(1, len(fields_excel) + 1)
+    ]
+    if len(first_row) != len(fields_excel) and not all(
+            field in fields_excel for field in first_row):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='The excel file is incorrect'
+        )
+    patients_excel: list[model.PatientCreate] = []
+    for row in ws.iter_rows(
+            min_row=2,
+            min_col=1,
+            max_col=11,
+            values_only=True):
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[1] is None or row[3] is None or row[4] is None or row[8] is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        if row[5] is not None and row[5] not in ['Hombre', 'Mujer']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        try:
+            new_patient = model.PatientCreate(
+                name=row[0],
+                first_surname=row[1],
+                second_surname=row[2],
+                alias=generate_alias(row[0], row[1], row[2]),
+                nid=row[3],
+                birth_date=row[4],
+                gender=(
+                    'Man' if row[5] == 'Hombre' else 'Woman'
+                ) if row[5] is not None else None,
+                address=row[6],
+                contact_phone=str(row[7]),
+                dossier_number=row[8],
+                first_technician=row[9],
+                observation=row[10],
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        patients_excel.append(new_patient)
+    patients_db = await service.get_patients_service(db, query={'nid': {'$in': [p.nid for p in patients_excel]}})
+    nids_db = [p.nid for p in patients_db]
+    patients_create = list(filter(
+        lambda p: p.nid not in nids_db,
+        patients_excel
+    ))
+    patients_update = [
+        (
+            model.Patient.prepare_query({'nid': p.nid}),
+            {'$set': get_valid_mongo_obj(p.model_dump())}
+        )
+        for p in patients_excel
+        if p.nid in nids_db
+    ]
+    if len(patients_create) > 0:
+        await service.bulk_create_service(db, patients=patients_create, ordered=False)
+    if len(patients_update) > 0:
+        await service.bulk_update_service(db, query_and_data=patients_update, ordered=False)
 
 
 async def update_patient_controller(
@@ -54,7 +163,7 @@ async def update_patient_controller(
             continue
         if update_data[field] is None:
             update_data.pop(field)
-    updated_patient = await service.update_patient_service(db, patient_id, update_data)
+    updated_patient = await service.update_patient_service(db, {'id': patient_id}, update_data)
     return updated_patient
 
 

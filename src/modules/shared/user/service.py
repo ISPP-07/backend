@@ -7,7 +7,12 @@ from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMong
 from src.modules.shared.user import model
 
 
-async def get_user_service(db: DataBaseDep, query: dict) -> model.UserOut | None:
+async def get_users_service(db: DataBaseDep, query: dict = None) -> list[model.User]:
+    result: list[model.User] = await model.User.get_multi(db, query)
+    return result
+
+
+async def get_user_service(db: DataBaseDep, query: dict) -> model.User | None:
     return await model.User.get(db, query)
 
 
@@ -35,14 +40,30 @@ async def create_user_service(db: DataBaseDep, user: model.UserCreate) -> model.
     return result
 
 
-async def update_user_service(db: DataBaseDep, query: dict, user: model.UserUpdate) -> model.UserOut | None:
+async def update_user_service(
+    db: DataBaseDep, query: dict, user: model.UserUpdate
+) -> model.UserOut | str:
+    user_check = await model.User.get_multi(
+        db,
+        query={'$or': [{'username': user.username}, {'email': user.email}]},
+    )
+    if len(user_check) > 0:
+        return "Error 400"
+
     if user.password:
         hashed_password = get_hashed_password(user.password)
         user.password = hashed_password
 
-    user_db: model.User | None = await model.User.update(db, query, user.model_dump())
+    data_to_update = user.model_dump()
+    for key in list(data_to_update.keys()):
+        if data_to_update[key] is None:
+            data_to_update.pop(key)
+
+    user_db: model.User | None = await model.User.update(
+        db, query, data_to_update=data_to_update
+    )
     if user_db is None:
-        return None
+        return "Error 404"
 
     result = model.UserOut(
         id=user_db.id,

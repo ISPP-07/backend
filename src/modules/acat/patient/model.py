@@ -23,7 +23,7 @@ class Patient(BaseMongo):
     name: str
     first_surname: str
     second_surname: Optional[str]
-    alias: str  # Must be auto-generated using the name and surnames
+    alias: str = None  # Must be auto-generated
     nid: str
     birth_date: PastDate
     gender: Optional[Gender]
@@ -43,6 +43,7 @@ class PatientCreate(BaseModel):
     name: str
     first_surname: str
     second_surname: Optional[str] = None
+    alias: Optional[str] = None
     nid: str
     birth_date: PastDate
     gender: Optional[Gender] = None
@@ -65,6 +66,7 @@ class PatientUpdate(BaseModel):
     address: Optional[str] = None
     contact_phone: Optional[str] = None
     dossier_number: Optional[str] = None
+    is_rehabilitated: Optional[bool] = None
     first_technician: Optional[str] = None
     registration_date: Optional[date] = None
     observation: Optional[str] = None

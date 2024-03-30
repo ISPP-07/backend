@@ -16,7 +16,12 @@ async def create_user_controller(db: DataBaseDep, user: model.UserCreate) -> mod
     return result
 
 
-async def get_user_controller(db: DataBaseDep, user_id: UUID4) -> model.UserOut:
+async def get_users_controller(db: DataBaseDep) -> list[model.User]:
+    result = await service.get_users_service(db)
+    return result
+
+
+async def get_user_controller(db: DataBaseDep, user_id: UUID4) -> model.User:
     result = await service.get_user_service(db, query={'id': user_id})
     if result is None:
         raise HTTPException(
@@ -28,7 +33,12 @@ async def get_user_controller(db: DataBaseDep, user_id: UUID4) -> model.UserOut:
 
 async def update_user_controller(db: DataBaseDep, user_id: UUID4, user: model.UserUpdate) -> model.UserOut:
     result = await service.update_user_service(db, query={'id': user_id}, user=user)
-    if result is None:
+    if result == "Error 400":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email or username already exist"
+        )
+    if result == "Error 404":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"

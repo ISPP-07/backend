@@ -31,9 +31,9 @@ async def create_delivery_service(
 async def update_delivery_service(
     db: DataBaseDep,
     query: dict,
-    delivery: model.DeliveryUpdate,
+    delivery: dict,
 ) -> model.Delivery | None:
-    delivery_db: model.Delivery | None = await model.Delivery.update(db, query, delivery.model_dump())
+    delivery_db: model.Delivery | None = await model.Delivery.update(db, query, delivery)
     if delivery_db is None:
         return None
     result = model.Delivery(id=delivery_db.id,
@@ -45,39 +45,53 @@ async def update_delivery_service(
     return result
 
 
-async def delete_delivery_service(db: DataBaseDep, query: dict) -> model.Delivery:
-    # Reset the stock of the products in the delivery
+async def delete_delivery_service(db: DataBaseDep, query: dict) -> None:
+    # Recuperar el pedido de entrega
     delivery = await get_delivery_service(db, query)
-    warehouses = await warehouse_service.get_warehouses_service(db, query=None)
-    product_to_warehouse = {
-        product.id: (
-            warehouse,
-            product) for warehouse in warehouses for product in warehouse.products}
-    if delivery.state != model.State.DELIVERED:
-        for line in delivery.lines:
-            warehouse, product = product_to_warehouse[line.product_id]
-            updated_products = [
-                p for p in warehouse.products if p.id != line.product_id] + [
-                warehouse_model.Product(
-                    id=product.id,
-                    name=product.name,
-                    quantity=product.quantity + line.quantity,
-                    exp_date=product.exp_date)]
-            await warehouse_service.update_warehouse_service(
-                db,
-                warehouse_id=warehouse.id,
-                warehouse_update=warehouse_model.WarehouseUpdate(
-                    products=updated_products)
-            )
-
-    mongo_delete: DeleteResultMongo = await model.Delivery.delete(db, query)
-    if mongo_delete.deleted_count == 0:
+    if delivery is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Delivery not found'
         )
+    if delivery.state != model.State.DELIVERED:
+        warehouses = await warehouse_service.get_warehouses_service(db, query=None)
+        product_to_warehouse = {
+            product.id: (
+                warehouse,
+                product) for warehouse in warehouses for product in warehouse.products}
+        product_updates = {}
+        for line in delivery.lines:
+            if line.product_id in product_to_warehouse:
+                _, product = product_to_warehouse[line.product_id]
+                if product.id not in product_updates:
+                    product_updates[product.id] = product.quantity + \
+                        line.quantity
+                else:
+                    product_updates[product.id] += line.quantity
+        for warehouse in warehouses:
+            updated_products = []
+            for product in warehouse.products:
+                if product.id in product_updates:
+                    updated_quantity = product_updates[product.id]
+                    updated_product = warehouse_model.Product(
+                        id=product.id,
+                        name=product.name,
+                        quantity=updated_quantity,
+                        exp_date=product.exp_date
+                    )
+                else:
+                    updated_product = product
+                updated_products.append(updated_product.model_dump())
+
+            await warehouse_service.update_warehouse_service(
+                db,
+                warehouse_id=warehouse.id,
+                warehouse_update={'products': updated_products}
+            )
+
+    mongo_delete = await model.Delivery.delete(db, query)
     if not mongo_delete.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='DB error'
+            detail='DB error during deletion'
         )

@@ -1,8 +1,10 @@
-from datetime import date
-import pytest_asyncio
+from pathlib import Path
+import openpyxl
 from uuid import uuid4
-from pymongo.database import Database
+from datetime import date
 
+import pytest_asyncio
+from pymongo.database import Database
 from fastapi.testclient import TestClient
 
 from src.core.config import settings
@@ -21,7 +23,10 @@ async def insert_patients_mongo(mongo_db: Database):
             "name": "Paciente 1",
             "first_surname": "AAA",
             "second_surname": "BBB",
-            "alias": "Paciente 1 AAA BBB",
+            "birth_date": "2023-02-28",
+            "address": "Calle 1",
+            "contact_phone": "123123123",
+            "alias": generate_alias("Paciente 1", "AAA", "BBB"),
             "nid": "12343456M",
             "birth_date": "2023-02-28",
             "gender": "Man",
@@ -37,7 +42,10 @@ async def insert_patients_mongo(mongo_db: Database):
             "name": "Paciente 2",
             "first_surname": "AAA",
             "second_surname": "BBB",
-            "alias": "Paciente 1 AAA BBB",
+            "birth_date": "2023-02-28",
+            "address": "Calle 1",
+            "contact_phone": "123123123",
+            "alias": generate_alias('Paciente 2', 'AAA', 'BBB'),
             "nid": "12343456M",
             "birth_date": "2023-02-28",
             "gender": "Man",
@@ -99,8 +107,7 @@ def test_create_patient(app_client: TestClient):
         "birth_date": "2023-02-28",
         "address": "Calle 1",
         "contact_phone": "123123123",
-        "alias": "Paciente 1 AAA BBB",
-        "nid": "12343456M",
+        "nid": "62890716E",
         "first_technician": "string",
         "gender": "Man",
         "observation": "string"
@@ -131,6 +138,56 @@ def test_get_patients(app_client: TestClient, insert_patients_mongo):
         assert item["nid"] == patient["nid"]
 
 
+def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
+    # Ruta del endpoint
+    url = f'{settings.API_STR}acat/patient/excel'
+
+    # Cargar el archivo Excel de prueba
+    excel_file_path = Path(__file__).resolve(
+    ).parent.parent / 'excel_test' / 'Pacientes.xlsx'
+
+    # Enviar el archivo Excel al endpoint
+    with open(excel_file_path, 'rb') as file:
+        files = {
+            "patients": (
+                "Pacientes.xlsx",
+                file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+        response = app_client.post(url=url, files=files)
+
+    # Verificar que la respuesta sea exitosa
+    assert response.status_code == 204
+
+    # Cargar el archivo Excel en meoria
+    wb = openpyxl.load_workbook(excel_file_path)
+    ws = wb.active
+
+    # Obtener los datos de los pacientes de la base de datos
+    patients_db = list(mongo_db["Patient"].find())
+
+    # Verificar que se hayan creado los pacientes
+    assert len(patients_db) == ws.max_row
+
+    # Obtener el último paciente creado
+    last_patient = patients_db[-1]
+
+    # Comparar los datos del último paciente creado con los del archivo Excel
+    assert last_patient['name'] == ws.cell(row=2, column=1).value
+    assert last_patient['first_surname'] == ws.cell(row=2, column=2).value
+    assert last_patient['second_surname'] == ws.cell(row=2, column=3).value
+    assert last_patient['nid'] == ws.cell(row=2, column=4).value
+    assert last_patient['birth_date'] == ws.cell(
+        row=2, column=5
+    ).value.date().isoformat()
+    assert last_patient['gender'] == ('Man' if ws.cell(
+        row=2, column=6).value == 'Hombre' else 'Woman')
+    assert last_patient['address'] == ws.cell(row=2, column=7).value
+    assert last_patient['contact_phone'] == str(ws.cell(row=2, column=8).value)
+    assert last_patient['dossier_number'] == ws.cell(row=2, column=9).value
+    assert last_patient['first_technician'] == ws.cell(row=2, column=10).value
+    assert last_patient['observation'] == ws.cell(row=2, column=11).value
+
+
 def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
     patient = insert_patients_mongo[0]
     url = f"{URL_PATIENT}/{patient['_id']}"
@@ -149,7 +206,6 @@ def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
     response = app_client.patch(url=url, json=update_data)
     assert response.status_code == 200
     result = response.json()
-    print(patient)
     assert isinstance(result, dict)
     assert result['id'] == str(patient['_id'])
     for field in updated_fields:
