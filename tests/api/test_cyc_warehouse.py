@@ -152,7 +152,7 @@ def test_update_product(app_client: TestClient, insert_warehouses_with_products)
                 "name": "Queso",
                 "exp_date": "2027-03-16",
                 "quantity": 23,
-                "update_exp_date": False,
+                "update_exp_date": 'false',
                 "warehouse_id": warehouse_id,
                 "product_id": product_id,
             }
@@ -161,8 +161,11 @@ def test_update_product(app_client: TestClient, insert_warehouses_with_products)
     response = app_client.patch(url=url, json=product_data)
     assert response.status_code == 200
     result = response.json()
-    for field in product_data:
-        assert str(result[field]) == str(product_data[field])
+    assert str(result[0]["exp_date"]) == "2025-01-01"
+    assert str(result[0]["name"]) == "Queso"
+    assert str(result[0]["quantity"]) == "23"
+    assert str(result[0]["warehouse_id"]) == warehouse_id
+    assert str(result[0]["id"]) == product_id
 
 def test_delete_product(app_client: TestClient, insert_warehouses_with_products):
     product_id = insert_warehouses_with_products[0]["products"][0]["id"]
