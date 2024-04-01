@@ -57,52 +57,6 @@ async def bulk_service(db: DataBaseDep, operations: list[BulkOperation], **kwarg
     return result
 
 
-# async def bulk_create_service(
-#     db: DataBaseDep,
-#     patients: list[model.PatientCreate],
-#     **kwargs: Any,
-# ) -> BulkWriteResult:
-#     result: BulkWriteResult = await model.Patient.bulk_operation(
-#         db,
-#         [
-#             InsertOne(model.Patient(**p.model_dump(), id=uuid4()).mongo())
-#             for p in patients
-#         ],
-#         **kwargs
-#     )
-#     if not result.acknowledged:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail='DB error'
-#         )
-#     return result
-
-
-# async def bulk_update_service(
-#     db: DataBaseDep,
-#     query_and_data: list[tuple[dict, dict]],
-#     many: bool = False,
-#     **kwargs: Any
-# ) -> BulkWriteResult:
-#     operations = []
-#     for (query, data) in query_and_data:
-#         if not many:
-#             operations.append(UpdateOne(filter=query, update=data))
-#         else:
-#             operations.append(UpdateMany(filter=query, update=data))
-#     result: BulkWriteResult = await model.Patient.bulk_operation(
-#         db,
-#         operations,
-#         **kwargs
-#     )
-#     if not result.acknowledged:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail='DB error'
-#         )
-#     return result
-
-
 async def get_patient_service(db: DataBaseDep, query: dict) -> model.PatientOut | None:
     patient: model.Patient = await model.Patient.get(db, query)
 
