@@ -1,5 +1,7 @@
-from typing import Any, Self
+from typing import Any, Self, Literal
+from enum import StrEnum
 from uuid import uuid4
+
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from pymongo import (
@@ -19,6 +21,52 @@ from src.core.database.mongo_types import (
     BulkWriteResult,
 )
 from src.core.utils.helpers import check_all_keys, change_invalid_types_mongo
+
+
+class BulkTypes(StrEnum):
+    InsertOne = 'InsertOne'
+    DeleteMany = 'DeleteMany'
+    DeleteOne = 'DeleteOne'
+    ReplaceOne = 'ReplaceOne'
+    UpdateOne = 'UpdateOne'
+    UpdateMany = 'UpdateMany'
+
+
+class BulkOperation():
+    data: dict
+    query: dict | None
+    optional_conf: dict
+
+    def __init__(
+        self,
+        bulk_type: Literal['InsertOne'] | Literal['DeleteMany'] | Literal['DeleteOne'] |
+        Literal['ReplaceOne'] | Literal['UpdateOne'] | Literal['UpdateMany'],
+        data: dict,
+        query: dict = None,
+        options: dict = {}
+    ) -> None:
+        self.bulk_type = BulkTypes[bulk_type]
+        self.data = data
+        self.query = query
+        self.optional_conf = options
+
+    def operation(self: Self):
+        if self.bulk_type != BulkTypes.InsertOne and self.query is None:
+            raise ValueError(
+                'Query cannot be None in all operations except InsertOne'
+            )
+        if self.bulk_type == BulkTypes.InsertOne:
+            return InsertOne(self.data)
+        elif self.bulk_type == BulkTypes.DeleteMany:
+            return DeleteMany(filter=self.query, **self.optional_conf)
+        elif self.bulk_type == BulkTypes.DeleteOne:
+            return DeleteOne(filter=self.query, **self.optional_conf)
+        elif self.bulk_type == BulkTypes.ReplaceOne:
+            return ReplaceOne(filter=self.query, replacement=self.data, **self.optional_conf)
+        elif self.bulk_type == BulkTypes.UpdateMany:
+            return UpdateMany(filter=self.query, update=self.data, **self.optional_conf)
+        elif self.bulk_type == BulkTypes.UpdateOne:
+            return UpdateOne(filter=self.query, update=self.data, **self.optional_conf)
 
 
 class BaseMongo(BaseModel):

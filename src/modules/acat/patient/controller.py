@@ -1,4 +1,5 @@
 from pydantic import UUID4, ValidationError
+from uuid import uuid4
 import os
 
 from fastapi import HTTPException, status, UploadFile
@@ -6,6 +7,7 @@ import openpyxl
 
 from src.core.utils.helpers import parse_validation_error, generate_alias, get_valid_mongo_obj
 from src.core.deps import DataBaseDep
+from src.core.database.base_crud import BulkOperation
 from src.modules.acat.patient import model
 from src.modules.acat.patient import service
 
@@ -117,22 +119,26 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
         patients_excel.append(new_patient)
     patients_db = await service.get_patients_service(db, query={'nid': {'$in': [p.nid for p in patients_excel]}})
     nids_db = [p.nid for p in patients_db]
-    patients_create = list(filter(
-        lambda p: p.nid not in nids_db,
-        patients_excel
-    ))
+    patients_create = [
+        BulkOperation(
+            bulk_type='InsertOne',
+            data=model.Patient(**p.model_dump(), id=uuid4()).mongo()
+        )
+        for p in patients_excel
+        if p.nid not in nids_db
+    ]
     patients_update = [
-        (
-            model.Patient.prepare_query({'nid': p.nid}),
-            {'$set': get_valid_mongo_obj(p.model_dump())}
+        BulkOperation(
+            bulk_type='UpdateOne',
+            data={'$set': get_valid_mongo_obj(p.model_dump())},
+            query=model.Patient.prepare_query({'nid': p.nid})
         )
         for p in patients_excel
         if p.nid in nids_db
     ]
-    if len(patients_create) > 0:
-        await service.bulk_create_service(db, patients=patients_create, ordered=False)
-    if len(patients_update) > 0:
-        await service.bulk_update_service(db, query_and_data=patients_update, ordered=False)
+    patients_operations = patients_create + patients_update
+    if len(patients_operations) > 0:
+        await service.bulk_service(db, operations=patients_operations, ordered=False)
 
 
 async def update_patient_controller(
