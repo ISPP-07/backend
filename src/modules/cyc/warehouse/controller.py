@@ -116,9 +116,9 @@ async def update_product_controller(
     result = []
     warehouses_id = [p.warehouse_id for p in update_products.products]
     warehouses = await service.get_warehouses_service(db, query={'id': {'$in': warehouses_id}})
-    products_by_warehouse: dict[UUID4, list[dict]] = {}
+    products_by_warehouse: dict[UUID4, list[model.Product]] = {}
     product_ids_count = Counter(p.product_id for p in update_products.products)
-    if any(value > 1 for value in product_ids_count.values()):
+    if any(value > 1 for value in product_ids_count.values):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There cannot be duplicated products'
@@ -142,6 +142,7 @@ async def update_product_controller(
             lambda p: p.id == product.product_id,
             warehouse.products
         )).pop()
+        warehouse.products.remove(old_product)
         updated_product = model.Product(
             id=product.product_id,
             name=old_product.name if product.name is None else product.name,
@@ -149,8 +150,7 @@ async def update_product_controller(
             exp_date=product.exp_date if product.update_exp_date else old_product.exp_date)
         if warehouse.id not in products_by_warehouse:
             products_by_warehouse[warehouse.id] = []
-        products_by_warehouse[warehouse.id].append(
-            updated_product.model_dump())
+        products_by_warehouse[warehouse.id].append(updated_product)
         result.append(model.ProductOut(
             id=product.product_id,
             warehouse_id=warehouse.id,
@@ -160,13 +160,12 @@ async def update_product_controller(
         ))
     for key, value in products_by_warehouse.items():
         warehouse = [w for w in warehouses if w.id == key][0]
-        value_ids = [p['id'] for p in value]
         await service.update_warehouse_service(
             db,
             warehouse_id=warehouse.id,
-            warehouse_update={
-                'products': [p.model_dump() for p in warehouse.products if p.id not in value_ids] + value
-            }
+            warehouse_update=model.WarehouseUpdate(
+                products=warehouse.products + value
+            )
         )
     return result
 
