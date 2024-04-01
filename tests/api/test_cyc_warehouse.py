@@ -141,3 +141,33 @@ def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
     assert first_product['exp_date'] == ws.cell(
         row=2, column=3
     ).value.date().isoformat()
+
+def test_update_product(app_client: TestClient, insert_warehouses_with_products):
+    warehouse_id = str(insert_warehouses_with_products[0]["_id"])
+    product_id = str(insert_warehouses_with_products[0]["products"][0]["id"])
+    url = f'{URL_WAREHOUSE}/product/'
+    product_data = {
+        "products": [
+            {
+                "name": "Queso",
+                "exp_date": "2027-03-16",
+                "quantity": 23,
+                "update_exp_date": False,
+                "warehouse_id": warehouse_id,
+                "product_id": product_id,
+            }
+        ]
+    }
+    response = app_client.patch(url=url, json=product_data)
+    assert response.status_code == 200
+    result = response.json()
+    for field in product_data:
+        assert str(result[field]) == str(product_data[field])
+
+def test_delete_product(app_client: TestClient, insert_warehouses_with_products):
+    product_id = insert_warehouses_with_products[0]["products"][0]["id"]
+    url = f'{URL_WAREHOUSE}/product/{product_id}'
+    response = app_client.delete(url=url)
+    assert response.status_code == 204
+    response = app_client.get(url=url)
+    assert response.status_code == 404
