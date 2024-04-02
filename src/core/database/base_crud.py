@@ -43,12 +43,15 @@ class BulkOperation():
         Literal['ReplaceOne'] | Literal['UpdateOne'] | Literal['UpdateMany'],
         data: dict,
         query: dict = None,
-        options: dict = {}
+        options: dict = None
     ) -> None:
         self.bulk_type = BulkTypes[bulk_type]
         self.data = data
         self.query = query
-        self.optional_conf = options
+        if options is None:
+            self.optional_conf = {}
+        else:
+            self.optional_conf = options
 
     def operation(self: Self):
         if self.bulk_type != BulkTypes.InsertOne and self.query is None:
