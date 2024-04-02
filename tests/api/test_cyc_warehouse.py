@@ -157,7 +157,9 @@ def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
     ).value.date().isoformat()
 
 
-def test_update_product(app_client: TestClient, insert_warehouses_with_products):
+def test_update_product(
+        app_client: TestClient,
+        insert_warehouses_with_products):
     warehouse_id = str(insert_warehouses_with_products[0]["_id"])
     product_id = str(insert_warehouses_with_products[0]["products"][0]["id"])
     url = f'{URL_WAREHOUSE}/product/'
@@ -183,7 +185,9 @@ def test_update_product(app_client: TestClient, insert_warehouses_with_products)
     assert str(result[0]["id"]) == product_id
 
 
-def test_delete_product(app_client: TestClient, insert_warehouses_with_products):
+def test_delete_product(
+        app_client: TestClient,
+        insert_warehouses_with_products):
     product_id = insert_warehouses_with_products[0]["products"][0]["id"]
     url = f'{URL_WAREHOUSE}/product/{product_id}'
     response = app_client.delete(url=url)
