@@ -202,7 +202,8 @@ async def delete_product_controller(db: DataBaseDep, product_id: UUID4) -> None:
             detail=f'Product {product_id} not found'
         )
     warehouse: model.Warehouse = await service.get_warehouse_service(db, {'id': product.warehouse_id})
-    new_products = [p.model_dump() for p in warehouse.products if p.id != product.id]
+    new_products = [p.model_dump()
+                    for p in warehouse.products if p.id != product.id]
     await service.update_warehouse_service(db, warehouse_id=warehouse.id, warehouse_update={'products': new_products})
 
 
