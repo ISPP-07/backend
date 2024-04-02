@@ -75,7 +75,7 @@ def test_get_product(
     insert_warehouses_with_products
 ):
     product = insert_warehouses_with_products[0]['products'][0]
-    url = f'{URL_WAREHOUSE}/product/{product['id']}'
+    url = f"{URL_WAREHOUSE}/product/{product['id']}"
     response: Response = app_client.get(url=url)
     assert response.status_code == 200
     result = response.json()
