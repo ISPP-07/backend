@@ -68,6 +68,19 @@ async def get_warehouse(db: DataBaseDep, warehouse_id: UUID4):
     return await controller.get_warehouse_controller(db, warehouse_id)
 
 
+@router.get(
+    '/product/{product_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.ProductOut,
+    responses={
+        200: {"description": "Successful Response"},
+        404: {"description": "Product not found"},
+    }
+)
+async def get_product(db: DataBaseDep, product_id: UUID4):
+    return await controller.get_product_controller(db, product_id)
+
+
 @router.post(
     '',
     status_code=status.HTTP_201_CREATED,
@@ -104,6 +117,24 @@ async def delete_warehouse(db: DataBaseDep, warehouse_id: UUID4):
     Deletes the warehouse identified by the given UUID from the database.
     """
     await controller.delete_warehouse_controller(db, warehouse_id)
+    return None
+
+
+@router.delete(
+    '/product/{product_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        204: {"description": "Product successfully deleted"},
+        404: {"description": "Product not found"},
+    }
+)
+async def delete_product(db: DataBaseDep, product_id: UUID4):
+    """
+    **Delete a product by its ID.**
+
+    Deletes the product identified by the given UUID from the database.
+    """
+    await controller.delete_product_controller(db, product_id)
     return None
 
 

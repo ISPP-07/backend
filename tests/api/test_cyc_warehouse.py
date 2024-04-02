@@ -28,7 +28,6 @@ async def insert_warehouses_with_products(mongo_db: Database):
                     "name": "Producto 1",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
-                    "warehouse_id": warehouse_id_1
                 }
             ]
          },
@@ -40,7 +39,6 @@ async def insert_warehouses_with_products(mongo_db: Database):
                     "name": "Producto 2",
                     "quantity": 10,
                     "exp_date": "2025-01-01",
-                    "warehouse_id": warehouse_id_2
                 }
             ]
          },
@@ -70,6 +68,22 @@ def test_get_all_products_list(
     for product_data in response_data:
         assert any(product_data["name"] == product["name"] and product_data["quantity"]
                    == product["quantity"] for product in inserted_products)
+
+
+def test_get_product(
+    app_client: TestClient,
+    insert_warehouses_with_products
+):
+    product = insert_warehouses_with_products[0]['products'][0]
+    url = f"{URL_WAREHOUSE}/product/{product['id']}"
+    response: Response = app_client.get(url=url)
+    assert response.status_code == 200
+    result = response.json()
+    assert result['id'] == str(product['id'])
+    assert result['name'] == product['name']
+    assert result['quantity'] == product['quantity']
+    assert result['exp_date'] == product['exp_date']
+    assert 'warehouse_id' in result
 
 
 def test_create_product(
@@ -141,3 +155,42 @@ def test_upload_excel_products(app_client: TestClient, mongo_db: Database):
     assert first_product['exp_date'] == ws.cell(
         row=2, column=3
     ).value.date().isoformat()
+
+
+def test_update_product(
+        app_client: TestClient,
+        insert_warehouses_with_products):
+    warehouse_id = str(insert_warehouses_with_products[0]["_id"])
+    product_id = str(insert_warehouses_with_products[0]["products"][0]["id"])
+    url = f'{URL_WAREHOUSE}/product/'
+    product_data = {
+        "products": [
+            {
+                "name": "Queso",
+                "exp_date": "2027-03-16",
+                "quantity": 23,
+                "update_exp_date": 'false',
+                "warehouse_id": warehouse_id,
+                "product_id": product_id,
+            }
+        ]
+    }
+    response = app_client.patch(url=url, json=product_data)
+    assert response.status_code == 200
+    result = response.json()
+    assert str(result[0]["exp_date"]) == "2025-01-01"
+    assert str(result[0]["name"]) == "Queso"
+    assert str(result[0]["quantity"]) == "23"
+    assert str(result[0]["warehouse_id"]) == warehouse_id
+    assert str(result[0]["id"]) == product_id
+
+
+def test_delete_product(
+        app_client: TestClient,
+        insert_warehouses_with_products):
+    product_id = insert_warehouses_with_products[0]["products"][0]["id"]
+    url = f'{URL_WAREHOUSE}/product/{product_id}'
+    response = app_client.delete(url=url)
+    assert response.status_code == 204
+    response = app_client.get(url=url)
+    assert response.status_code == 404

@@ -7,6 +7,7 @@ import openpyxl
 from pydantic import UUID4, ValidationError
 
 from src.core.deps import DataBaseDep
+from src.core.database.base_crud import BulkOperation
 from src.core.utils.helpers import parse_validation_error, get_valid_mongo_obj
 from src.modules.cyc.warehouse import service
 from src.modules.cyc.warehouse import model
@@ -14,6 +15,20 @@ from src.modules.cyc.warehouse import model
 
 async def get_products_controller(db: DataBaseDep) -> list[model.ProductOut]:
     return await service.get_products_service(db)
+
+
+async def get_product_controller(db: DataBaseDep, product_id: UUID4) -> model.ProductOut:
+    products = await service.get_products_service(db)
+    result = next(
+        (p for p in products if p.id == product_id),
+        None
+    )
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Product {product_id} not found'
+        )
+    return result
 
 
 async def get_warehouses_controller(db: DataBaseDep) -> list[model.Warehouse]:
@@ -175,6 +190,23 @@ async def delete_warehouse_controller(db: DataBaseDep, warehouse_id: UUID4) -> N
     await service.delete_warehouse_service(db, warehouse_id)
 
 
+async def delete_product_controller(db: DataBaseDep, product_id: UUID4) -> None:
+    products = await service.get_products_service(db)
+    product = next(
+        (p for p in products if p.id == product_id),
+        None
+    )
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Product {product_id} not found'
+        )
+    warehouse: model.Warehouse = await service.get_warehouse_service(db, {'id': product.warehouse_id})
+    new_products = [p.model_dump()
+                    for p in warehouse.products if p.id != product.id]
+    await service.update_warehouse_service(db, warehouse_id=warehouse.id, warehouse_update={'products': new_products})
+
+
 async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile) -> None:
     [_, extension] = os.path.splitext(products.filename)
     if extension[1:] not in ['xlsx', 'xlsm']:
@@ -230,7 +262,7 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
                 detail='There cannot be duplicated products'
             )
         products_excel.get(warehouse_name).products.append(new_product)
-    update_data: list[tuple[dict, dict]] = []
+    warehouse_operations: list[BulkOperation] = []
     for key, value in products_excel.items():
         warehouse = await service.get_warehouse_service(db, query={'name': key})
         if warehouse is None:
@@ -257,14 +289,16 @@ async def upload_excel_products_controller(db: DataBaseDep, products: UploadFile
         new_products = update_and_old_products + [
             get_valid_mongo_obj(p.model_dump()) for p in value.products
         ]
-        update_data.append(
-            (
-                model.Warehouse.prepare_query({'id': warehouse.id}),
-                {'$set': {'products': new_products}}
+        warehouse_operations.append(
+            BulkOperation(
+                bulk_type='UpdateOne',
+                data={'$set': {'products': new_products}},
+                query=model.Warehouse.prepare_query({'id': warehouse.id})
             )
         )
-    if len(update_data) > 0:
-        await service.bulk_update_service(
+    if len(warehouse_operations) > 0:
+        await service.bulk_service(
             db,
-            query_and_data=update_data
+            operations=warehouse_operations,
+            ordered=False
         )
