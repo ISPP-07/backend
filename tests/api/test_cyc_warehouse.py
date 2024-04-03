@@ -61,11 +61,12 @@ def test_get_all_products_list(
     url = f'{URL_WAREHOUSE}/product'
     response: Response = app_client.get(url=url)
     assert response.status_code == 200
-    response_data = response.json()
+    result = response.json()
+    assert 'elements' in result and 'total_elements' in result
     inserted_products = [
         product for warehouse in warehouses for product in warehouse["products"]]
-    assert len(response_data) == len(inserted_products)
-    for product_data in response_data:
+    assert len(result['elements']) == len(inserted_products)
+    for product_data in result['elements']:
         assert any(product_data["name"] == product["name"] and product_data["quantity"]
                    == product["quantity"] for product in inserted_products)
 

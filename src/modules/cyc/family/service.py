@@ -1,13 +1,15 @@
-from fastapi import HTTPException, status
+from typing import Any
 
 from pydantic import UUID4
+from fastapi import HTTPException, status
+
 from src.core.deps import DataBaseDep
 from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
 from src.modules.cyc.family import model
 
 
-async def get_families_service(db: DataBaseDep) -> list[model.Family]:
-    return await model.Family.get_multi(db)
+async def get_families_service(db: DataBaseDep, **kwargs: Any) -> list[model.Family]:
+    return await model.Family.get_multi(db, **kwargs)
 
 
 async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | None:

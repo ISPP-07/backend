@@ -13,8 +13,13 @@ from src.modules.cyc.warehouse import service
 from src.modules.cyc.warehouse import model
 
 
-async def get_products_controller(db: DataBaseDep) -> list[model.ProductOut]:
-    return await service.get_products_service(db)
+async def get_products_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetProducts:
+    products = await service.get_products_service(db)
+    result = products[offset:offset + limit]
+    return model.GetProducts(
+        elements=result,
+        total_elements=len(result)
+    )
 
 
 async def get_product_controller(db: DataBaseDep, product_id: UUID4) -> model.ProductOut:

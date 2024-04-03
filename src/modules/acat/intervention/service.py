@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException, status
 from pydantic import UUID4
 
@@ -16,8 +18,8 @@ async def get_intervention_service(db: DataBaseDep, query: dict) -> model.Interv
     return intervention
 
 
-async def get_interventions_service(db: DataBaseDep) -> list[model.Intervention]:
-    return await model.Intervention.get_multi(db, query=None)
+async def get_interventions_service(db: DataBaseDep, **kwargs: Any) -> list[model.Intervention]:
+    return await model.Intervention.get_multi(db, query=None, **kwargs)
 
 
 async def create_intervention_service(db: DataBaseDep, intervention_data: model.InterventionCreate,

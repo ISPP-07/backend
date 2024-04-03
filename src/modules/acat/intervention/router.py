@@ -13,12 +13,12 @@ router = APIRouter(tags=['Intervention'], dependencies=dependencies)
 
 @router.get('',
             status_code=status.HTTP_200_OK,
-            response_model=list[model.Intervention],
+            response_model=model.GetInterventions,
             responses={
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_interventions(db: DataBaseDep):
+async def get_interventions(db: DataBaseDep, limit: int = 100, offset: int = 0):
     """
     **Retrieve a list of all interventions.**
 
@@ -27,7 +27,7 @@ async def get_interventions(db: DataBaseDep):
     typology (if provided), observations (if provided), the technician responsible for the
     intervention, and the patient associated with the intervention.
     """
-    return await controller.get_interventions_controller(db)
+    return await controller.get_interventions_controller(db, limit, offset)
 
 
 @router.get('/{intervention_id}',

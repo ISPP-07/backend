@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from pymongo.database import Database
+from httpx import Response
 
 from src.core.config import settings
 
@@ -62,13 +63,13 @@ def insert_families_mongo(mongo_db: Database):
 
 def test_get_families(app_client: TestClient, insert_families_mongo):
     url = f'{settings.API_STR}cyc/family/'
-    response = app_client.get(url=url)
+    response: Response = app_client.get(url=url)
     assert response.status_code == 200
     result = response.json()
-    assert True
-    assert isinstance(result, list)
-    assert len(result) == 1
-    for item, family in zip(result, insert_families_mongo):
+    assert 'elements' in result and 'total_elements' in result
+    assert isinstance(result['elements'], list)
+    assert len(result['elements']) == 1
+    for item, family in zip(result['elements'], insert_families_mongo):
         assert item['id'] == str(family['_id'])
         assert item['name'] == family['name']
         assert item['number_of_people'] == family['number_of_people']

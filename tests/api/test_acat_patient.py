@@ -129,8 +129,9 @@ def test_get_patients(app_client: TestClient, insert_patients_mongo):
     response = app_client.get(url=URL_PATIENT)
     assert response.status_code == 200
     result = response.json()
-    assert isinstance(result, list)
-    for item, patient in zip(result, insert_patients_mongo):
+    assert 'elements' in result and 'total_elements' in result
+    assert isinstance(result['elements'], list)
+    for item, patient in zip(result['elements'], insert_patients_mongo):
         assert item["id"] == str(patient["_id"])
         assert item["name"] == patient["name"]
         assert item["address"] == patient["address"]

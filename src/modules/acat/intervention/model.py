@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, UUID4
 
+from pydantic import BaseModel, UUID4, NonNegativeInt
 from src.core.database.base_crud import BaseMongo
 from src.modules.acat.patient.model import Patient
 
@@ -37,3 +37,8 @@ class InterventionUpdate(BaseModel):
     patient_id: Optional[UUID4] = None
     technician: Optional[str] = None
     update_fields_to_none: list[str] = []
+
+
+class GetInterventions(BaseModel):
+    elements: Intervention
+    total_elements: NonNegativeInt

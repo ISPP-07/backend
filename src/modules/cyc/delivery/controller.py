@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Dict
-from pydantic import UUID4
 
+from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
@@ -12,27 +12,34 @@ from src.modules.cyc.warehouse import service as product_service
 from src.modules.cyc.warehouse import model as product_model
 
 
-async def get_deliveries_controller(db: DataBaseDep):
-    result = await service.get_deliveries_service(db)
+async def get_deliveries_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetDeliveries:
+    deliveries = await service.get_deliveries_service(db, limit=limit, skip=offset)
     warehouses = await product_service.get_warehouses_service(db, query=None)
     product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products}
-    result_final = []
-    for delivery in result:
+        product.id: product.name for warehouse in warehouses for product in warehouse.products
+    }
+    deliveries_out = []
+    for delivery in deliveries:
         updated_lines = []
         for line in delivery.lines:
             product_name = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.dict(), name=product_name)
+                **line.model_dump(), name=product_name
+            )
             updated_lines.append(updated_line)
-        salida = model.DeliveryOut(id=delivery.id,
-                                   date=delivery.date,
-                                   months=delivery.months,
-                                   state=delivery.state,
-                                   lines=updated_lines,
-                                   family_id=delivery.family_id)
-        result_final.append(salida)
-    return result_final
+        out = model.DeliveryOut(
+            id=delivery.id,
+            date=delivery.date,
+            months=delivery.months,
+            state=delivery.state,
+            lines=updated_lines,
+            family_id=delivery.family_id
+        )
+        deliveries_out.append(out)
+    return model.GetDeliveries(
+        elements=deliveries_out,
+        total_elements=len(deliveries_out)
+    )
 
 
 async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> model.DeliveryOut:
