@@ -11,7 +11,7 @@ router = APIRouter(tags=['Family'], dependencies=dependencies)
 
 @router.get('',
             status_code=status.HTTP_200_OK,
-            response_model=list[model.GetFamilies],
+            response_model=model.GetFamilies,
             responses={
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}

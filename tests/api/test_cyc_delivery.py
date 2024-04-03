@@ -98,9 +98,10 @@ def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
     response = app_client.get(url=URL_DELIVERY)
     assert response.status_code == 200
     result = response.json()
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item, delivery in zip(result, insert_deliveries_mongo):
+    assert 'elements' in result and 'total_elements' in result
+    assert isinstance(result['elements'], list)
+    assert len(result['elements']) == 2
+    for item, delivery in zip(result['elements'], insert_deliveries_mongo):
         assert item['id'] == str(delivery['_id'])
         # Convert the date string to ISO format without time
         item_date = item['date'].split('T')[0]
