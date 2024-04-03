@@ -15,7 +15,7 @@ from src.modules.cyc.warehouse import model
 
 async def get_products_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetProducts:
     products = await service.get_products_service(db)
-    result = products[offset:offset+limit]
+    result = products[offset:offset + limit]
     return model.GetProducts(
         elements=result,
         total_elements=len(result)
