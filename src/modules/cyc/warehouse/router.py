@@ -32,13 +32,13 @@ async def get_warehouses(db: DataBaseDep):
 @router.get(
     '/product',
     status_code=status.HTTP_200_OK,
-    response_model=list[model.ProductOut],
+    response_model=model.GetProducts,
     responses={
         200: {"description": "Successful Response"},
         500: {"description": "Internal Server Error"}
     }
 )
-async def get_products(db: DataBaseDep):
+async def get_products(db: DataBaseDep, limit: int = 100, offset: int = 0):
     """
     **Retrieve a list of all products in all warehouses.**
 
@@ -46,7 +46,7 @@ async def get_products(db: DataBaseDep):
     including each product's name, quantity, expiration date, and the ID of the warehouse
     it's stored in.
     """
-    return await controller.get_products_controller(db)
+    return await controller.get_products_controller(db, limit, offset)
 
 
 @router.get(

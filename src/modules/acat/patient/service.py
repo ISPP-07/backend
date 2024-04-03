@@ -15,8 +15,8 @@ async def get_patient_by_id(db: DataBaseDep, patient_id: UUID4) -> model.Patient
     return await model.Patient.get(db, query={'id': patient_id})
 
 
-async def get_patients_service(db: DataBaseDep, query=None) -> list[model.Patient]:
-    return await model.Patient.get_multi(db, query)
+async def get_patients_service(db: DataBaseDep, query=None, **kwargs: Any) -> list[model.Patient]:
+    return await model.Patient.get_multi(db, query, **kwargs)
 
 
 async def create_patient_service(db: DataBaseDep, patient: model.PatientCreate) -> InsertOneResultMongo:

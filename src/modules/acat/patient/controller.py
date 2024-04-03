@@ -12,8 +12,12 @@ from src.modules.acat.patient import model
 from src.modules.acat.patient import service
 
 
-async def get_patients_controller(db: DataBaseDep):
-    return await service.get_patients_service(db)
+async def get_patients_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetPatients:
+    patients = await service.get_patients_service(db, limit=limit, skip=offset)
+    return model.GetPatients(
+        elements=patients,
+        total_elements=len(patients)
+    )
 
 
 async def create_patient_controller(db: DataBaseDep, patient: model.PatientCreate) -> model.Patient:

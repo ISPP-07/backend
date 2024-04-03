@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, UUID4, PositiveInt, FutureDatetime
+from pydantic import BaseModel, UUID4, PositiveInt, FutureDatetime, NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
 
@@ -54,3 +54,8 @@ class DeliveryUpdate(BaseModel):
     state: Optional[State] = None
     lines: Optional[list[DeliveryLine]] = None
     family_id: Optional[UUID4] = None
+
+
+class GetDeliveries(BaseModel):
+    elements: list[DeliveryOut]
+    total_elements: NonNegativeInt

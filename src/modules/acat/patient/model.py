@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel, UUID4, PastDate
+from pydantic import BaseModel, UUID4, PastDate, NonNegativeInt
 
 from src.core.database.base_crud import BaseMongo
 from src.core.utils.helpers import calculate_age
@@ -90,3 +90,8 @@ class PatientOut(BaseModel):
     first_technician: Optional[str]
     observation: Optional[str]
     age: int
+
+
+class GetPatients(BaseModel):
+    elements: list[Patient]
+    total_elements: NonNegativeInt

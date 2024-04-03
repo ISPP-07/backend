@@ -9,6 +9,7 @@ from pydantic import (
     PastDate,
     FutureDate,
     PositiveInt,
+    NonNegativeInt,
     UUID4,
     BaseModel,
     model_validator,
@@ -226,3 +227,8 @@ class FamilyUpdate(BaseModel, FamilyValidator):
         return data
     observation: Optional[str] = None
     members: Optional[list[Person]] = None
+
+
+class GetFamilies(BaseModel):
+    elements: list[Family]
+    total_elements: NonNegativeInt

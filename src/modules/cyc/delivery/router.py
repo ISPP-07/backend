@@ -12,12 +12,12 @@ router = APIRouter(tags=["Delivery"], dependencies=dependencies)
 
 @router.get("",
             status_code=status.HTTP_200_OK,
-            response_model=list[model.DeliveryOut],
+            response_model=model.GetDeliveries,
             responses={
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_deliveries(db: DataBaseDep) -> list[model.DeliveryOut]:
+async def get_deliveries(db: DataBaseDep, limit: int = 100, offset: int = 0):
     """
     **Retrieve a list of all deliveries.**
 
@@ -25,7 +25,7 @@ async def get_deliveries(db: DataBaseDep) -> list[model.DeliveryOut]:
     its ID, date scheduled for, duration in months, items (lines) including product ID, quantity,
     and state (if any), and the family ID associated with the delivery.
     """
-    return await controller.get_deliveries_controller(db)
+    return await controller.get_deliveries_controller(db, limit, offset)
 
 
 @router.get('/{delivery_id}',

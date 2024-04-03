@@ -8,8 +8,12 @@ from src.modules.acat.intervention import model
 from src.modules.acat.patient import service as patient_service
 
 
-async def get_interventions_controller(db: DataBaseDep):
-    return await service.get_interventions_service(db)
+async def get_interventions_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetInterventions:
+    interventions = await service.get_interventions_service(db, limit=limit, skip=offset)
+    return model.GetInterventions(
+        elements=interventions,
+        total_elements=len(interventions)
+    )
 
 
 async def get_intervention_details_controller(db: DataBaseDep, intervention_id: UUID4):

@@ -6,8 +6,12 @@ from src.modules.cyc.family import model
 from src.modules.cyc.family import service
 
 
-async def get_families_controller(db: DataBaseDep):
-    return await service.get_families_service(db)
+async def get_families_controller(db: DataBaseDep, limit=100, offset=0) -> model.GetFamilies:
+    families = await service.get_families_service(db, limit=limit, skip=offset)
+    return model.GetFamilies(
+        elements=families,
+        total_elements=len(families)
+    )
 
 
 async def create_family_controller(db: DataBaseDep, family: model.FamilyCreate) -> model.Family:

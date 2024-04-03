@@ -11,12 +11,12 @@ router = APIRouter(tags=['Patient'], dependencies=dependencies)
 
 @router.get('',
             status_code=status.HTTP_200_OK,
-            response_model=list[model.Patient],
+            response_model=model.GetPatients,
             responses={
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_patients(db: DataBaseDep):
+async def get_patients(db: DataBaseDep, limit: int = 100, offset: int = 0):
     """
     **Retrieve a list of all patients.**
 
@@ -26,7 +26,7 @@ async def get_patients(db: DataBaseDep):
     dossier number, first technician assigned to the patient (if any), registration date, any
     observations about the patient, and the calculated age of the patient.
     """
-    return await controller.get_patients_controller(db)
+    return await controller.get_patients_controller(db, limit, offset)
 
 
 @router.post('',

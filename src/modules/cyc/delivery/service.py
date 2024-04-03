@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
@@ -7,8 +9,8 @@ from src.modules.cyc.warehouse import service as warehouse_service
 from src.modules.cyc.warehouse import model as warehouse_model
 
 
-async def get_deliveries_service(db: DataBaseDep) -> list[model.Delivery]:
-    return await model.Delivery.get_multi(db, query=None)
+async def get_deliveries_service(db: DataBaseDep, **kwargs: Any) -> list[model.Delivery]:
+    return await model.Delivery.get_multi(db, query=None, **kwargs)
 
 
 async def get_delivery_service(db: DataBaseDep, query: dict) -> model.Delivery | None:

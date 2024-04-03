@@ -19,8 +19,8 @@ async def get_warehouse_service(db: DataBaseDep, query: dict) -> model.Warehouse
     return await model.Warehouse.get(db, query)
 
 
-async def get_products_service(db: DataBaseDep, query: dict = None) -> list[model.ProductOut]:
-    warehouses: list[model.Warehouse] = await model.Warehouse.get_multi(db, query)
+async def get_products_service(db: DataBaseDep, query: dict = None, **kwargs: Any) -> list[model.ProductOut]:
+    warehouses: list[model.Warehouse] = await model.Warehouse.get_multi(db, query, **kwargs)
     result = [
         model.ProductOut(
             id=product.id,
