@@ -64,8 +64,7 @@ def test_get_all_products_list(
     result = response.json()
     assert 'elements' in result and 'total_elements' in result
     inserted_products = [
-        product for warehouse in warehouses for product in warehouse["products"]
-    ]
+        product for warehouse in warehouses for product in warehouse["products"]]
     assert len(result['elements']) == len(inserted_products)
     for product_data in result['elements']:
         assert any(product_data["name"] == product["name"] and product_data["quantity"]
