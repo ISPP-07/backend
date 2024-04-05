@@ -161,8 +161,7 @@ async def update_delivery_controller(db: DataBaseDep, delivery_id: UUID4, delive
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='There is one product that is in two different lines. ' +
-                'Please put them in a single line'
-            )
+                'Please put them in a single line')
 
         warehouses = await product_service.get_warehouses_service(db, query=None)
         product_to_warehouse = {
