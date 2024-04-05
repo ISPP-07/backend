@@ -10,7 +10,7 @@ async def get_families_controller(db: DataBaseDep, limit=100, offset=0) -> model
     families = await service.get_families_service(db, limit=limit, skip=offset)
     return model.GetFamilies(
         elements=families,
-        total_elements=len(families)
+        total_elements=await service.count_families_service(db, query={})
     )
 
 
