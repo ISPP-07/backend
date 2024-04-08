@@ -156,3 +156,9 @@ async def bulk_update_service(
             detail='DB error'
         )
     return result
+
+
+async def count_products_service(db: DataBaseDep, query: dict) -> int:
+    warehouses: list[model.Warehouse] = await model.Warehouse.get_multi(db, query)
+    count = sum(len(warehouse.products) for warehouse in warehouses)
+    return count
