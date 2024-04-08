@@ -12,7 +12,7 @@ async def get_interventions_controller(db: DataBaseDep, limit: int = 100, offset
     interventions = await service.get_interventions_service(db, limit=limit, skip=offset)
     return model.GetInterventions(
         elements=interventions,
-        total_elements=len(interventions)
+        total_elements=await service.count_interventions_service(db, query={})
     )
 
 

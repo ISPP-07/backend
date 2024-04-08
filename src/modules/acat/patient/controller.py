@@ -16,7 +16,7 @@ async def get_patients_controller(db: DataBaseDep, limit: int = 100, offset: int
     patients = await service.get_patients_service(db, limit=limit, skip=offset)
     return model.GetPatients(
         elements=patients,
-        total_elements=len(patients)
+        total_elements=await service.count_patients_service(db, query={})
     )
 
 
