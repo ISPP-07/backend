@@ -18,7 +18,7 @@ async def get_products_controller(db: DataBaseDep, limit: int = 100, offset: int
     result = products[offset:offset + limit]
     return model.GetProducts(
         elements=result,
-        total_elements=len(result)
+        total_elements=await service.count_products_service(db, query={})
     )
 
 

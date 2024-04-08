@@ -40,5 +40,5 @@ class InterventionUpdate(BaseModel):
 
 
 class GetInterventions(BaseModel):
-    elements: Intervention
+    elements: list[Intervention]
     total_elements: NonNegativeInt

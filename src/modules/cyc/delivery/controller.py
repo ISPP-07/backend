@@ -38,7 +38,7 @@ async def get_deliveries_controller(db: DataBaseDep, limit: int = 100, offset: i
         deliveries_out.append(out)
     return model.GetDeliveries(
         elements=deliveries_out,
-        total_elements=len(deliveries_out)
+        total_elements=await service.count_deliveries_service(db, query={})
     )
 
 
