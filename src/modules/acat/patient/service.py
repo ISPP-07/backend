@@ -96,3 +96,7 @@ async def delete_patient_service(db: DataBaseDep, query: dict) -> model.Patient:
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Patient not found',
         )
+
+
+async def count_patients_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Patient.count(db, query)

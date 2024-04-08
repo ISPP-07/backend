@@ -64,3 +64,7 @@ async def delete_intervention_service(db: DataBaseDep, query: dict) -> model.Int
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Intervention not found',
         )
+
+
+async def count_interventions_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Intervention.count(db, query)

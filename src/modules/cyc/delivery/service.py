@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.delivery import model
-from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo
 from src.modules.cyc.warehouse import service as warehouse_service
 from src.modules.cyc.warehouse import model as warehouse_model
 
@@ -97,3 +97,7 @@ async def delete_delivery_service(db: DataBaseDep, query: dict) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error during deletion'
         )
+
+
+async def count_deliveries_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Delivery.count(db, query)

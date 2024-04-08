@@ -54,3 +54,7 @@ async def update_family_service(
         query={'id': family_id},
         data_to_update=family_update
     )
+
+
+async def count_families_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Family.count(db, query)
