@@ -1,6 +1,6 @@
 import argparse
 from typing import Any
-from datetime import date, datetime
+from datetime import date
 from enum import Enum
 
 NID_LETERS = [
