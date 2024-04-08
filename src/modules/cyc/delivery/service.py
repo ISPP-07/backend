@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
 from src.modules.cyc.delivery import model
-from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.database.mongo_types import InsertOneResultMongo
 from src.modules.cyc.warehouse import service as warehouse_service
 from src.modules.cyc.warehouse import model as warehouse_model
 
