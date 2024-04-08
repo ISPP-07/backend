@@ -1,18 +1,55 @@
-from src.core.security import verify_password
-from src.modules.shared.user.model import User
+import pyotp
+
+from fastapi import HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+
+from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.deps import DataBaseDep
+from src.core.utils.security import verify_password
+from src.modules.shared.auth import model
+from src.modules.shared.user import model as user_model
 
 
-def root_service():
-    return 'Hello core auth router!'
+def generate_user_secret():
+    secret = pyotp.random_base32()
+    return secret
 
 
-def hello_service():
-    return 'Hello service !!'
+def generate_qr_code(email, secret):
+    topt_object = pyotp.TOTP(secret)
+    qr_text = topt_object.provisioning_uri(email, issuer_name="Harmony")
+    return qr_text
 
 
-async def login_service(session, form_data):
-    user = await User.get(session, username=form_data.username)
-    if user and verify_password(form_data.password, user.hashed_password):
-        return user
+def verify_otp(secret, otp):
+    totp = pyotp.TOTP(secret)
+    return totp.verify(otp)
 
-    return None
+
+async def login_service(db: DataBaseDep,
+                        form_data: OAuth2PasswordRequestForm) -> user_model.User | None:
+    user: user_model.User = await user_model.User.get(db, query={'username': form_data.username})
+    if not (user and verify_password(form_data.password, user.password)):
+        return None
+    return user
+
+
+async def create_user_secret(db: DataBaseDep, user_create: model.UserSecretCreate) -> model.UserSecretOut | None:
+    user = await model.UserSecret.get(db, query={'email': user_create.email})
+    if user:
+        result = await model.UserSecret.update(db, {'email': user_create.email}, user_create.model_dump())
+    else:
+        insert_mongo: InsertOneResultMongo = await model.UserSecret.create(db, user_create.model_dump())
+        if not insert_mongo.acknowledged:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail='DB error'
+            )
+        result = await model.UserSecret.get(db, query={'id': insert_mongo.inserted_id})
+    return result
+
+
+async def get_secret_by_email(db: DataBaseDep, email: str) -> str:
+    query = {'email': email}
+    user = await model.UserSecret.get(db, query)
+    return user.user_secret

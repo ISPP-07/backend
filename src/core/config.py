@@ -1,9 +1,8 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 import secrets
-from fastapi import Depends
 from pydantic_settings import BaseSettings
-from pydantic import AnyHttpUrl, PostgresDsn, validator, ValidationInfo, field_validator
+from pydantic import AnyHttpUrl, MongoDsn, ValidationInfo, field_validator
 from fastapi.responses import JSONResponse
 
 
@@ -37,26 +36,26 @@ class Settings(BaseSettings):
     SERVER_HOST: str
     SERVER_PORT: int
 
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(
-            cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+            cls, v: Union[str, List[str], List[AnyHttpUrl]]) -> List[AnyHttpUrl]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        elif isinstance(v, list):
             return v
-        raise ValueError(v)
+        raise ValueError(f"Invalid input for BACKEND_CORS_ORIGINS: {v}")
 
-    POSTGRES_HOST: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    POSTGRES_PORT: int
-    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    MONGO_HOST: str
+    MONGO_USER: str
+    MONGO_PASSWORD: str
+    MONGO_DB: str
+    MONGO_PORT: int
+    MONGO_DATABASE_URI: Optional[MongoDsn] = None
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
+    @field_validator("MONGO_DATABASE_URI", mode="before")
     @classmethod
     def assemble_db_connection(
             cls,
@@ -64,13 +63,12 @@ class Settings(BaseSettings):
             values: ValidationInfo) -> Any:
         if isinstance(v, str):
             return v
-        return PostgresDsn.build(
-            scheme="postgresql+psycopg",
-            username=values.data.get("POSTGRES_USER"),
-            password=values.data.get("POSTGRES_PASSWORD"),
-            host=values.data.get("POSTGRES_HOST"),
-            port=values.data.get("POSTGRES_PORT"),
-            path=values.data.get("POSTGRES_DB") or ""
+        return MongoDsn.build(  # pylint: disable=E1101
+            scheme="mongodb",
+            username=values.data.get("MONGO_USER"),
+            password=values.data.get("MONGO_PASSWORD"),
+            host=values.data.get("MONGO_HOST"),
+            port=values.data.get("MONGO_PORT"),
         )
 
     @property
@@ -81,8 +79,6 @@ class Settings(BaseSettings):
         Returns:
             dict: This can be unpacked as **kwargs to pass to FastAPI app.
         """
-
-        print(self.STAGING)
 
         fastapi_kwargs = {
             "title": self.PROJECT_NAME,

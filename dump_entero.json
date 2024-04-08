@@ -1,0 +1,969 @@
+{
+    "Patient": [
+        {
+            "_id": "fb401b0e-e966-4f07-88f1-d469b3de53c4",
+            "name": "Juan",
+            "first_surname": "Suarez",
+            "second_surname": "Lopez",
+            "alias": "Juanito",
+            "nid": "12342908G",
+            "birth_date": "2004-01-13",
+            "gender": "Man",
+            "address": "Calle Adolfo Suarez, 15",
+            "contact_phone": "754589635",
+            "dossier_number": "AAB172",
+            "is_rehabilitated": false,
+            "first_technician": "Pedro C.",
+            "observation": "Muestra signos de ansiedad, es necesario ajustar el tratamiento."
+        },
+        {
+            "_id": "4556cc27-f836-435d-a3ee-4be5050b5329",
+            "name": "Sof\u00eda",
+            "first_surname": "Mart\u00ednez",
+            "second_surname": "Garc\u00eda",
+            "alias": "Sofi",
+            "nid": "36115217L",
+            "birth_date": "1998-05-24",
+            "gender": "Woman",
+            "address": "Plaza de la Constituci\u00f3n, 4",
+            "contact_phone": "657483920",
+            "dossier_number": "BBC293",
+            "is_rehabilitated": true,
+            "first_technician": "Laura M.",
+            "observation": "Progresa adecuadamente en su recuperaci\u00f3n, continuar con el plan actual."
+        },
+        {
+            "_id": "b54f872d-3d3c-4fa6-8fa5-54218e21ddf2",
+            "name": "Carlos",
+            "first_surname": "P\u00e9rez",
+            "second_surname": "Fern\u00e1ndez",
+            "alias": "Charly",
+            "nid": "26164874M",
+            "birth_date": "2000-11-08",
+            "gender": "Man",
+            "address": "Avenida Miraflores, 27",
+            "contact_phone": "698547123",
+            "dossier_number": "CCD314",
+            "is_rehabilitated": false,
+            "first_technician": "Miguel A.",
+            "observation": "Necesita m\u00e1s apoyo en el \u00e1rea de habilidades sociales, se recomienda grupo terap\u00e9utico."
+        },
+        {
+            "_id": "8cf26e58-39a4-42bc-885d-c26a8dad920a",
+            "name": "Elena",
+            "first_surname": "Rodr\u00edguez",
+            "second_surname": "Luna",
+            "alias": "Elen",
+            "nid": "26076933Q",
+            "birth_date": "1996-03-15",
+            "gender": "Woman",
+            "address": "Calle del Sol, 10",
+            "contact_phone": "756849302",
+            "dossier_number": "DDE415",
+            "is_rehabilitated": true,
+            "first_technician": "Sara P.",
+            "observation": "Excelente evoluci\u00f3n, se sugiere revisi\u00f3n semestral para seguimiento."
+        },
+        {
+            "_id": "c713931b-d3cf-4986-9988-7171b0ef97fd",
+            "name": "Miguel",
+            "first_surname": "\u00c1lvarez",
+            "second_surname": "Torres",
+            "alias": "Miki",
+            "nid": "57831446Q",
+            "birth_date": "2002-07-19",
+            "gender": "Man",
+            "address": "Ronda de la Universidad, 11",
+            "contact_phone": "612345678",
+            "dossier_number": "EEF516",
+            "is_rehabilitated": false,
+            "first_technician": "Cristina G.",
+            "observation": "Dificultades para mantener la concentraci\u00f3n, se propone evaluaci\u00f3n por especialista."
+        },
+        {
+            "_id": "72f81763-0c8d-4be5-8609-6b69dd6917ad",
+            "name": "Luc\u00eda",
+            "first_surname": "G\u00f3mez",
+            "second_surname": "Prieto",
+            "alias": "Lu",
+            "nid": "70530960B",
+            "birth_date": "1994-09-30",
+            "gender": "Woman",
+            "address": "Calle Nueva, 5",
+            "contact_phone": "679123456",
+            "dossier_number": "FFG627",
+            "is_rehabilitated": true,
+            "first_technician": "Juan D.",
+            "observation": "Contin\u00faa con el seguimiento post-rehabilitaci\u00f3n, muy comprometida con su mejora."
+        }
+    ],
+    "User": [
+        {
+            "_id": "4e3413d9-5683-483a-8772-1d91bfb9d81d",
+            "username": "grupo1",
+            "password": "$2b$12$kjVsFp51l7n9A4O0.r.bYO5tRfbq9FDoJPkqgo4EXBVqLiTw8V6qS",
+            "email": "ittalentofficial@outlook.com"
+        },
+        {
+            "_id": "061ac269-5e3e-4733-ad93-413efd8b3816",
+            "username": "ispp",
+            "password": "$2b$12$ZWrU43lx9NuUl.Fz5bilQeYR4nErXS4AVX43sFYLz067It49N0.qy",
+            "email": "harmonyltd@outlook.es"
+        }
+    ],
+    "Family": [
+        {
+            "_id": "765537e7-2dd5-47ab-8718-685ebc8b451c",
+            "name": "Familia Garcia Vazquez",
+            "phone": "658548545",
+            "address": "Avenida Maria del Mar, 34",
+            "referred_organization": "Organizacion ALX",
+            "next_renewal_date": "2025-03-31",
+            "observation": "Familia unida y feliz",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2010-01-31",
+                    "type": "Child",
+                    "name": "Pepe",
+                    "surname": "Garcia",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "62417103W",
+                    "family_head": false,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Lactosa"
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "2002-09-30",
+                    "type": "Adult",
+                    "name": "Juan",
+                    "surname": "Garcia",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "79246344M",
+                    "family_head": false,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1982-08-31",
+                    "type": "Adult",
+                    "name": "Manuel",
+                    "surname": "Garcia",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "36198173Z",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Gluten"
+                    ],
+                    "homeless": false
+                }
+            ]
+        },
+        {
+            "_id": "a180a694-7437-49c6-81f7-4ee161d9b8ac",
+            "name": "Familia Lopez Gutierrez",
+            "phone": "698513657",
+            "address": "Avenida Ciudad Jardin, 12",
+            "referred_organization": "Organizacion YJH",
+            "next_renewal_date": "2027-03-31",
+            "observation": "Padre con Diabete, necesita dieta especial",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2010-01-31",
+                    "type": "Child",
+                    "name": "Sara",
+                    "surname": "L\u00f3pez",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "69305765A",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": true,
+                    "food_intolerances": [
+                        ""
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1980-09-30",
+                    "type": "Adult",
+                    "name": "Juan",
+                    "surname": "Lopez",
+                    "nationality": "Venezolano",
+                    "nid": "62292286Y",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1982-08-31",
+                    "type": "Adult",
+                    "name": "Sara",
+                    "surname": "Bernal",
+                    "nationality": "Colombiana",
+                    "nid": "85438440H",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Gluten"
+                    ],
+                    "homeless": false
+                }
+            ]
+        },
+        {
+            "_id": "11815cd5-19ff-4748-82e9-0200ee1d6050",
+            "name": "Familia Martinez Suarez",
+            "phone": "624563751",
+            "address": "Calle Sol, 12",
+            "referred_organization": "Organizacion AUX",
+            "next_renewal_date": "2026-01-23",
+            "observation": "Ninguna observacion",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2011-04-12",
+                    "type": "Child",
+                    "name": "Marco",
+                    "surname": "Martinez",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "01850816Y",
+                    "family_head": false,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Lactosa"
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1974-02-21",
+                    "type": "Adult",
+                    "name": "Andres",
+                    "surname": "Martinez",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "57508689H",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1982-08-31",
+                    "type": "Adult",
+                    "name": "Maria",
+                    "surname": "Cabrera",
+                    "nationality": "Espa\u00f1ola",
+                    "nid": "17516600F",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Lactosa"
+                    ],
+                    "homeless": false
+                }
+            ]
+        },
+        {
+            "_id": "3fdf51c1-04ae-4b17-9bd2-fad322f059b4",
+            "name": "Familia Ramos Monta\u00f1osa",
+            "phone": "754293461",
+            "address": "Calle Tierra, 4",
+            "referred_organization": "Organizacion JKS",
+            "next_renewal_date": "2026-02-20",
+            "observation": "Ninguna observacion",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2014-04-12",
+                    "type": "Child",
+                    "name": "Carmen",
+                    "surname": "Ramos",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "24474245Z",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": true,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1973-11-21",
+                    "type": "Adult",
+                    "name": "David",
+                    "surname": "Ramos",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "03071586M",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": true,
+                    "food_intolerances": [
+                        "Gluten"
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1982-08-31",
+                    "type": "Adult",
+                    "name": "Paloma",
+                    "surname": "Monta\u00f1osa",
+                    "nationality": "Espa\u00f1ola",
+                    "nid": "79518592W",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Lactosa"
+                    ],
+                    "homeless": false
+                }
+            ]
+        },
+        {
+            "_id": "a4810c1c-1109-4980-940d-875f86928f49",
+            "name": "Familia Torres Delgado",
+            "phone": "658394721",
+            "address": "Avenida de la Paz, 38",
+            "referred_organization": "Fundaci\u00f3n XYZ",
+            "next_renewal_date": "2026-07-15",
+            "observation": "Asistencia regular a talleres de integraci\u00f3n",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2016-06-30",
+                    "type": "Child",
+                    "name": "Luc\u00eda",
+                    "surname": "Torres",
+                    "nationality": "Espa\u00f1ola",
+                    "nid": "59996993K",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Frutos secos"
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1978-03-22",
+                    "type": "Adult",
+                    "name": "Jorge",
+                    "surname": "Torres",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "74838545H",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1980-12-05",
+                    "type": "Adult",
+                    "name": "Ana",
+                    "surname": "Delgado",
+                    "nationality": "Espa\u00f1ola",
+                    "nid": "60304794J",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Lactosa"
+                    ],
+                    "homeless": false
+                }
+            ]
+        },
+        {
+            "_id": "fbe5d347-11e7-4b02-963a-49e4869f2693",
+            "name": "Familia G\u00f3mez Herrera",
+            "phone": "662347890",
+            "address": "Plaza de los Almendros, 5",
+            "referred_organization": "Centro Comunitario Alfa",
+            "next_renewal_date": "2026-10-03",
+            "observation": "En proceso de reubicaci\u00f3n de vivienda",
+            "number_of_people": 3,
+            "members": [
+                {
+                    "date_birth": "2018-08-14",
+                    "type": "Child",
+                    "name": "Sergio",
+                    "surname": "G\u00f3mez",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "05717388W",
+                    "family_head": false,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1985-01-29",
+                    "type": "Adult",
+                    "name": "Luis",
+                    "surname": "G\u00f3mez",
+                    "nationality": "Espa\u00f1ol",
+                    "nid": "34890913M",
+                    "family_head": true,
+                    "gender": "Man",
+                    "functional_diversity": false,
+                    "food_intolerances": [
+                        "Frutos secos"
+                    ],
+                    "homeless": false
+                },
+                {
+                    "date_birth": "1987-05-16",
+                    "type": "Adult",
+                    "name": "Marta",
+                    "surname": "Herrera",
+                    "nationality": "Espa\u00f1ola",
+                    "nid": "19804312R",
+                    "family_head": false,
+                    "gender": "Woman",
+                    "functional_diversity": true,
+                    "food_intolerances": [
+                        "Lactosa",
+                        "Gluten"
+                    ],
+                    "homeless": false
+                }
+            ]
+        }
+    ],
+    "Delivery": [
+        {
+            "_id": "df01da55-e29a-456a-a272-7b7ab5c18011",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 1,
+            "state": "next",
+            "lines": [
+                {
+                    "product_id": "5ee609a7-641a-442d-9d14-17a058f026bd",
+                    "quantity": 3,
+                    "state": "Muy buen estado"
+                },
+                {
+                    "product_id": "8cb86f53-5107-4a79-ad2d-b831f110f64f",
+                    "quantity": 3,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "765537e7-2dd5-47ab-8718-685ebc8b451c"
+        },
+        {
+            "_id": "d8cb395a-df47-475b-8b5c-c43677aaaa61",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 1,
+            "state": "next",
+            "lines": [
+                {
+                    "product_id": "4eedaef1-275d-4a1b-b5b6-3c9cf596fb94",
+                    "quantity": 3,
+                    "state": "Muy buen estado"
+                },
+                {
+                    "product_id": "56da2deb-7745-4697-91a7-793bb48a56db",
+                    "quantity": 8,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "a180a694-7437-49c6-81f7-4ee161d9b8ac"
+        },
+        {
+            "_id": "6e84d5c0-3553-4c66-b7f8-212f416709c2",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 1,
+            "state": "next",
+            "lines": [
+                {
+                    "product_id": "180afc1c-5915-49df-abb4-670f67d75f82",
+                    "quantity": 4,
+                    "state": "Buen estado"
+                },
+                {
+                    "product_id": "a9a3f4fc-c81f-4de1-8721-35c0fb5f90a1",
+                    "quantity": 8,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "11815cd5-19ff-4748-82e9-0200ee1d6050"
+        },
+        {
+            "_id": "76dfcef8-cb16-4920-84a2-6d0c63e2e29b",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 1,
+            "state": "next",
+            "lines": [
+                {
+                    "product_id": "6d7ac90d-df60-49aa-a35b-66598270d74c",
+                    "quantity": 7,
+                    "state": "Buenas"
+                },
+                {
+                    "product_id": "8a0fb8a8-eb6f-4c39-942e-73e7ea0587ec",
+                    "quantity": 8,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "3fdf51c1-04ae-4b17-9bd2-fad322f059b4"
+        },
+        {
+            "_id": "2b111d9f-2b39-4dcb-9682-d78db6bff7fc",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 2,
+            "state": "delivered",
+            "lines": [
+                {
+                    "product_id": "db324a7d-139d-4f4b-aa2b-8e07e0ce8a16",
+                    "quantity": 10,
+                    "state": "Buenas"
+                },
+                {
+                    "product_id": "1ac25110-426b-421a-827f-0d6e0cc0af1f",
+                    "quantity": 8,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "11815cd5-19ff-4748-82e9-0200ee1d6050"
+        },
+        {
+            "_id": "57adc434-1df9-4e38-9ac4-51a2d6dec6e3",
+            "date": "2024-04-02T10:13:30.353000+00:00",
+            "months": 2,
+            "state": "delivered",
+            "lines": [
+                {
+                    "product_id": "818288bc-33c0-4dc4-9376-9feb4baf1117",
+                    "quantity": 10,
+                    "state": "Son peque\u00f1as"
+                },
+                {
+                    "product_id": "1d6ef001-ac68-4379-8aca-2282a22b8069",
+                    "quantity": 10,
+                    "state": "Muy buen estado"
+                }
+            ],
+            "family_id": "3fdf51c1-04ae-4b17-9bd2-fad322f059b4"
+        }
+    ],
+    "Intervention": [
+        {
+            "_id": "63bdef09-d881-4364-a1cf-cbe465b2d5c5",
+            "date": "2024-03-29T11:22:02.298000+00:00",
+            "reason": "Revision semanal",
+            "typology": "Consulta psicol\u00f3gica",
+            "observations": "El paciente refiere sentirse mas animado y con ganas de seguir adelante con el tratamiento.",
+            "technician": "Juan L.",
+            "patient": {
+                "id": "fb401b0e-e966-4f07-88f1-d469b3de53c4",
+                "name": "Juan",
+                "first_surname": "Suarez",
+                "second_surname": "Lopez",
+                "alias": "Juanito",
+                "nid": "12342908G",
+                "birth_date": "2004-01-13",
+                "gender": "Man",
+                "address": "Calle Adolfo Suarez, 15",
+                "contact_phone": "754589635",
+                "dossier_number": "AAB172",
+                "is_rehabilitated": false,
+                "first_technician": "Pedro C.",
+                "registration_date": "2024-03-31",
+                "observation": "Muestra signos de ansiedad, es necesario ajustar el tratamiento."
+            }
+        },
+        {
+            "_id": "8aa42065-e147-4a6e-8029-22237b890bc9",
+            "date": "2024-03-30T09:45:00.123000+00:00",
+            "reason": "Evaluaci\u00f3n de progreso",
+            "typology": "Consulta psicol\u00f3gica",
+            "observations": "El paciente muestra una mejora significativa en su estado de \u00e1nimo y motivaci\u00f3n.",
+            "technician": "Laura M.",
+            "patient": {
+                "id": "4556cc27-f836-435d-a3ee-4be5050b5329",
+                "name": "Sof\u00eda",
+                "first_surname": "Mart\u00ednez",
+                "second_surname": "Garc\u00eda",
+                "alias": "Sofi",
+                "nid": "36115217L",
+                "birth_date": "1998-05-24",
+                "gender": "Woman",
+                "address": "Plaza de la Constituci\u00f3n, 4",
+                "contact_phone": "657483920",
+                "dossier_number": "BBC293",
+                "is_rehabilitated": true,
+                "first_technician": "Laura M.",
+                "registration_date": "2024-03-31",
+                "observation": "Progresa adecuadamente en su recuperaci\u00f3n, continuar con el plan actual."
+            }
+        },
+        {
+            "_id": "68a5cfdf-7055-4a96-8c53-8565f31a352f",
+            "date": "2024-04-02T14:30:45.678000+00:00",
+            "reason": "Sesi\u00f3n de seguimiento",
+            "typology": "Terapia cognitivo-conductual",
+            "observations": "El paciente ha logrado avances importantes en la gesti\u00f3n de sus pensamientos negativos.",
+            "technician": "Miguel A.",
+            "patient": {
+                "id": "b54f872d-3d3c-4fa6-8fa5-54218e21ddf2",
+                "name": "Carlos",
+                "first_surname": "P\u00e9rez",
+                "second_surname": "Fern\u00e1ndez",
+                "alias": "Charly",
+                "nid": "26164874M",
+                "birth_date": "2000-11-08",
+                "gender": "Man",
+                "address": "Avenida Miraflores, 27",
+                "contact_phone": "698547123",
+                "dossier_number": "CCD314",
+                "is_rehabilitated": false,
+                "first_technician": "Miguel A.",
+                "registration_date": "2024-03-31",
+                "observation": "Necesita m\u00e1s apoyo en el \u00e1rea de habilidades sociales, se recomienda grupo terap\u00e9utico."
+            }
+        },
+        {
+            "_id": "8ed74c4b-986d-43d5-81d4-f91c171d75f9",
+            "date": "2024-04-05T16:15:30.456000+00:00",
+            "reason": "Control de ansiedad",
+            "typology": "Mindfulness y t\u00e9cnicas de relajaci\u00f3n",
+            "observations": "Se observa una disminuci\u00f3n en los niveles de ansiedad del paciente y una mejor capacidad de relajaci\u00f3n.",
+            "technician": "Sof\u00eda P.",
+            "patient": {
+                "id": "8cf26e58-39a4-42bc-885d-c26a8dad920a",
+                "name": "Elena",
+                "first_surname": "Rodr\u00edguez",
+                "second_surname": "Luna",
+                "alias": "Elen",
+                "nid": "26076933Q",
+                "birth_date": "1996-03-15",
+                "gender": "Woman",
+                "address": "Calle del Sol, 10",
+                "contact_phone": "756849302",
+                "dossier_number": "DDE415",
+                "is_rehabilitated": true,
+                "first_technician": "Sara P.",
+                "registration_date": "2024-03-31",
+                "observation": "Excelente evoluci\u00f3n, se sugiere revisi\u00f3n semestral para seguimiento."
+            }
+        },
+        {
+            "_id": "518c688b-5071-4e89-a34d-3ca717ddbc5a",
+            "date": "2024-04-07T10:20:00.789000+00:00",
+            "reason": "Consulta de seguimiento",
+            "typology": "Evaluaci\u00f3n del estado general",
+            "observations": "El paciente expresa una actitud positiva hacia el futuro y un incremento en la autoestima.",
+            "technician": "Carlos Q.",
+            "patient": {
+                "id": "c713931b-d3cf-4986-9988-7171b0ef97fd",
+                "name": "Miguel",
+                "first_surname": "\u00c1lvarez",
+                "second_surname": "Torres",
+                "alias": "Miki",
+                "nid": "57831446Q",
+                "birth_date": "2002-07-19",
+                "gender": "Man",
+                "address": "Ronda de la Universidad, 11",
+                "contact_phone": "612345678",
+                "dossier_number": "EEF516",
+                "is_rehabilitated": false,
+                "first_technician": "Cristina G.",
+                "registration_date": "2024-03-31",
+                "observation": "Dificultades para mantener la concentraci\u00f3n, se propone evaluaci\u00f3n por especialista."
+            }
+        },
+        {
+            "_id": "39925110-f448-409b-8f29-61ceb054894d",
+            "date": "2024-04-09T13:50:20.321000+00:00",
+            "reason": "Sesi\u00f3n de terapia grupal",
+            "typology": "Apoyo grupal",
+            "observations": "El paciente interact\u00faa activamente con el grupo, compartiendo experiencias y mostrando empat\u00eda.",
+            "technician": "Elena R.",
+            "patient": {
+                "id": "72f81763-0c8d-4be5-8609-6b69dd6917ad",
+                "name": "Luc\u00eda",
+                "first_surname": "G\u00f3mez",
+                "second_surname": "Prieto",
+                "alias": "Lu",
+                "nid": "70530960B",
+                "birth_date": "1994-09-30",
+                "gender": "Woman",
+                "address": "Calle Nueva, 5",
+                "contact_phone": "679123456",
+                "dossier_number": "FFG627",
+                "is_rehabilitated": true,
+                "first_technician": "Juan D.",
+                "registration_date": "2024-03-31",
+                "observation": "Contin\u00faa con el seguimiento post-rehabilitaci\u00f3n, muy comprometida con su mejora."
+            }
+        }
+    ],
+    "Warehouse": [
+        {
+            "_id": "53256944-77fb-4e06-9a34-aa1ae641f6a7",
+            "name": "Almacen 1",
+            "products": [
+                {
+                    "id": "5ee609a7-641a-442d-9d14-17a058f026bd",
+                    "name": "Arroz",
+                    "quantity": 12,
+                    "exp_date": "2025-03-31"
+                },
+                {
+                    "id": "8cb86f53-5107-4a79-ad2d-b831f110f64f",
+                    "name": "Macarrones 500g",
+                    "quantity": 2,
+                    "exp_date": "2026-03-31"
+                },
+                {
+                    "id": "02a391f6-ddb5-430c-8539-4cbecf124ef4",
+                    "name": "Agua 2L",
+                    "quantity": 34,
+                    "exp_date": "2025-03-31"
+                },
+                {
+                    "id": "cfc6f9f0-1954-4e82-84e1-e92d64f2c8c3",
+                    "name": "Ternera 200g",
+                    "quantity": 15,
+                    "exp_date": "2024-04-30"
+                },
+                {
+                    "id": "9f6d7f6e-e65d-4afd-8f7f-2f47c582554a",
+                    "name": "Lentejas",
+                    "quantity": 22,
+                    "exp_date": "2025-04-13"
+                },
+                {
+                    "id": "ae1feda1-8890-423c-a4c7-e7f772abda3c",
+                    "name": "Garbanzos",
+                    "quantity": 11,
+                    "exp_date": "2025-03-31"
+                }
+            ]
+        },
+        {
+            "_id": "c18ae192-c278-4730-8b75-65145c55486d",
+            "name": "Almacen 2",
+            "products": [
+                {
+                    "id": "6d7ac90d-df60-49aa-a35b-66598270d74c",
+                    "name": "Manzanas",
+                    "quantity": 8,
+                    "exp_date": "2024-05-23"
+                },
+                {
+                    "id": "62105c48-a743-41d5-a7d4-a5940368971a",
+                    "name": "Sandias",
+                    "quantity": 5,
+                    "exp_date": "2024-04-15"
+                },
+                {
+                    "id": "1f26bb59-62cd-43c9-add8-ec836bdba2bf",
+                    "name": "Pi\u00f1as",
+                    "quantity": 11,
+                    "exp_date": "2024-04-05"
+                },
+                {
+                    "id": "d51da1e4-643c-4600-a109-36cc90cbead0",
+                    "name": "Tomates",
+                    "quantity": 23,
+                    "exp_date": "2024-04-30"
+                },
+                {
+                    "id": "8a0fb8a8-eb6f-4c39-942e-73e7ea0587ec",
+                    "name": "Tetra brik Leche Entera",
+                    "quantity": 14,
+                    "exp_date": "2024-04-13"
+                },
+                {
+                    "id": "79f79b2b-0c82-4dbb-9f40-de0761bd462b",
+                    "name": "Tetra brik Leche Desnatada",
+                    "quantity": 11,
+                    "exp_date": "2024-04-13"
+                }
+            ]
+        },
+        {
+            "_id": "fdbcc20c-720a-4f71-be9d-61b731d8f643",
+            "name": "Almacen 3",
+            "products": [
+                {
+                    "id": "4eedaef1-275d-4a1b-b5b6-3c9cf596fb94",
+                    "name": "Pechuga de Pollo 200g",
+                    "quantity": 7,
+                    "exp_date": "2024-05-23"
+                },
+                {
+                    "id": "b8f41f2a-366f-4c38-a2de-55638edcf043",
+                    "name": "Huevos",
+                    "quantity": 48,
+                    "exp_date": "2024-04-15"
+                },
+                {
+                    "id": "f1609513-f6bd-43a3-b219-a271615f6de2",
+                    "name": "Bacon 100g",
+                    "quantity": 11,
+                    "exp_date": "2024-04-05"
+                },
+                {
+                    "id": "f87a6986-d570-4169-882a-eecd45f00d34",
+                    "name": "Aceite de Oliva 500ml",
+                    "quantity": 5,
+                    "exp_date": "2025-04-30"
+                },
+                {
+                    "id": "56da2deb-7745-4697-91a7-793bb48a56db",
+                    "name": "Yogur Griego",
+                    "quantity": 2,
+                    "exp_date": "2024-04-13"
+                },
+                {
+                    "id": "3281fa79-579d-4ae4-b842-00e5b5b5c8b1",
+                    "name": "Lechuga",
+                    "quantity": 17,
+                    "exp_date": "2024-04-13"
+                }
+            ]
+        },
+        {
+            "_id": "8541d1f7-07f3-4840-80ff-fb4d6748bb1c",
+            "name": "Almacen 4",
+            "products": [
+                {
+                    "id": "11964314-2b2a-4cbf-9ecc-e0dc8aeadc15",
+                    "name": "Alcachofas",
+                    "quantity": 12,
+                    "exp_date": "2024-05-23"
+                },
+                {
+                    "id": "29105a3c-0ee6-42ed-83d0-f33ca6226a5c",
+                    "name": "Limones",
+                    "quantity": 8,
+                    "exp_date": "2024-04-15"
+                },
+                {
+                    "id": "180afc1c-5915-49df-abb4-670f67d75f82",
+                    "name": "Brocoli",
+                    "quantity": 7,
+                    "exp_date": "2024-04-05"
+                },
+                {
+                    "id": "a9a3f4fc-c81f-4de1-8721-35c0fb5f90a1",
+                    "name": "Ciruelas",
+                    "quantity": 7,
+                    "exp_date": "2024-05-30"
+                },
+                {
+                    "id": "2945f4eb-4b5e-4234-8428-466fc43710f4",
+                    "name": "Platanos",
+                    "quantity": 10,
+                    "exp_date": "2024-04-13"
+                },
+                {
+                    "id": "a2182cc4-ad53-45cd-88f1-0763df246a28",
+                    "name": "Coliflor",
+                    "quantity": 7,
+                    "exp_date": "2024-04-13"
+                }
+            ]
+        },
+        {
+            "_id": "677fc9f3-8e7d-4188-8a05-317e53716b81",
+            "name": "Almacen 5",
+            "products": [
+                {
+                    "id": "20e5e0d5-656e-4914-b9f8-b1ea986b42d0",
+                    "name": "Manzanas",
+                    "quantity": 20,
+                    "exp_date": "2024-06-10"
+                },
+                {
+                    "id": "db324a7d-139d-4f4b-aa2b-8e07e0ce8a16",
+                    "name": "Tomates",
+                    "quantity": 20,
+                    "exp_date": "2024-05-15"
+                },
+                {
+                    "id": "1ac25110-426b-421a-827f-0d6e0cc0af1f",
+                    "name": "Zanahorias",
+                    "quantity": 17,
+                    "exp_date": "2024-05-20"
+                },
+                {
+                    "id": "1f3fa387-8160-4c16-827b-66794deda0e6",
+                    "name": "Espinacas",
+                    "quantity": 15,
+                    "exp_date": "2024-04-25"
+                },
+                {
+                    "id": "b550a73b-b2d6-4ee3-a0d9-fdd811eb5188",
+                    "name": "Naranjas",
+                    "quantity": 22,
+                    "exp_date": "2024-05-05"
+                },
+                {
+                    "id": "372cdbc7-9a7a-4072-8f5d-00254a0a2d61",
+                    "name": "Patatas",
+                    "quantity": 40,
+                    "exp_date": "2024-07-01"
+                }
+            ]
+        },
+        {
+            "_id": "8afa177f-865c-4345-9b61-a793c1e10b19",
+            "name": "Almacen 6",
+            "products": [
+                {
+                    "id": "f05fb591-8162-4289-a597-9a89956483fd",
+                    "name": "Pepinos",
+                    "quantity": 18,
+                    "exp_date": "2024-06-18"
+                },
+                {
+                    "id": "49718286-2b9d-4ea8-b96d-910a58b2e1d0",
+                    "name": "Pimientos",
+                    "quantity": 16,
+                    "exp_date": "2024-05-22"
+                },
+                {
+                    "id": "e3eb5f45-f03c-428a-be3f-d71d2610c364",
+                    "name": "Aguacates",
+                    "quantity": 10,
+                    "exp_date": "2024-05-29"
+                },
+                {
+                    "id": "187759a6-7274-4f4f-bd1b-0580787cd1e7",
+                    "name": "Cebollas",
+                    "quantity": 20,
+                    "exp_date": "2024-06-05"
+                },
+                {
+                    "id": "818288bc-33c0-4dc4-9376-9feb4baf1117",
+                    "name": "Berenjenas",
+                    "quantity": 4,
+                    "exp_date": "2024-05-17"
+                },
+                {
+                    "id": "1d6ef001-ac68-4379-8aca-2282a22b8069",
+                    "name": "Calabacines",
+                    "quantity": 2,
+                    "exp_date": "2024-05-25"
+                }
+            ]
+        }
+    ]
+}

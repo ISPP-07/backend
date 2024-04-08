@@ -1,41 +1,56 @@
-from sqlmodel import select
-from src.modules.cyc.family.model import Family, FamilyObservation, Person
+from typing import Any
+
+from pydantic import UUID4
+from fastapi import HTTPException, status
+
+from src.core.deps import DataBaseDep
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
+from src.modules.cyc.family import model
 
 
-async def get_families_service(session):
-    return await Family.get_multi(session)
+async def get_families_service(db: DataBaseDep, **kwargs: Any) -> list[model.Family]:
+    return await model.Family.get_multi(db, **kwargs)
 
 
-async def create_family_service(session, family: Family):
-    obj = await Family.create(session, **family.model_dump())
-    return obj
+async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | None:
+    return await model.Family.get(db, query)
 
 
-async def get_family_details_service(session, family_id: int):
-    # Consulta para obtener los observation_text asociados al family_id
-    observation_query = select(FamilyObservation.observation_text).where(
-        FamilyObservation.family_id == family_id)
+async def create_family_service(
+    db: DataBaseDep,
+    family: model.FamilyCreate,
+) -> InsertOneResultMongo:
+    result = await model.Family.create(db, obj_to_create=family.model_dump())
+    if not result.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    return result
 
-    person_query = select(Person).where(Person.family_id == family_id)
 
-    # header_query = select(Person).where(
-    #    Person.family_id == family_id, Person.family_header == True)
+async def delete_family_service(db: DataBaseDep, query: dict) -> model.Family:
+    mongo_delete: DeleteResultMongo = await model.Family.delete(db, query)
 
-    # Ejecutar la consulta
-    result = await session.execute(observation_query)
-    result_person = await session.execute(person_query)
-    # result_header = await session.execute(header_query)
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Family not found'
+        )
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
 
-    # Extraer los observation_text de los resultados
-    observation_texts = [row[0] for row in result.fetchall()]
-    persons = [p[0] for p in result_person.fetchall()]
-    # header = [h[0] for h in result_header.fetchall()]
 
-    family = await Family.get(session, id=family_id)
-
-    json = family.model_dump()
-    json["observations"] = observation_texts
-    json["members"] = persons
-    # json["family_head"] = header[0]
-
-    return json
+async def update_family_service(
+    db: DataBaseDep,
+    family_id: UUID4,
+    family_update: dict
+) -> model.Family | None:
+    return await model.Family.update(
+        db,
+        query={'id': family_id},
+        data_to_update=family_update
+    )

@@ -1,21 +1,98 @@
-from sqlmodel import select, func
-from sqlalchemy.orm import aliased, joinedload
+from typing import Any
+from uuid import uuid4
 
-from src.modules.acat.patient.model import Patient, PatientObservation
-from src.modules.acat.appointment.model import Appointment
-from src.modules.acat.patient.model import Technician
+from fastapi import HTTPException, status
+from pydantic import UUID4
+from pymongo import InsertOne, UpdateOne, UpdateMany
 
-
-async def create_patient_service(session, patient: Patient):
-    obj = await Patient.create(session, **patient.model_dump())
-    return obj
-
-
-async def get_patients_service(session):
-    obj = await Patient.get_multi(session)
-    return obj
+from src.core.database.base_crud import BulkOperation
+from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo, UpdateResult, BulkWriteResult
+from src.core.deps import DataBaseDep
+from src.modules.acat.patient import model
 
 
-async def get_patient_details_service(session, patient_id: int):
-    obj = await Patient.get(session, id=patient_id)
-    return obj
+async def get_patient_by_id(db: DataBaseDep, patient_id: UUID4) -> model.Patient | None:
+    return await model.Patient.get(db, query={'id': patient_id})
+
+
+async def get_patients_service(db: DataBaseDep, query=None, **kwargs: Any) -> list[model.Patient]:
+    return await model.Patient.get_multi(db, query, **kwargs)
+
+
+async def create_patient_service(db: DataBaseDep, patient: model.PatientCreate) -> InsertOneResultMongo:
+    result: InsertOneResultMongo = await model.Patient.create(db, obj_to_create=patient.model_dump())
+    if not result.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    return result
+
+
+async def update_many_patient_service(
+    db: DataBaseDep,
+    query: dict,
+    update: dict,
+    **kwargs
+) -> UpdateResult:
+    return await model.Patient.update_many(
+        db=db,
+        query=query,
+        data_to_update=update,
+        **kwargs
+    )
+
+
+async def bulk_service(db: DataBaseDep, operations: list[BulkOperation], **kwargs: Any):
+    result: BulkWriteResult = await model.Patient.bulk_operation(
+        db,
+        [o.operation() for o in operations],
+        **kwargs
+    )
+    if not result.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    return result
+
+
+async def get_patient_service(db: DataBaseDep, query: dict) -> model.PatientOut | None:
+    patient: model.Patient = await model.Patient.get(db, query)
+
+    if not patient:
+        return None
+
+    # Add age to the patient
+    patient_dict = patient.model_dump()
+    patient_dict['age'] = patient.age()
+
+    return model.PatientOut(**patient_dict)
+
+
+async def update_patient_service(
+    db: DataBaseDep,
+    query: dict,
+    updated_patient_data: dict,
+    **kwargs: Any
+) -> model.Patient | None:
+    return await model.Patient.update(
+        db,
+        query=query,
+        data_to_update=updated_patient_data,
+        **kwargs
+    )
+
+
+async def delete_patient_service(db: DataBaseDep, query: dict) -> model.Patient:
+    mongo_delete: DeleteResultMongo = await model.Patient.delete(db, query)
+    if not mongo_delete.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    if mongo_delete.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Patient not found',
+        )
