@@ -48,12 +48,12 @@ class Settings(BaseSettings):
             return v
         raise ValueError(f"Invalid input for BACKEND_CORS_ORIGINS: {v}")
 
-    MONGO_HOST: str
-    MONGO_USER: str
-    MONGO_PASSWORD: str
+    MONGO_HOST: str | None = None
+    MONGO_USER: str | None = None
+    MONGO_PASSWORD: str | None = None
+    MONGO_PORT: int | None = None
     MONGO_DB: str
-    MONGO_PORT: int
-    MONGO_DATABASE_URI: Optional[MongoDsn] = None
+    MONGO_DATABASE_URI: Optional[MongoDsn] | str = None
 
     @field_validator("MONGO_DATABASE_URI", mode="before")
     @classmethod

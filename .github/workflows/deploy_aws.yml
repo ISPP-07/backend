@@ -38,6 +38,7 @@ jobs:
         SCRIPT_BEFORE: |
           cd /home/ubuntu/app
           cp backend/.env .
+          sudo rm -r backend/*
         SCRIPT_AFTER: |
           cd /home/ubuntu/app
           cp .env backend/
