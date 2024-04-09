@@ -43,7 +43,7 @@ jobs:
           cd /home/ubuntu/app
           cp .env backend/
           cd backend/
-          python3.11 -m pipenv install --categories packages
+          python3.11 -m pipenv install 
           sudo systemctl restart backend.service
           systemctl status backend.service
         EXCLUDE: "/.git/, .gitignore, /.github/, /devcontainers/, /tests/, .env.test.example, commit.txt, dump_entero.json, example.env, info.yml, LICENSE, README.md"
