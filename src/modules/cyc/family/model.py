@@ -58,23 +58,16 @@ class Gender(Enum):
     MEN = 'Man'
     WOMEN = 'Woman'
 
-# This class is commented because the implementation of its functionalities
-# will not be done in this sprint.
-# class DeliveryHistory(Base, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     delivery_date: date
-#     family_id: Optional[int] = Field(default=None, foreign_key='family.id')
-
 
 class Person(BaseModel):
     date_birth: PastDate
     type: Optional[PersonType] = None
-    name: Optional[str]
-    surname: Optional[str]
-    nationality: Optional[str]
-    nid: str
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    nationality: Optional[str] = None
+    nid: Optional[str] = None
     family_head: bool = False
-    gender: Optional[Gender]
+    gender: Optional[Gender] = None
     functional_diversity: Optional[bool] = False
     food_intolerances: list[str] = []
     homeless: Optional[bool] = False
@@ -87,19 +80,18 @@ class Person(BaseModel):
         else:
             data.type = PersonType.ADULT
         if data.type == PersonType.ADULT:
+            if any(
+                data.model_dump()[field] is None
+                for field in ['name', 'surname', 'nid']
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Name, surname and nid are mandatory for adults'
+                )
             if not check_nid(data.nid):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={'field': 'nid', 'msg': 'Invalid NID'}
-                )
-            if all(
-                data.__dict__[field] is None for field in [
-                    'name',
-                    'surname',
-                    'nid']):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='Name, surname and nid are mandatory for adults'
                 )
             return data
         else:
@@ -180,9 +172,6 @@ class Family(BaseMongo, FamilyValidator):
     number_of_people: PositiveInt = None
     informed: bool = False
     members: list[Person]
-    # delivery_history: list[DeliveryHistory] = Relationship(
-    #     back_populates='family_id',
-    # )
 
     @model_validator(mode='after')
     @classmethod
@@ -190,9 +179,6 @@ class Family(BaseMongo, FamilyValidator):
         cls.validate_family_members(data.members)
         data.number_of_people = len(data.members)
         return data
-
-# VALIDAR phone, SI NOS DICEN CADA CUENTA SE TIENE QUE RENOVAR UNA FAMILIA QUITAR
-# EL CAMPO Y AÑADIRLO NOSOTROS
 
 
 class FamilyCreate(BaseModel):
