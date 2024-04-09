@@ -1,0 +1,41 @@
+name: Backend Deploy AWS
+
+on:
+  pull_request:
+    types:
+      - labeled
+    branches:
+      - develop
+      - main
+  workflow_call:
+    secrets:
+      EC2_SSH_KEY:
+        required: true
+      HOST_DNS:
+        required: true
+      USERNAME:
+        required: true
+      TARGET_DIR:
+        required: true
+
+
+jobs:
+  deploy:
+  name: Deploy to EC2
+    if: ${{ github.event.label.name == 'deploy' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v2
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.HOST_DNS }}
+        REMOTE_USER: ${{ secrets.USERNAME }}
+        TARGET: ${{ secrets.TARGET_DIR }}
+        SCRIPT_AFTER: |
+          sistemctl status backend.service
+
