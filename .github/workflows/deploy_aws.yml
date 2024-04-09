@@ -21,7 +21,6 @@ on:
 
 jobs:
   deploy-aws:
-  name: Deploy to EC2
     if: ${{ github.event.label.name == 'deploy' }}
 
     runs-on: ubuntu-latest
