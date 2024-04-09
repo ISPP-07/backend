@@ -58,6 +58,7 @@ class Gender(Enum):
     MEN = 'Man'
     WOMEN = 'Woman'
 
+
 class Person(BaseModel):
     date_birth: PastDate
     type: Optional[PersonType] = None
@@ -178,6 +179,7 @@ class Family(BaseMongo, FamilyValidator):
         cls.validate_family_members(data.members)
         data.number_of_people = len(data.members)
         return data
+
 
 class FamilyCreate(BaseModel):
     name: str
