@@ -22,6 +22,9 @@ router = APIRouter(tags=['Authentication'])
 async def is_master(
     user: Annotated[user_model.User, Depends(get_current_user)]
 ):
+    """
+    Checks if the user is a master user.
+    """
     return await controller.is_master_controller(user)
 
 

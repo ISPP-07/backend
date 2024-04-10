@@ -19,7 +19,8 @@ def create_user_auth(mongo_db: Database):
         '_id': uuid4(),
         'username': 'Pepe',
         'password': get_hashed_password(password),
-        'email': 'pepe@test.com'
+        'email': 'pepe@test.com',
+        'master': False,
     }
     mongo_db['User'].insert_one(user)
     yield {
@@ -28,6 +29,7 @@ def create_user_auth(mongo_db: Database):
         'hashed_password': user['password'],
         'password': password,
         'email': user['email'],
+        'master': user['master'],
     }
 
 
@@ -67,3 +69,14 @@ def test_refresh_token(app_client: TestClient, login_user):
     result = response.json()
     assert 'access_token' in result
     assert 'refresh_token' in result
+
+
+@pytest.mark.dependency(depends=['test_login'])
+def test_is_master(app_client: TestClient, login_user):
+    access_token = login_user['access_token']
+    headers = {'Authorization': f'Bearer {access_token}'}
+    url = f'{URL_AUTH}master/'
+    response: Response = app_client.get(url=url, headers=headers)
+    assert response.status_code == 200
+    result = response.json()
+    assert result['is_master'] == False
