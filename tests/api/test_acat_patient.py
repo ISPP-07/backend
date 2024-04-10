@@ -85,7 +85,10 @@ async def insert_patient_to_delete(mongo_db: Database):
     yield patient
 
 
-def test_get_patient_details(app_client: TestClient, insert_patients_mongo, app_superuser):
+def test_get_patient_details(
+        app_client: TestClient,
+        insert_patients_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     patient_id = str(insert_patients_mongo[0]["_id"])
@@ -129,7 +132,10 @@ def test_create_patient(app_client: TestClient, app_superuser):
         patient_data["second_surname"])
 
 
-def test_get_patients(app_client: TestClient, insert_patients_mongo, app_superuser):
+def test_get_patients(
+        app_client: TestClient,
+        insert_patients_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     response = app_client.get(url=URL_PATIENT, headers=headers)
@@ -145,7 +151,10 @@ def test_get_patients(app_client: TestClient, insert_patients_mongo, app_superus
         assert item["nid"] == patient["nid"]
 
 
-def test_upload_excel_patients(app_client: TestClient, mongo_db: Database, app_superuser):
+def test_upload_excel_patients(
+        app_client: TestClient,
+        mongo_db: Database,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     # Ruta del endpoint
@@ -197,7 +206,10 @@ def test_upload_excel_patients(app_client: TestClient, mongo_db: Database, app_s
     assert last_patient['observation'] == ws.cell(row=2, column=11).value
 
 
-def test_update_patient(app_client: TestClient, insert_patients_mongo: list, app_superuser):
+def test_update_patient(
+        app_client: TestClient,
+        insert_patients_mongo: list,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     patient = insert_patients_mongo[0]

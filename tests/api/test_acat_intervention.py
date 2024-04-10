@@ -114,7 +114,10 @@ def test_get_intervention_detail(
     assert result["patient"]["birth_date"] == "2003-03-08"
 
 
-def test_create_intervention(app_client: TestClient, insert_patient_mongo, app_superuser):
+def test_create_intervention(
+        app_client: TestClient,
+        insert_patient_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     patient_id = str(insert_patient_mongo["_id"])

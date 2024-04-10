@@ -22,7 +22,10 @@ async def insert_user_mongo(mongo_db: Database):
     yield user
 
 
-def test_get_all_user(app_client: TestClient, insert_user_mongo, app_superuser):
+def test_get_all_user(
+        app_client: TestClient,
+        insert_user_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     response = app_client.get(url=USER_URL, headers=headers)
