@@ -11,6 +11,21 @@ from src.modules.shared.user import model as user_model
 router = APIRouter(tags=['Authentication'])
 
 
+@router.get(
+    '/master',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {'description': 'User not found'},
+        status.HTTP_200_OK: {'description': 'Successful Response'}
+    },
+    response_model=model.UserIsMaster
+)
+async def is_master(
+    user: Annotated[user_model.User, Depends(get_current_user)]
+):
+    return await controller.is_master_controller(user)
+
+
 @router.post(
     '/login',
     status_code=status.HTTP_200_OK,

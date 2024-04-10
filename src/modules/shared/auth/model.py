@@ -39,3 +39,7 @@ class UserSecretOut(BaseModel):
 
 class RefreshTokenBody(BaseModel):
     refresh_token: str
+
+class UserIsMaster(BaseModel):
+    id: UUID4
+    is_master: bool
