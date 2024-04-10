@@ -30,18 +30,6 @@ async def login(
     return await controller.login_controller(db, form_data)
 
 
-@router.post('/test-token',
-             response_model=user_model.UserOut,
-             responses={
-                 200: {"description": "User information retrieved successfully"},
-             })
-async def test_token(user: Annotated[user_model.User, Depends(get_current_user)]):
-    """
-    Tests the validity of the current access token and returns the user information.
-    """
-    return user
-
-
 @router.post('/refresh',
              summary="Refresh token",
              response_model=model.TokenSchema,

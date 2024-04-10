@@ -11,6 +11,7 @@ class TokenSchema(BaseModel):
 class TokenPayload(BaseModel):
     sub: UUID4 = None
     exp: int = None
+    scopes: list[str] = []
 
 
 class UserAuth(BaseModel):

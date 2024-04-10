@@ -9,13 +9,15 @@ from src.modules.acat.patient import model
 router = APIRouter(tags=['Patient'], dependencies=dependencies)
 
 
-@router.get('',
-            status_code=status.HTTP_200_OK,
-            response_model=model.GetPatients,
-            responses={
-                200: {"description": "Successful Response"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=model.GetPatients,
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_patients(db: DataBaseDep, limit: int = 100, offset: int = 0):
     """
     **Retrieve a list of all patients.**

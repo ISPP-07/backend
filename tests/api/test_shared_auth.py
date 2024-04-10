@@ -7,6 +7,7 @@ import pytest
 
 from src.core.config import settings
 from src.core.utils.security import get_hashed_password
+from tests.api.test_shared_user import USER_URL
 
 URL_AUTH = f'{settings.API_STR}shared/auth/'
 
@@ -72,8 +73,8 @@ def test_refresh_token(app_client: TestClient, login_user):
 def test_access_token(app_client: TestClient, login_user, create_user_auth):
     access_token = login_user['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
-    url = f'{URL_AUTH}test-token/'
-    response: Response = app_client.post(url=url, headers=headers)
+    url = f'{USER_URL}/me'
+    response: Response = app_client.get(url=url, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert result['id'] == create_user_auth['id']
