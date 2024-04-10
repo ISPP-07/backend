@@ -94,7 +94,10 @@ async def insert_deliveries_mongo(mongo_db: Database):
     yield result
 
 
-def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo, app_superuser):
+def test_get_deliveries(
+        app_client: TestClient,
+        insert_deliveries_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     response = app_client.get(url=URL_DELIVERY, headers=headers)
@@ -139,7 +142,10 @@ def test_get_delivery_detail(
         insert_deliveries_mongo[0]["family_id"])
 
 
-def test_create_delivery(app_client: TestClient, insert_deliveries_mongo, app_superuser):
+def test_create_delivery(
+        app_client: TestClient,
+        insert_deliveries_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     data = {

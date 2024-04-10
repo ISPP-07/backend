@@ -139,7 +139,10 @@ def test_create_warehouse(app_client: TestClient, app_superuser):
     assert str(result['name']) == str(warehouse_data['name'])
 
 
-def test_upload_excel_products(app_client: TestClient, mongo_db: Database, app_superuser):
+def test_upload_excel_products(
+        app_client: TestClient,
+        mongo_db: Database,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     url = f'{URL_WAREHOUSE}/product/excel'

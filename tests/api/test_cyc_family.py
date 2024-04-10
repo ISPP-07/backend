@@ -61,7 +61,10 @@ def insert_families_mongo(mongo_db: Database):
     yield result
 
 
-def test_get_families(app_client: TestClient, insert_families_mongo, app_superuser):
+def test_get_families(
+        app_client: TestClient,
+        insert_families_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     url = f'{settings.API_STR}cyc/family/'
@@ -113,7 +116,10 @@ def test_create_family(app_client: TestClient, app_superuser):
     assert response_data["address"] == family_data["address"]
 
 
-def test_get_family_details(app_client: TestClient, insert_families_mongo, app_superuser):
+def test_get_family_details(
+        app_client: TestClient,
+        insert_families_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     family = insert_families_mongo[0]
@@ -131,7 +137,10 @@ def test_get_family_details(app_client: TestClient, insert_families_mongo, app_s
             assert str(result[field]) == str(family[field])
 
 
-def test_update_family(app_client: TestClient, insert_families_mongo, app_superuser):
+def test_update_family(
+        app_client: TestClient,
+        insert_families_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     family = insert_families_mongo[0]
@@ -151,7 +160,10 @@ def test_update_family(app_client: TestClient, insert_families_mongo, app_superu
     assert response_data["referred_organization"] == family_data["referred_organization"]
 
 
-def test_delete_family(app_client: TestClient, insert_families_mongo, app_superuser):
+def test_delete_family(
+        app_client: TestClient,
+        insert_families_mongo,
+        app_superuser):
     access_token = app_superuser['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     family = insert_families_mongo[0]
