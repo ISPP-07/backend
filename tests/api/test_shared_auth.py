@@ -82,7 +82,10 @@ def test_access_token(app_client: TestClient, login_user, create_user_auth):
 
 
 @pytest.mark.dependency(depends=['test_login'])
-def test_get_secret_and_qr(app_client: TestClient, login_user, create_user_auth):
+def test_get_secret_and_qr(
+        app_client: TestClient,
+        login_user,
+        create_user_auth):
     access_token = login_user['access_token']
     headers = {'authorization': f'Bearer {access_token}'}
     url = f'{URL_AUTH}recovery-qr-code/'
