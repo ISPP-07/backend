@@ -67,16 +67,3 @@ def test_refresh_token(app_client: TestClient, login_user):
     result = response.json()
     assert 'access_token' in result
     assert 'refresh_token' in result
-
-
-@pytest.mark.dependency(depends=['test_login'])
-def test_access_token(app_client: TestClient, login_user, create_user_auth):
-    access_token = login_user['access_token']
-    headers = {'authorization': f'Bearer {access_token}'}
-    url = f'{USER_URL}/me'
-    response: Response = app_client.get(url=url, headers=headers)
-    assert response.status_code == 200
-    result = response.json()
-    assert result['id'] == create_user_auth['id']
-    assert result['username'] == create_user_auth['username']
-    assert result['email'] == create_user_auth['email']

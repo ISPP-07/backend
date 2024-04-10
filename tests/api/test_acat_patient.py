@@ -85,10 +85,12 @@ async def insert_patient_to_delete(mongo_db: Database):
     yield patient
 
 
-def test_get_patient_details(app_client: TestClient, insert_patients_mongo):
+def test_get_patient_details(app_client: TestClient, insert_patients_mongo, app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     patient_id = str(insert_patients_mongo[0]["_id"])
     url = f'{URL_PATIENT}/{patient_id}'
-    response = app_client.get(url)
+    response = app_client.get(url, headers=headers)
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["dossier_number"] == str(
@@ -98,7 +100,9 @@ def test_get_patient_details(app_client: TestClient, insert_patients_mongo):
         insert_patients_mongo[0]["first_surname"])
 
 
-def test_create_patient(app_client: TestClient):
+def test_create_patient(app_client: TestClient, app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     patient_data = {
         "dossier_number": "1",
         "name": "Paciente 1",
@@ -113,8 +117,8 @@ def test_create_patient(app_client: TestClient):
         "observation": "string"
     }
 
-    response = app_client.post(url=URL_PATIENT, json=patient_data)
-
+    response = app_client.post(
+        url=URL_PATIENT, json=patient_data, headers=headers)
     assert response.status_code == 201
     response_data = response.json()
     assert response_data["registration_date"] == date.today(
@@ -125,8 +129,10 @@ def test_create_patient(app_client: TestClient):
         patient_data["second_surname"])
 
 
-def test_get_patients(app_client: TestClient, insert_patients_mongo):
-    response = app_client.get(url=URL_PATIENT)
+def test_get_patients(app_client: TestClient, insert_patients_mongo, app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
+    response = app_client.get(url=URL_PATIENT, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert 'elements' in result and 'total_elements' in result
@@ -139,7 +145,9 @@ def test_get_patients(app_client: TestClient, insert_patients_mongo):
         assert item["nid"] == patient["nid"]
 
 
-def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
+def test_upload_excel_patients(app_client: TestClient, mongo_db: Database, app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     # Ruta del endpoint
     url = f'{settings.API_STR}acat/patient/excel'
 
@@ -154,7 +162,7 @@ def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
                 "Pacientes.xlsx",
                 file,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
-        response = app_client.post(url=url, files=files)
+        response = app_client.post(url=url, files=files, headers=headers)
 
     # Verificar que la respuesta sea exitosa
     assert response.status_code == 204
@@ -189,7 +197,9 @@ def test_upload_excel_patients(app_client: TestClient, mongo_db: Database):
     assert last_patient['observation'] == ws.cell(row=2, column=11).value
 
 
-def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
+def test_update_patient(app_client: TestClient, insert_patients_mongo: list, app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     patient = insert_patients_mongo[0]
     url = f"{URL_PATIENT}/{patient['_id']}"
     updated_fields = ['name', 'gender', 'second_surname', 'birth_date']
@@ -204,7 +214,7 @@ def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
         'birth_date': "2001-09-20",
         'update_fields_to_none': ['gender', 'second_surname']
     }
-    response = app_client.patch(url=url, json=update_data)
+    response = app_client.patch(url=url, json=update_data, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert isinstance(result, dict)
@@ -216,11 +226,15 @@ def test_update_patient(app_client: TestClient, insert_patients_mongo: list):
 
 
 def test_delete_patient(
-        app_client: TestClient,
-        insert_patient_to_delete,
-        mongo_db: Database):
+    app_client: TestClient,
+    insert_patient_to_delete,
+    mongo_db: Database,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     url = f"{URL_PATIENT}/{insert_patient_to_delete['_id']}"
-    response = app_client.delete(url=url)
+    response = app_client.delete(url=url, headers=headers)
     assert response.status_code == 204
     deleted_patient = mongo_db["Patient"].find_one(
         {'_id': insert_patient_to_delete['_id']}

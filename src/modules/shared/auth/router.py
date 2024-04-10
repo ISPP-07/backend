@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.core.deps import DataBaseDep, get_current_user
-from src.modules.shared.auth import controller
-from src.modules.shared.auth import model
+from src.modules.shared.auth import controller, model
 from src.modules.shared.user import model as user_model
 
 router = APIRouter(tags=['Authentication'])
