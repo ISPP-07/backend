@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

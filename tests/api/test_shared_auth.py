@@ -7,7 +7,6 @@ import pytest
 
 from src.core.config import settings
 from src.core.utils.security import get_hashed_password
-from tests.api.test_shared_user import USER_URL
 
 URL_AUTH = f'{settings.API_STR}shared/auth/'
 
