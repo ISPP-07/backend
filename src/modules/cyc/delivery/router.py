@@ -1,5 +1,7 @@
-from pydantic import UUID4
+from typing import Optional
+from datetime import date
 
+from pydantic import UUID4
 from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
@@ -17,7 +19,15 @@ router = APIRouter(tags=["Delivery"], dependencies=dependencies)
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_deliveries(db: DataBaseDep, limit: int = 100, offset: int = 0):
+async def get_deliveries(
+    db: DataBaseDep,
+    before_date: Optional[date] = None,
+    after_date: Optional[date] = None,
+    state: Optional[model.State] = None,
+    family_id: Optional[UUID4] = None,
+    limit: int = 100,
+    offset: int = 0
+):
     """
     **Retrieve a list of all deliveries.**
 
@@ -25,7 +35,11 @@ async def get_deliveries(db: DataBaseDep, limit: int = 100, offset: int = 0):
     its ID, date scheduled for, duration in months, items (lines) including product ID, quantity,
     and state (if any), and the family ID associated with the delivery.
     """
-    return await controller.get_deliveries_controller(db, limit, offset)
+    return await controller.get_deliveries_controller(
+        db,
+        before_date, after_date, state, family_id,
+        limit, offset
+    )
 
 
 @router.get('/{delivery_id}',

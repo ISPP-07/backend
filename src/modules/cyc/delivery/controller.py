@@ -1,5 +1,6 @@
 from collections import Counter
-from typing import Dict
+from typing import Dict, Optional
+from datetime import date
 
 from pydantic import UUID4
 from fastapi import HTTPException, status
@@ -12,8 +13,36 @@ from src.modules.cyc.warehouse import service as product_service
 from src.modules.cyc.warehouse import model as product_model
 
 
-async def get_deliveries_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetDeliveries:
-    deliveries = await service.get_deliveries_service(db, limit=limit, skip=offset)
+async def get_deliveries_controller(
+    db: DataBaseDep,
+    before_date: Optional[date],
+    after_date: Optional[date],
+    state: Optional[model.State],
+    family_id: Optional[UUID4],
+    limit: int = 100,
+    offset: int = 0
+) -> model.GetDeliveries:
+    deliveries = await service.get_deliveries_service(
+        db,
+        (
+            'date', {
+                '$lte': before_date.isoformat()
+            } if before_date is not None else None
+        ),
+        (
+            'date', {
+                '$gte': after_date.isoformat()
+            } if after_date is not None else None
+        ),
+        (
+            'state', state.value if state is not None else state
+        ),
+        (
+            'family_id', family_id
+        ),
+        limit=limit,
+        skip=offset
+    )
     warehouses = await product_service.get_warehouses_service(db, query=None)
     product_to_name = {
         product.id: product.name for warehouse in warehouses for product in warehouse.products
