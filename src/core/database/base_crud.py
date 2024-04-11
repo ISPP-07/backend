@@ -336,7 +336,7 @@ class BaseMongo(BaseModel):
         return cls(**dict(data, id=data_id))
 
     def mongo(self, **kwargs):
-        exclude_unset = kwargs.pop('exclude_unset', True)
+        exclude_unset = kwargs.pop('exclude_unset', False)
         by_alias = kwargs.pop('by_alias', True)
         parsed = self.model_dump(
             exclude_unset=exclude_unset,

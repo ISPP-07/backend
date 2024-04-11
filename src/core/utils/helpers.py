@@ -1,4 +1,5 @@
 import argparse
+from itertools import combinations
 from typing import Any
 from datetime import date
 from enum import Enum
@@ -111,4 +112,11 @@ def parse_validation_error(errors: list[dict]):
             f'error "{error["msg"]}", '
             f'with input "{error["input"]}"\n'
         )
+    return result
+
+
+def get_all_combinations(data: list):
+    result = list()
+    for n in range(1, len(data) + 1):
+        result += list(combinations(data, n))
     return result
