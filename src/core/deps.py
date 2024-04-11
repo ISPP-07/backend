@@ -17,7 +17,6 @@ from src.modules.shared.user import model as user_model
 reusable_oauth = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_STR}shared/auth/login",
     scheme_name="JWT",
-    scopes={}
 )
 
 
