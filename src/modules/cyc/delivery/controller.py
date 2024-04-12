@@ -18,7 +18,7 @@ async def get_deliveries_controller(
     before_date: Optional[date],
     after_date: Optional[date],
     state: Optional[model.State],
-    family_id: Optional[UUID4],
+    family: Optional[UUID4],
     limit: int = 100,
     offset: int = 0
 ) -> model.GetDeliveries:
@@ -38,7 +38,7 @@ async def get_deliveries_controller(
             'state', state.value if state is not None else state
         ),
         (
-            'family_id', family_id
+            'family_id', family
         ),
         limit=limit,
         skip=offset
