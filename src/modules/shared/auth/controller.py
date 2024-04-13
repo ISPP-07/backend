@@ -7,9 +7,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from src.core.config import settings
 from src.core.deps import DataBaseDep
 from src.core.utils.security import create_access_token, create_refresh_token
-from src.modules.shared.auth import service
-from src.modules.shared.auth import model
-from src.modules.shared.user import service as user_service
+from src.modules.shared.auth import service, model
+from src.modules.shared.user import model as user_model, service as user_service
 
 
 async def login_controller(db: DataBaseDep, form_data: OAuth2PasswordRequestForm) -> model.TokenSchema:
@@ -69,3 +68,12 @@ async def get_secret_and_qr(db, email) -> model.UserSecretOut:
     )
 
     return result
+
+
+async def is_master_controller(
+    user: user_model.User
+) -> model.UserIsMaster:
+    return model.UserIsMaster(
+        id=user.id,
+        is_master=user.master
+    )

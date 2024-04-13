@@ -88,11 +88,15 @@ async def insert_patient_mongo(mongo_db: Database):
 
 
 def test_get_intervention_detail(
-        app_client: TestClient,
-        insert_interventions_mongo):
+    app_client: TestClient,
+    insert_interventions_mongo,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     intervention_id = str(insert_interventions_mongo[0]["_id"])
     url = f'{URL_INTERVENTION}/{intervention_id}'
-    response = app_client.get(url=url)
+    response = app_client.get(url=url, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == intervention_id
@@ -110,7 +114,12 @@ def test_get_intervention_detail(
     assert result["patient"]["birth_date"] == "2003-03-08"
 
 
-def test_create_intervention(app_client: TestClient, insert_patient_mongo):
+def test_create_intervention(
+        app_client: TestClient,
+        insert_patient_mongo,
+        app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     patient_id = str(insert_patient_mongo["_id"])
     intervention_data = {
         "date": "2023-03-03T00:00:00",
@@ -120,7 +129,8 @@ def test_create_intervention(app_client: TestClient, insert_patient_mongo):
         "patient_id": patient_id,
         "technician": "John Doe"
     }
-    response = app_client.post(url=URL_INTERVENTION, json=intervention_data)
+    response = app_client.post(
+        url=URL_INTERVENTION, json=intervention_data, headers=headers)
     assert response.status_code == 201
     response_data = response.json()
     assert response_data["date"] == intervention_data["date"]
@@ -131,13 +141,16 @@ def test_create_intervention(app_client: TestClient, insert_patient_mongo):
 
 
 def test_update_intervention(
-        app_client: TestClient,
-        insert_interventions_mongo: list):
+    app_client: TestClient,
+    insert_interventions_mongo: list,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     # Select an intervention to update
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
     url = f"{URL_INTERVENTION}/{intervention_id}"
-
     # Data to update
     updated_data = {
         "date": "2025-03-08T00:00:00",
@@ -147,12 +160,10 @@ def test_update_intervention(
         "technician": "Jane Doe",
         "update_fields_to_none": ["reason"]
     }
-
     # Execute the update operation
-    response = app_client.patch(url=url, json=updated_data)
+    response = app_client.patch(url=url, json=updated_data, headers=headers)
     assert response.status_code == 200
     result = response.json()
-
     # Verify the updated fields
     assert result["date"] == updated_data["date"]
     assert result["typology"] == updated_data["typology"]
@@ -161,16 +172,18 @@ def test_update_intervention(
 
 
 def test_delete_intervention(
-        app_client: TestClient,
-        insert_interventions_mongo,
-        mongo_db: Database):
+    app_client: TestClient,
+    insert_interventions_mongo,
+    mongo_db: Database,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     intervention = insert_interventions_mongo[0]
     intervention_id = str(intervention["_id"])
     url = f"{URL_INTERVENTION}/{intervention_id}"
-
-    response = app_client.delete(url=url)
+    response = app_client.delete(url=url, headers=headers)
     assert response.status_code == 204
-
     deleted_intervention = mongo_db["Intervention"].find_one(
         {"_id": intervention["_id"]})
     assert deleted_intervention is None
