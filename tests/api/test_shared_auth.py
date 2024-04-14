@@ -18,8 +18,7 @@ def create_user_auth(mongo_db: Database):
         '_id': uuid4(),
         'username': 'Pepe',
         'password': get_hashed_password(password),
-        'email': 'pepe@test.com',
-        'master': False,
+        'email': 'pepe@test.com'
     }
     mongo_db['User'].insert_one(user)
     yield {
@@ -28,7 +27,6 @@ def create_user_auth(mongo_db: Database):
         'hashed_password': user['password'],
         'password': password,
         'email': user['email'],
-        'master': user['master'],
     }
 
 
