@@ -97,20 +97,6 @@
             "observation": "Contin\u00faa con el seguimiento post-rehabilitaci\u00f3n, muy comprometida con su mejora."
         }
     ],
-    "User": [
-        {
-            "_id": "4e3413d9-5683-483a-8772-1d91bfb9d81d",
-            "username": "grupo1",
-            "password": "$2b$12$kjVsFp51l7n9A4O0.r.bYO5tRfbq9FDoJPkqgo4EXBVqLiTw8V6qS",
-            "email": "ittalentofficial@outlook.com"
-        },
-        {
-            "_id": "061ac269-5e3e-4733-ad93-413efd8b3816",
-            "username": "ispp",
-            "password": "$2b$12$ZWrU43lx9NuUl.Fz5bilQeYR4nErXS4AVX43sFYLz067It49N0.qy",
-            "email": "harmonyltd@outlook.es"
-        }
-    ],
     "Family": [
         {
             "_id": "765537e7-2dd5-47ab-8718-685ebc8b451c",
