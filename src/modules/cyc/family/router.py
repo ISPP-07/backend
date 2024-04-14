@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, status
 from pydantic import UUID4
 
@@ -16,14 +18,21 @@ router = APIRouter(tags=['Family'], dependencies=dependencies)
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_families(db: DataBaseDep, limit: int = 100, offset: int = 0):
+async def get_families(
+    db: DataBaseDep,
+    state: Optional[model.DerecognitionStatus] = None,
+    referred_organization: Optional[str] = None,
+    name: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+):
     """
     **Retrieve a list of all families.**
 
     Queries the database and returns a list of all families. Each family includes
     details such as the family ID, name, and related information.
     """
-    return await controller.get_families_controller(db, limit, offset)
+    return await controller.get_families_controller(db, state, referred_organization, name, limit, offset)
 
 
 @router.post('',

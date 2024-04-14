@@ -19,7 +19,6 @@ FAMILY_NONE_FIELDS = [
     'referred_organization', 'next_renewal_date', 'observation'
 ]
 
-
 AGE_RANGES: Dict[
     Literal['baby', 'child', 'adult', 'senior', 'old'],
     Dict[Literal['min', 'max'], int]

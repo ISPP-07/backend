@@ -1,3 +1,6 @@
+from typing import Optional
+from datetime import date
+
 from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
@@ -9,16 +12,24 @@ from src.modules.acat.patient import model
 router = APIRouter(tags=['Patient'], dependencies=dependencies)
 
 
-@router.get(
-    '',
-    status_code=status.HTTP_200_OK,
-    response_model=model.GetPatients,
-    responses={
-        200: {"description": "Successful Response"},
-        500: {"description": "Internal Server Error"}
-    }
-)
-async def get_patients(db: DataBaseDep, limit: int = 100, offset: int = 0):
+@router.get('',
+            status_code=status.HTTP_200_OK,
+            response_model=model.GetPatients,
+            responses={
+                200: {"description": "Successful Response"},
+                500: {"description": "Internal Server Error"}
+            })
+async def get_patients(
+    db: DataBaseDep,
+    alias: Optional[str] = None,
+    name: Optional[str] = None,
+    nid: Optional[str] = None,
+    is_rehabilitated: Optional[bool] = None,
+    before_registration_date: Optional[date] = None,
+    after_registration_date: Optional[date] = None,
+    limit: int = 100,
+    offset: int = 0
+):
     """
     **Retrieve a list of all patients.**
 
@@ -28,7 +39,12 @@ async def get_patients(db: DataBaseDep, limit: int = 100, offset: int = 0):
     dossier number, first technician assigned to the patient (if any), registration date, any
     observations about the patient, and the calculated age of the patient.
     """
-    return await controller.get_patients_controller(db, limit, offset)
+    return await controller.get_patients_controller(
+        db,
+        alias, name, nid, is_rehabilitated,
+        before_registration_date, after_registration_date,
+        limit, offset
+    )
 
 
 @router.post('',
