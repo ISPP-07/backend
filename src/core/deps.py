@@ -10,13 +10,13 @@ from jose import jwt, JWTError
 
 from src.core.database.session import get_client
 from src.core.config import settings
-from src.modules.shared.auth.model import TokenPayload
-from src.modules.shared.user.model import User
+from src.modules.shared.auth import model as auth_model
+from src.modules.shared.user import model as user_model
 
 
 reusable_oauth = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_STR}shared/auth/login",
-    scheme_name="JWT"
+    scheme_name="JWT",
 )
 
 
@@ -29,12 +29,12 @@ DataBaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth)]
 
 
-async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
+async def get_current_user(db: DataBaseDep, token: TokenDep) -> user_model.User:
     try:
         payload = jwt.decode(
             token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        token_data = TokenPayload(**payload)
+        token_data = auth_model.TokenPayload(**payload)
 
         if datetime.fromtimestamp(token_data.exp) < datetime.now():
             raise HTTPException(
@@ -49,7 +49,7 @@ async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
 
-    user = await User.get(db, {'id': token_data.sub})
+    user = await user_model.User.get(db, {'id': token_data.sub})
 
     if user is None:
         raise HTTPException(
@@ -57,4 +57,16 @@ async def get_current_user(db: DataBaseDep, token: TokenDep) -> User:
             detail="Could not find user",
         )
 
+    return user
+
+
+async def get_master_user(
+    user: Annotated[user_model.User, Depends(get_current_user)]
+) -> user_model.User:
+    if not user.master:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Not enough privileges',
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return user

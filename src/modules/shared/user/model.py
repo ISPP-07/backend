@@ -6,6 +6,7 @@ from src.core.database.base_crud import BaseMongo
 
 class User(BaseMongo):
     id: UUID4
+    master: bool = False
     username: str
     password: str
     email: EmailStr

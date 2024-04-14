@@ -16,22 +16,27 @@ async def get_user_service(db: DataBaseDep, query: dict) -> model.User | None:
     return await model.User.get(db, query)
 
 
-async def create_user_service(db: DataBaseDep, user: model.UserCreate) -> model.UserOut | None:
+async def create_user_service(db: DataBaseDep, user: dict) -> model.UserOut | None:
     user_check = await model.User.get_multi(
         db,
-        query={'$or': [{'username': user.username}, {'email': user.email}]},
+        query={
+            '$or': [
+                {'username': user['username']},
+                {'email': user['email']}
+            ]
+        },
     )
     if len(user_check) > 0:
         return None
-    hashed_password = get_hashed_password(user.password)
-    user.password = hashed_password
-    insert_mongo: InsertOneResultMongo = await model.User.create(db, user.model_dump())
+    hashed_password = get_hashed_password(user['password'])
+    user['password'] = hashed_password
+    insert_mongo: InsertOneResultMongo = await model.User.create(db, user)
     if not insert_mongo.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error'
         )
-    user_db = await model.User.get(db, query={'id': insert_mongo.inserted_id})
+    user_db: model.User = await model.User.get(db, query={'id': insert_mongo.inserted_id})
     result = model.UserOut(
         id=user_db.id,
         username=user_db.username,

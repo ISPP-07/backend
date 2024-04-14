@@ -4,11 +4,28 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.core.deps import DataBaseDep, get_current_user
-from src.modules.shared.auth import controller
-from src.modules.shared.auth import model
+from src.modules.shared.auth import controller, model
 from src.modules.shared.user import model as user_model
 
 router = APIRouter(tags=['Authentication'])
+
+
+@router.get(
+    '/master',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {'description': 'User not found'},
+        status.HTTP_200_OK: {'description': 'Successful Response'}
+    },
+    response_model=model.UserIsMaster
+)
+async def is_master(
+    user: Annotated[user_model.User, Depends(get_current_user)]
+):
+    """
+    Checks if the user is a master user.
+    """
+    return await controller.is_master_controller(user)
 
 
 @router.post(
@@ -28,18 +45,6 @@ async def login(
     Authenticates a user and generates an access and refresh token.
     """
     return await controller.login_controller(db, form_data)
-
-
-@router.post('/test-token',
-             response_model=user_model.UserOut,
-             responses={
-                 200: {"description": "User information retrieved successfully"},
-             })
-async def test_token(user: Annotated[user_model.User, Depends(get_current_user)]):
-    """
-    Tests the validity of the current access token and returns the user information.
-    """
-    return user
 
 
 @router.post('/refresh',

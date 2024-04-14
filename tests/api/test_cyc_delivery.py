@@ -94,8 +94,13 @@ async def insert_deliveries_mongo(mongo_db: Database):
     yield result
 
 
-def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
-    response = app_client.get(url=URL_DELIVERY)
+def test_get_deliveries(
+        app_client: TestClient,
+        insert_deliveries_mongo,
+        app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
+    response = app_client.get(url=URL_DELIVERY, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert 'elements' in result and 'total_elements' in result
@@ -115,11 +120,15 @@ def test_get_deliveries(app_client: TestClient, insert_deliveries_mongo):
 
 
 def test_get_delivery_detail(
-        app_client: TestClient,
-        insert_deliveries_mongo):
+    app_client: TestClient,
+    insert_deliveries_mongo,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     delivery_id = str(insert_deliveries_mongo[0]["_id"])
     url = f'{URL_DELIVERY}/{delivery_id}'
-    response = app_client.get(url=url)
+    response = app_client.get(url=url, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == delivery_id
@@ -133,7 +142,12 @@ def test_get_delivery_detail(
         insert_deliveries_mongo[0]["family_id"])
 
 
-def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
+def test_create_delivery(
+        app_client: TestClient,
+        insert_deliveries_mongo,
+        app_superuser):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     data = {
         "date": "2025-03-08",
         "months": 1,
@@ -147,7 +161,7 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
         "family_id": str(
             insert_deliveries_mongo[0]["family_id"]),
     }
-    response = app_client.post(url=URL_DELIVERY, json=data)
+    response = app_client.post(url=URL_DELIVERY, json=data, headers=headers)
     assert response.status_code == 201
     result = response.json()
     assert result["date"] == "2025-03-08T00:00:00"
@@ -159,19 +173,27 @@ def test_create_delivery(app_client: TestClient, insert_deliveries_mongo):
 
 
 def test_get_family_deliveries(
-        app_client: TestClient,
-        insert_deliveries_mongo: list):
+    app_client: TestClient,
+    insert_deliveries_mongo: list,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     family_id = str(insert_deliveries_mongo[0]['family_id'])
     url = f'{URL_DELIVERY}/family/{family_id}'
-    response = app_client.get(url=url)
+    response = app_client.get(url=url, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert len(result) == 2
 
 
 def test_update_delivery(
-        app_client: TestClient,
-        insert_deliveries_mongo: list):
+    app_client: TestClient,
+    insert_deliveries_mongo: list,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     delivery_id = str(insert_deliveries_mongo[0]["_id"])
     data = {
         "date": "3000-03-25",
@@ -186,7 +208,7 @@ def test_update_delivery(
             insert_deliveries_mongo[0]["family_id"]),
     }
     url = f'{URL_DELIVERY}/{delivery_id}'
-    response = app_client.patch(url=url, json=data)
+    response = app_client.patch(url=url, json=data, headers=headers)
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == delivery_id
@@ -198,9 +220,13 @@ def test_update_delivery(
 
 
 def test_delete_delivery(
-        app_client: TestClient,
-        insert_deliveries_mongo: list):
+    app_client: TestClient,
+    insert_deliveries_mongo: list,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
     delivery_id = str(insert_deliveries_mongo[0]["_id"])
     url = f'{URL_DELIVERY}/{delivery_id}'
-    response = app_client.delete(url=url)
+    response = app_client.delete(url=url, headers=headers)
     assert response.status_code == 204
