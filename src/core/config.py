@@ -1,6 +1,6 @@
 import secrets
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Union
+from typing import Any, List, Optional, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import AnyHttpUrl, MongoDsn, ValidationInfo, field_validator
 
