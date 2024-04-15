@@ -1,3 +1,6 @@
+import re
+from typing import Optional
+
 from fastapi import HTTPException, status
 from pydantic import UUID4
 
@@ -6,11 +9,33 @@ from src.modules.cyc.family import model
 from src.modules.cyc.family import service
 
 
-async def get_families_controller(db: DataBaseDep, limit=100, offset=0) -> model.GetFamilies:
-    families = await service.get_families_service(db, limit=limit, skip=offset)
+async def get_families_controller(
+    db: DataBaseDep,
+    state: Optional[model.DerecognitionStatus],
+    referred_organization: Optional[str],
+    name: Optional[str],
+    limit=100,
+    offset=0
+) -> model.GetFamilies:
+    families = await service.get_families_service(
+        db,
+        ('derecognition_state', state.value if state is not None else state),
+        (
+            'referred_organization', {
+                '$regex': re.compile(f'^{referred_organization}', re.IGNORECASE)
+            } if referred_organization is not None else referred_organization
+        ),
+        (
+            'name', {
+                '$regex': re.compile(f'^{name}', re.IGNORECASE)
+            } if name is not None else name
+        ),
+        limit=limit,
+        skip=offset
+    )
     return model.GetFamilies(
         elements=families,
-        total_elements=len(families)
+        total_elements=await service.count_families_service(db, query={})
     )
 
 

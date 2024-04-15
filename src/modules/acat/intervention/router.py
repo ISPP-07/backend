@@ -1,5 +1,7 @@
-from pydantic import UUID4
+from typing import Optional
+from datetime import date
 
+from pydantic import UUID4
 from fastapi import APIRouter, status
 
 from src.core.deps import DataBaseDep
@@ -11,14 +13,24 @@ from src.modules.acat.intervention import model
 router = APIRouter(tags=['Intervention'], dependencies=dependencies)
 
 
-@router.get('',
-            status_code=status.HTTP_200_OK,
-            response_model=model.GetInterventions,
-            responses={
-                200: {"description": "Successful Response"},
-                500: {"description": "Internal Server Error"}
-            })
-async def get_interventions(db: DataBaseDep, limit: int = 100, offset: int = 0):
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=model.GetInterventions,
+    responses={
+        200: {"description": "Successful Response"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+async def get_interventions(
+    db: DataBaseDep,
+    before_date: Optional[date] = None,
+    after_date: Optional[date] = None,
+    technician: Optional[str] = None,
+    patient: Optional[UUID4] = None,
+    limit: int = 100,
+    offset: int = 0
+):
     """
     **Retrieve a list of all interventions.**
 
@@ -27,7 +39,11 @@ async def get_interventions(db: DataBaseDep, limit: int = 100, offset: int = 0):
     typology (if provided), observations (if provided), the technician responsible for the
     intervention, and the patient associated with the intervention.
     """
-    return await controller.get_interventions_controller(db, limit, offset)
+    return await controller.get_interventions_controller(
+        db,
+        before_date, after_date, technician, patient,
+        limit, offset
+    )
 
 
 @router.get('/{intervention_id}',

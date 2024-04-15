@@ -1,5 +1,8 @@
-from pydantic import UUID4
+import re
+from typing import Optional
+from datetime import date
 
+from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
@@ -8,11 +11,41 @@ from src.modules.acat.intervention import model
 from src.modules.acat.patient import service as patient_service
 
 
-async def get_interventions_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetInterventions:
-    interventions = await service.get_interventions_service(db, limit=limit, skip=offset)
+async def get_interventions_controller(
+    db: DataBaseDep,
+    before_date: Optional[date],
+    after_date: Optional[date],
+    technician: Optional[str],
+    patient: Optional[UUID4],
+    limit: int = 100,
+    offset: int = 0
+) -> model.GetInterventions:
+    interventions = await service.get_interventions_service(
+        db,
+        (
+            'date', {
+                '$lte': before_date.isoformat()
+            } if before_date is not None else None
+        ),
+        (
+            'date', {
+                '$gte': after_date.isoformat()
+            } if after_date is not None else None
+        ),
+        (
+            'technician', {
+                '$regex': re.compile(f'^{technician}', re.IGNORECASE)
+            } if technician is not None else technician
+        ),
+        (
+            'patient.id', patient
+        ),
+        limit=limit,
+        skip=offset
+    )
     return model.GetInterventions(
         elements=interventions,
-        total_elements=len(interventions)
+        total_elements=await service.count_interventions_service(db, query={})
     )
 
 

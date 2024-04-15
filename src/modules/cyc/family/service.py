@@ -4,12 +4,23 @@ from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
+from src.core.utils.helpers import get_all_combinations
 from src.core.database.mongo_types import InsertOneResultMongo, DeleteResultMongo
 from src.modules.cyc.family import model
 
 
-async def get_families_service(db: DataBaseDep, **kwargs: Any) -> list[model.Family]:
-    return await model.Family.get_multi(db, **kwargs)
+async def get_families_service(
+    db: DataBaseDep,
+    *args: Any,
+    **kwargs: Any
+) -> list[model.Family]:
+    query_combinations = get_all_combinations(args)
+    query = None
+    for combination in query_combinations:
+        if any(c[1] is None for c in combination):
+            continue
+        query = {c[0]: c[1] for c in combination}
+    return await model.Family.get_multi(db=db, query=query, **kwargs)
 
 
 async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | None:
@@ -54,3 +65,7 @@ async def update_family_service(
         query={'id': family_id},
         data_to_update=family_update
     )
+
+
+async def count_families_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Family.count(db, query)

@@ -1,22 +1,61 @@
-from pydantic import UUID4, ValidationError
-from uuid import uuid4
 import os
+import re
+from typing import Optional
+from uuid import uuid4
+from datetime import date
 
+from pydantic import UUID4, ValidationError
 from fastapi import HTTPException, status, UploadFile
 import openpyxl
 
 from src.core.utils.helpers import parse_validation_error, generate_alias, get_valid_mongo_obj
 from src.core.deps import DataBaseDep
 from src.core.database.base_crud import BulkOperation
-from src.modules.acat.patient import model
-from src.modules.acat.patient import service
+from src.modules.acat.patient import model, service
 
 
-async def get_patients_controller(db: DataBaseDep, limit: int = 100, offset: int = 0) -> model.GetPatients:
-    patients = await service.get_patients_service(db, limit=limit, skip=offset)
+async def get_patients_controller(
+    db: DataBaseDep,
+    alias: Optional[str],
+    name: Optional[str],
+    nid: Optional[str],
+    is_rehabilitated: Optional[bool],
+    before_registration_date: Optional[date] = None,
+    after_registration_date: Optional[date] = None,
+    limit: int = 100,
+    offset: int = 0
+) -> model.GetPatients:
+    patients = await service.get_patients_service(
+        db,
+        None,
+        (
+            'alias', {
+                '$regex': re.compile(f'^{alias}', re.IGNORECASE)
+            } if alias is not None else alias
+        ),
+        (
+            'name', {
+                '$regex': re.compile(f'^{name}', re.IGNORECASE)
+            } if name is not None else name
+        ),
+        ('nid', nid),
+        ('is_rehabilitated', is_rehabilitated),
+        (
+            'registration_date', {
+                '$lte': before_registration_date.isoformat()
+            } if before_registration_date is not None else None
+        ),
+        (
+            'registration_date', {
+                '$gte': after_registration_date.isoformat()
+            } if after_registration_date is not None else None
+        ),
+        limit=limit,
+        skip=offset
+    )
     return model.GetPatients(
         elements=patients,
-        total_elements=len(patients)
+        total_elements=await service.count_patients_service(db, query={})
     )
 
 
