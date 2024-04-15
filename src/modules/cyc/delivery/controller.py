@@ -85,7 +85,8 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
     updated_lines = []
     for line in result.lines:
         product_name = product_to_name.get(line.product_id)
-        updated_line = model.DeliveryLineOut(**line.dict(), name=product_name)
+        updated_line = model.DeliveryLineOut(
+            **line.model_dump(), name=product_name)
         updated_lines.append(updated_line)
     salida = model.DeliveryOut(id=result.id,
                                date=result.date,
@@ -288,7 +289,7 @@ async def get_family_deliveries_controller(db: DataBaseDep, family_id: int) -> l
         for line in delivery.lines:
             product_name = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.dict(), name=product_name)
+                **line.model_dump(), name=product_name)
             updated_lines.append(updated_line)
         salida = model.DeliveryOut(id=delivery.id,
                                    date=delivery.date,

@@ -1,8 +1,9 @@
+import secrets
 from pathlib import Path
 from typing import Any, List, Optional, Union
-import secrets
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import AnyHttpUrl, MongoDsn, ValidationInfo, field_validator
+
 from fastapi.responses import JSONResponse
 
 
@@ -97,8 +98,8 @@ class Settings(BaseSettings):
             )
         return fastapi_kwargs
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file='.env', env_file_encoding='utf-8')
 
 
 settings = Settings()
