@@ -16,6 +16,7 @@ async def get_intervention_service(db: DataBaseDep, query: dict) -> model.Interv
         return None
     return intervention
 
+
 async def get_interventions_service(
     db: DataBaseDep,
     *args: Any,
