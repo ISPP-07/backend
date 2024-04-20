@@ -114,3 +114,16 @@ async def update_intervention_controller(
 
 async def delete_intervention_controller(db: DataBaseDep, intervention_id: UUID4):
     await service.delete_intervention_service(db, query={'id': intervention_id})
+
+
+async def get_patient_interventions_controller(db: DataBaseDep, patient_id: UUID4, limit: int = 100, offset: int = 0) -> model.GetInterventions:
+    result = await service.get_interventions_service(db, query={'patient.id': patient_id}, limit=limit, skip=offset)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No interventions found for this patient",
+        )
+    return model.GetInterventions(
+        elements=result,
+        total_elements=len(result)
+    )
