@@ -122,20 +122,3 @@ async def delete_intervention(db: DataBaseDep, intervention_id: UUID4):
     Deletes an intervention record from the database based on the intervention's UUID.
     """
     return await controller.delete_intervention_controller(db, intervention_id)
-
-
-@router.get('/patients/{patient_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=model.GetInterventions,
-            responses={
-                200: {"description": "Successful Response"},
-                404: {"description": "No interventions found for this patient"},
-                500: {"description": "Internal Server Error"}
-            })
-async def get_patient_interventions(db: DataBaseDep, patient_id: UUID4, limit: int = 100, offset: int = 0):
-    """
-    **Retrieve a list of all interventions for a specific patient.**
-
-    Returns a list containing every intervention for a specific patient.
-    """
-    return await controller.get_patient_interventions_controller(db, patient_id, limit, offset)
