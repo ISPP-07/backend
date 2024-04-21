@@ -94,7 +94,7 @@ class Person(BaseModel):
                 )
             return data
         else:
-            if data.nid is not None:
+            if data.nid is not None and data.nid is not "":
                 if not check_nid(data.nid):
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
