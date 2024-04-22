@@ -43,7 +43,8 @@ async def create_family_controller(db: DataBaseDep, family: model.FamilyCreate) 
     if family.members is not None:
         persons = await service.get_members_service(db)
         for m in family.members:
-            if m.nid is not None and any(person.nid == m.nid for person in persons):
+            if m.nid is not None and any(
+                    person.nid == m.nid for person in persons):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f'There is already a person with this NID: {m.nid}',
@@ -67,7 +68,8 @@ async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: mo
     if family.members is not None:
         persons = await service.get_members_service(db)
         for m in family.members:
-            if m.nid is not None and any(person.nid == m.nid for person in persons):
+            if m.nid is not None and any(
+                    person.nid == m.nid for person in persons):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f'There is already a person with this NID: {m.nid}',
