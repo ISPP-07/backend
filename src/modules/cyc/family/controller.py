@@ -40,6 +40,15 @@ async def get_families_controller(
 
 
 async def create_family_controller(db: DataBaseDep, family: model.FamilyCreate) -> model.Family:
+    if family.members is not None:
+        persons = await service.get_members_service(db)
+        for m in family.members:
+            if m.nid is not None and any(
+                    person.nid == m.nid for person in persons):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f'There is already a person with this NID: {m.nid}',
+                )
     mongo_insert = await service.create_family_service(db, family)
     result = await service.get_family_service(db, query={'id': mongo_insert.inserted_id})
     return result
@@ -56,6 +65,15 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
 
 
 async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: model.FamilyUpdate) -> model.Family:
+    if family.members is not None:
+        persons = await service.get_members_service(db)
+        for m in family.members:
+            if m.nid is not None and any(
+                    person.nid == m.nid for person in persons):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f'There is already a person with this NID: {m.nid}',
+                )
     request_none_fields = [
         field for field in model.FAMILY_NONE_FIELDS
         if field in family.update_fields_to_none

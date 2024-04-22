@@ -108,7 +108,6 @@ def test_create_family(app_client: TestClient, app_superuser):
             }
         ]
     }
-
     response = app_client.post(url=url, json=family_data, headers=headers)
     assert response.status_code == 201
     response_data = response.json()

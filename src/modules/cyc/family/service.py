@@ -23,6 +23,12 @@ async def get_families_service(
     return await model.Family.get_multi(db=db, query=query, **kwargs)
 
 
+async def get_members_service(db: DataBaseDep, query: dict = None) -> list[model.Person]:
+    families: list[model.Family] = await model.Family.get_multi(db, query)
+    result = [member for family in families for member in family.members]
+    return result
+
+
 async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | None:
     return await model.Family.get(db, query)
 
