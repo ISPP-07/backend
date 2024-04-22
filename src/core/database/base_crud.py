@@ -68,17 +68,20 @@ class BulkOperation():
             return ReplaceOne(
                 filter=self.query,
                 replacement=self.data,
-                **self.optional_conf)
+                **self.optional_conf
+            )
         elif self.bulk_type == BulkTypes.UpdateMany:
             return UpdateMany(
                 filter=self.query,
                 update=self.data,
-                **self.optional_conf)
+                **self.optional_conf
+            )
         elif self.bulk_type == BulkTypes.UpdateOne:
             return UpdateOne(
                 filter=self.query,
                 update=self.data,
-                **self.optional_conf)
+                **self.optional_conf
+            )
 
 
 class BaseMongo(BaseModel):

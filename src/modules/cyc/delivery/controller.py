@@ -6,11 +6,9 @@ from pydantic import UUID4
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.modules.cyc.delivery import model
-from src.modules.cyc.delivery import service
+from src.modules.cyc.delivery import model, service
 from src.modules.cyc.family import service as family_service
-from src.modules.cyc.warehouse import service as product_service
-from src.modules.cyc.warehouse import model as product_model
+from src.modules.cyc.warehouse import service as product_service, model as product_model
 
 
 async def get_deliveries_controller(

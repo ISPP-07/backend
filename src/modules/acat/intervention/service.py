@@ -4,7 +4,8 @@ from fastapi import HTTPException, status
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo
+from src.core.database.base_crud import BulkOperation
+from src.core.database.mongo_types import DeleteResultMongo, InsertOneResultMongo, UpdateResult, BulkWriteResult
 from src.core.utils.helpers import get_all_combinations
 from src.modules.acat.intervention import model
 from src.modules.acat.patient import model as patient_model
@@ -45,7 +46,7 @@ async def create_intervention_service(
     intervention_dict['patient'] = patient_data.model_dump()
     intervention_dict.pop('patient_id')
 
-    result = await model.Intervention.create(db, obj_to_create=intervention_dict)
+    result: InsertOneResultMongo = await model.Intervention.create(db, obj_to_create=intervention_dict)
 
     if not result.acknowledged:
         raise HTTPException(
@@ -65,6 +66,32 @@ async def update_intervention_service(
         query={'id': intervention_id},
         data_to_update=updated_intervention_data
     )
+
+
+async def update_interventions_service(
+    db: DataBaseDep,
+    query: dict,
+    updated_intervention_data: dict,
+) -> UpdateResult:
+    return await model.Intervention.update_many(
+        db,
+        query,
+        data_to_update=updated_intervention_data
+    )
+
+
+async def bulk_service(db: DataBaseDep, operations: list[BulkOperation], **kwargs: Any):
+    result: BulkWriteResult = await model.Intervention.bulk_operation(
+        db,
+        [o.operation() for o in operations],
+        **kwargs
+    )
+    if not result.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    return result
 
 
 async def delete_intervention_service(db: DataBaseDep, query: dict) -> model.Intervention:

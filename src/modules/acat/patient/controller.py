@@ -12,6 +12,7 @@ from src.core.utils.helpers import parse_validation_error, generate_alias, get_v
 from src.core.deps import DataBaseDep
 from src.core.database.base_crud import BulkOperation
 from src.modules.acat.patient import model, service
+from src.modules.acat.intervention import model as intervention_model, service as intervention_service
 
 
 async def get_patients_controller(
@@ -179,9 +180,21 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
         for p in patients_excel
         if p.nid in nids_db
     ]
+    interventions_update = [
+        BulkOperation(
+            bulk_type='UpdateMany',
+            data={'$set': {'patient': p.data['$set']}},
+            query=intervention_model.Intervention.prepare_query(
+                {'patient.nid': p.data['$set']['nid']}
+            )
+        )
+        for p in patients_update
+    ]
     patients_operations = patients_create + patients_update
     if len(patients_operations) > 0:
         await service.bulk_service(db, operations=patients_operations, ordered=False)
+    if len(interventions_update) > 0:
+        await intervention_service.bulk_service(db, operations=interventions_update, ordered=False)
 
 
 async def update_patient_controller(
@@ -213,6 +226,12 @@ async def update_patient_controller(
         if update_data[field] is None:
             update_data.pop(field)
     updated_patient = await service.update_patient_service(db, {'id': patient_id}, update_data)
+    if updated_patient is not None:
+        await intervention_service.update_interventions_service(
+            db,
+            {'patient.id': patient_id},
+            {'patient': updated_patient.model_dump()}
+        )
     return updated_patient
 
 
