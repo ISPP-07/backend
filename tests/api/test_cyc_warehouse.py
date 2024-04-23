@@ -193,12 +193,14 @@ def test_update_product(
                 "exp_date": "2027-03-16",
                 "quantity": 23,
                 "update_exp_date": 'false',
-                "warehouse_id": warehouse_id,
-                "product_id": product_id,
+                "warehouse_id": str(insert_warehouses_with_products[0]["_id"]),
+                "product_id": str(insert_warehouses_with_products[0]["products"][0]["id"]),
             }
         ]
     }
-    response = app_client.patch(url=url, json=product_data, headers=headers)
+    response: Response = app_client.patch(
+        url=url, json=product_data, headers=headers
+    )
     assert response.status_code == 200
     result = response.json()
     assert str(result[0]["exp_date"]) == "2025-01-01"
@@ -206,6 +208,28 @@ def test_update_product(
     assert str(result[0]["quantity"]) == "23"
     assert str(result[0]["warehouse_id"]) == warehouse_id
     assert str(result[0]["id"]) == product_id
+
+
+def test_update_warehouse(
+    app_client: TestClient,
+    insert_warehouses_with_products,
+    app_superuser
+):
+    access_token = app_superuser['access_token']
+    headers = {'authorization': f'Bearer {access_token}'}
+    warehouse_id = str(insert_warehouses_with_products[1]["_id"])
+    url = f'{URL_WAREHOUSE}/{warehouse_id}/'
+    warehouse_data = {
+        "name": "Almacen",
+        "products": []
+    }
+    response: Response = app_client.patch(
+        url=url, json=warehouse_data, headers=headers
+    )
+    assert response.status_code == 200
+    result = response.json()
+    assert str(result["name"]) == "Almacen"
+    assert len(result['products']) == 0
 
 
 def test_delete_product(
