@@ -95,7 +95,8 @@ class PersonUpdate(BaseModel):
     @model_validator(mode='after')
     @classmethod
     def validate_nid(cls, data: Self):
-        if not data.passport and data.nid is not None and not check_nid(data.nid):
+        if not data.passport and data.nid is not None and not check_nid(
+                data.nid):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={'field': 'nid', 'msg': 'Invalid NID'}
