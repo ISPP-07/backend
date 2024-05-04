@@ -1,8 +1,7 @@
 import re
 from typing import Optional
-from uuid import uuid4
 
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, status
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep

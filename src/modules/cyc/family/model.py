@@ -58,51 +58,6 @@ class Gender(Enum):
     WOMEN = 'Woman'
 
 
-class PersonValidator:
-    @classmethod
-    def validate_person_fields(cls, data: Self):
-        if 'passport' not in data.model_dump():
-            data.passport = False
-        if calculate_age(data.date_birth) < 18:
-            data.type = PersonType.CHILD
-        else:
-            data.type = PersonType.ADULT
-        if data.type == PersonType.ADULT:
-            if any(
-                data.model_dump()[field] is None
-                for field in ['name', 'surname', 'nid']
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='Name, surname and nid are mandatory for adults'
-                )
-            if not data.passport and not check_nid(data.nid):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={'field': 'nid', 'msg': 'Invalid NID'}
-                )
-            return data
-        else:
-            if data.nid is not None:
-                if not data.passport and not check_nid(data.nid):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail={
-                            'field': 'nid',
-                            'msg': 'Invalid NID'
-                        }
-                    )
-            if data.family_head:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        'field': 'family_head',
-                        'msg': 'A child cannot be the family head'
-                    }
-                )
-            return data
-
-
 class Person(BaseModel):
     date_birth: PastDate
     type: Optional[PersonType] = None
@@ -123,7 +78,7 @@ class Person(BaseModel):
         return get_age_rank(self.age)
 
 
-class PersonUpdate(BaseModel, PersonValidator):
+class PersonUpdate(BaseModel):
     date_birth: Optional[PastDate] = None
     type: Optional[PersonType] = None
     name: Optional[str] = None
@@ -139,8 +94,13 @@ class PersonUpdate(BaseModel, PersonValidator):
 
     @model_validator(mode='after')
     @classmethod
-    def validate_person(cls, data: Self):
-        return cls.validate_person_fields(data)
+    def validate_nid(cls, data: Self):
+        if not data.passport and data.nid is not None and not check_nid(data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={'field': 'nid', 'msg': 'Invalid NID'}
+            )
+        return data
 
 
 class FamilyValidator:
@@ -189,13 +149,50 @@ class Family(BaseMongo, FamilyValidator):
         return data
 
 
-class PersonCreate(Person, PersonValidator):
+class PersonCreate(Person):
     passport: bool = False
 
     @model_validator(mode='after')
     @classmethod
-    def validate_person(cls, data: Self):
-        return cls.validate_person_fields(data)
+    def validate_person_fields(cls, data: Self):
+        if calculate_age(data.date_birth) < 18:
+            data.type = PersonType.CHILD
+        else:
+            data.type = PersonType.ADULT
+        if data.type == PersonType.ADULT:
+            if any(
+                data.model_dump()[field] is None
+                for field in ['name', 'surname', 'nid']
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Name, surname and nid are mandatory for adults'
+                )
+            if not data.passport and not check_nid(data.nid):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={'field': 'nid', 'msg': 'Invalid NID'}
+                )
+            return data
+        else:
+            if data.nid is not None:
+                if not data.passport and not check_nid(data.nid):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            'field': 'nid',
+                            'msg': 'Invalid NID'
+                        }
+                    )
+            if data.family_head:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        'field': 'family_head',
+                        'msg': 'A child cannot be the family head'
+                    }
+                )
+            return data
 
 
 class FamilyCreate(BaseModel):
