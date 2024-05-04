@@ -35,9 +35,9 @@ async def get_family_service(db: DataBaseDep, query: dict) -> model.Family | Non
 
 async def create_family_service(
     db: DataBaseDep,
-    family: model.FamilyCreate,
+    family: dict,
 ) -> InsertOneResultMongo:
-    result = await model.Family.create(db, obj_to_create=family.model_dump())
+    result = await model.Family.create(db, obj_to_create=family)
     if not result.acknowledged:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

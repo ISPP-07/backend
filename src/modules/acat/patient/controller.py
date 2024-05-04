@@ -163,33 +163,43 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
         patients_excel.append(new_patient)
     patients_db = await service.get_patients_service(db, query={'nid': {'$in': [p.nid for p in patients_excel]}})
     nids_db = [p.nid for p in patients_db]
-    patients_create = [
-        BulkOperation(
-            bulk_type='InsertOne',
-            data=model.Patient(**p.model_dump(), id=uuid4()).mongo()
-        )
-        for p in patients_excel
-        if p.nid not in nids_db
-    ]
-    patients_update = [
-        BulkOperation(
-            bulk_type='UpdateOne',
-            data={'$set': get_valid_mongo_obj(p.model_dump())},
-            query=model.Patient.prepare_query({'nid': p.nid})
-        )
-        for p in patients_excel
-        if p.nid in nids_db
-    ]
-    interventions_update = [
-        BulkOperation(
-            bulk_type='UpdateMany',
-            data={'$set': {'patient': p.data['$set']}},
-            query=intervention_model.Intervention.prepare_query(
-                {'patient.nid': p.data['$set']['nid']}
+    patients_create = []
+    patients_update = []
+    interventions_update = []
+    for p in patients_excel:
+        if p.nid not in nids_db:
+            patients_create.append(
+                BulkOperation(
+                    bulk_type='InsertOne',
+                    data=model.Patient(**p.model_dump(), id=uuid4()).mongo()
+                )
             )
-        )
-        for p in patients_update
-    ]
+        else:
+            patients_update.append(
+                BulkOperation(
+                    bulk_type='UpdateOne',
+                    data={'$set': get_valid_mongo_obj(p.model_dump())},
+                    query=model.Patient.prepare_query({'nid': p.nid})
+                )
+            )
+            interventions_update.append(
+                BulkOperation(
+                    bulk_type='UpdateMany',
+                    data={'$set': {
+                        'patient': get_valid_mongo_obj(
+                            model.Patient(
+                                **p.model_dump(),
+                                id=next(
+                                    p_aux for p_aux in patients_db if p_aux.nid == p.nid
+                                ).id
+                            ).model_dump()
+                        )
+                    }},
+                    query=intervention_model.Intervention.prepare_query(
+                        {'patient.nid': p.nid}
+                    )
+                )
+            )
     patients_operations = patients_create + patients_update
     if len(patients_operations) > 0:
         await service.bulk_service(db, operations=patients_operations, ordered=False)
