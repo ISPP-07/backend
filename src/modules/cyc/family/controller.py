@@ -1,10 +1,15 @@
 import re
+import os
+from uuid import uuid4
 from typing import Optional
 
-from fastapi import HTTPException, status
-from pydantic import UUID4
+import openpyxl
+from fastapi import HTTPException, status, UploadFile
+from pydantic import UUID4, ValidationError
 
 from src.core.deps import DataBaseDep
+from src.core.database.base_crud import BulkOperation
+from src.core.utils.helpers import parse_validation_error
 from src.modules.cyc.family import model
 from src.modules.cyc.family import service
 
@@ -178,3 +183,166 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
         family_id,
         family_update={'members': members}
     )
+
+
+async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile) -> None:
+    [_, extension] = os.path.splitext(families.filename)
+    if extension[1:] not in ['xlsx', 'xlsm']:
+        print(extension[1:])
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'The files with extension ',
+                f'"{extension[1:]}" are not supported.'
+            )
+        )
+    fields_familie_excel = [
+        'numero familia', 'nombre', 'numero telefono', 'direccion',
+        'fecha renovacion', 'estado', 'organizacion referida'
+    ]
+    fields_person_excel = [
+        'numero familia', 'fecha nacimiento', 'nombre',	'apellido',	'nacionalidad',
+        'documento identidad', 'cabeza familia', 'genero', 'diversidad funcional',
+        'intolerancia alimenticia', 'sin hogar'
+    ]
+    wb = openpyxl.load_workbook(families.file)
+    ws = wb.active
+    first_row_familie = [
+        ws.cell(row=1, column=i).value
+        for i in range(1, len(fields_familie_excel) + 1)
+    ]
+    first_row_person = [
+        ws.cell(row=1, column=i).value
+        for i in range(8, 8 + len(fields_person_excel) + 1)
+    ]
+    if not all(
+        field in fields_familie_excel for field in first_row_familie
+    ) and not all(
+        field in fields_person_excel for field in first_row_person
+    ):
+        print('error en all')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='The excel file is incorrect'
+        )
+    persons_excel: dict[int, list[model.PersonCreate]] = {}
+    families_excel: list[model.Family] = []
+    for row in ws.iter_rows(
+        min_row=2,
+        min_col=9,
+        max_col=19,
+        values_only=True
+    ):
+        print(row)
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[1] is None or row[4] is None or row[7] is None:
+            print('error en none person')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        if row[7] not in ['Hombre', 'Mujer']:
+            print('error en gender')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        parsed_nid: str | None = row[5]
+        is_passport = False
+        print(parsed_nid)
+        if parsed_nid is not None and parsed_nid.startswith('P-'):
+            parsed_nid = parsed_nid[2:]
+            is_passport = True
+            print('Parsed: ', parsed_nid)
+            print(is_passport)
+        is_family_head = False
+        if row[6] is not None:
+            is_family_head = True
+        has_functional_diversity = False
+        if row[8] is not None:
+            has_functional_diversity = True
+        food_intolerances: list[str] = []
+        if row[9] is not None:
+            intolerances: str = row[9]
+            food_intolerances = intolerances.split(',')
+        is_homeless = False
+        if row[10] is not None:
+            is_homeless = True
+        try:
+            new_person = model.PersonCreate(
+                date_birth=row[1],
+                name=row[2],
+                surname=row[3],
+                nationality=row[4],
+                nid=parsed_nid,
+                family_head=is_family_head,
+                gender='Man' if row[7] == 'Hombre' else 'Woman',
+                functional_diversity=has_functional_diversity,
+                food_intolerances=food_intolerances,
+                homeless=is_homeless,
+                passport=is_passport
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        if (row[0] not in persons_excel):
+            persons_excel[row[0]] = [new_person]
+        else:
+            persons_excel[row[0]].append(new_person)
+    for row in ws.iter_rows(
+        min_row=2,
+        min_col=1,
+        max_col=7,
+        values_only=True
+    ):
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[1] is None or row[2] is None or row[3] is None or row[5] is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        state_value = None
+        if row[5] is not None and row[5] not in ['Activa', 'Suspendida']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        else:
+            if row[4] == 'Activa':
+                state_value = model.DerecognitionStatus.ACTIVE
+            else:
+                state_value = model.DerecognitionStatus.SUSPENDED
+        try:
+            new_family = model.Family(
+                id=uuid4(),
+                name=row[1],
+                phone=str(row[2]),
+                address=row[3],
+                next_renewal_date=row[4],
+                derecognition_state=state_value,
+                referred_organization=row[6],
+                observation=None,
+                members=[
+                    model.Person(**p.model_dump(exclude=['passport']))
+                    for p in persons_excel[row[0]]
+                ]
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        families_excel.append(new_family)
+    families_operations = [
+        BulkOperation(
+            bulk_type='InsertOne',
+            data=f.mongo()
+        )
+        for f in families_excel
+    ]
+    if len(families_operations) > 0:
+        await service.bulk_service(db, operations=families_operations, ordered=False)
