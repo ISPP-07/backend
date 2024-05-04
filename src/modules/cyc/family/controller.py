@@ -201,10 +201,17 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
         'fecha renovacion', 'estado', 'organizacion referida'
     ]
     fields_person_excel = [
-        'numero familia', 'fecha nacimiento', 'nombre',	'apellido',	'nacionalidad',
-        'documento identidad', 'cabeza familia', 'genero', 'diversidad funcional',
-        'intolerancia alimenticia', 'sin hogar'
-    ]
+        'numero familia',
+        'fecha nacimiento',
+        'nombre',
+        'apellido',
+        'nacionalidad',
+        'documento identidad',
+        'cabeza familia',
+        'genero',
+        'diversidad funcional',
+        'intolerancia alimenticia',
+        'sin hogar']
     wb = openpyxl.load_workbook(families.file)
     ws = wb.active
     first_row_familie = [
