@@ -206,52 +206,6 @@ class FamilyCreate(BaseModel):
     members: list[PersonCreate]
 
 
-class PersonCreate(Person):
-    passport: bool = False
-
-    @model_validator(mode='after')
-    @classmethod
-    def validate_person_fields(cls, data: Self):
-        if calculate_age(data.date_birth) < 18:
-            data.type = PersonType.CHILD
-        else:
-            data.type = PersonType.ADULT
-        if data.type == PersonType.ADULT:
-            if any(
-                data.model_dump()[field] is None
-                for field in ['name', 'surname', 'nid']
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='Name, surname and nid are mandatory for adults'
-                )
-            if not data.passport and not check_nid(data.nid):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={'field': 'nid', 'msg': 'Invalid NID'}
-                )
-            return data
-        else:
-            if data.nid is not None:
-                if not data.passport and not check_nid(data.nid):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail={
-                            'field': 'nid',
-                            'msg': 'Invalid NID'
-                        }
-                    )
-            if data.family_head:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        'field': 'family_head',
-                        'msg': 'A child cannot be the family head'
-                    }
-                )
-            return data
-
-
 class FamilyUpdate(BaseModel, FamilyValidator):
     name: Optional[str] = None
     phone: Optional[str] = None
