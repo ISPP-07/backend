@@ -193,11 +193,11 @@ def test_update_product(
                 "exp_date": "2027-03-16",
                 "quantity": 23,
                 "update_exp_date": 'false',
-                "warehouse_id": str(insert_warehouses_with_products[0]["_id"]),
-                "product_id": str(insert_warehouses_with_products[0]["products"][0]["id"]),
-            }
-        ]
-    }
+                "warehouse_id": str(
+                    insert_warehouses_with_products[0]["_id"]),
+                "product_id": str(
+                    insert_warehouses_with_products[0]["products"][0]["id"]),
+            }]}
     response: Response = app_client.patch(
         url=url, json=product_data, headers=headers
     )
