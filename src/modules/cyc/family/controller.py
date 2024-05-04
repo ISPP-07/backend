@@ -188,7 +188,6 @@ async def delete_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
 async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile) -> None:
     [_, extension] = os.path.splitext(families.filename)
     if extension[1:] not in ['xlsx', 'xlsm']:
-        print(extension[1:])
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
@@ -198,7 +197,7 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
         )
     fields_familie_excel = [
         'numero familia', 'nombre', 'numero telefono', 'direccion',
-        'fecha renovacion', 'estado', 'organizacion referida'
+        'fecha renovacion', 'estado', 'organizacion referida', 'observacion'
     ]
     fields_person_excel = [
         'numero familia',
@@ -220,14 +219,13 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
     ]
     first_row_person = [
         ws.cell(row=1, column=i).value
-        for i in range(8, 8 + len(fields_person_excel) + 1)
+        for i in range(10, 9 + len(fields_person_excel) + 1)
     ]
     if not all(
         field in fields_familie_excel for field in first_row_familie
     ) and not all(
         field in fields_person_excel for field in first_row_person
     ):
-        print('error en all')
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='The excel file is incorrect'
@@ -236,33 +234,27 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
     families_excel: list[model.Family] = []
     for row in ws.iter_rows(
         min_row=2,
-        min_col=9,
-        max_col=19,
+        min_col=10,
+        max_col=20,
         values_only=True
     ):
-        print(row)
         if all(value is None for value in row):
             continue
         if row[0] is None or row[1] is None or row[4] is None or row[7] is None:
-            print('error en none person')
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
         if row[7] not in ['Hombre', 'Mujer']:
-            print('error en gender')
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
         parsed_nid: str | None = row[5]
         is_passport = False
-        print(parsed_nid)
         if parsed_nid is not None and parsed_nid.startswith('P-'):
             parsed_nid = parsed_nid[2:]
             is_passport = True
-            print('Parsed: ', parsed_nid)
-            print(is_passport)
         is_family_head = False
         if row[6] is not None:
             is_family_head = True
@@ -302,7 +294,7 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
     for row in ws.iter_rows(
         min_row=2,
         min_col=1,
-        max_col=7,
+        max_col=8,
         values_only=True
     ):
         if all(value is None for value in row):
@@ -313,13 +305,13 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
                 detail='The excel file is incorrect'
             )
         state_value = None
-        if row[5] is not None and row[5] not in ['Activa', 'Suspendida']:
+        if row[5] not in ['Activa', 'Suspendida']:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
             )
         else:
-            if row[4] == 'Activa':
+            if row[5] == 'Activa':
                 state_value = model.DerecognitionStatus.ACTIVE
             else:
                 state_value = model.DerecognitionStatus.SUSPENDED
@@ -332,7 +324,7 @@ async def upload_excel_families_controller(db: DataBaseDep, families: UploadFile
                 next_renewal_date=row[4],
                 derecognition_state=state_value,
                 referred_organization=row[6],
-                observation=None,
+                observation=row[7],
                 members=[
                     model.Person(**p.model_dump(exclude=['passport']))
                     for p in persons_excel[row[0]]
