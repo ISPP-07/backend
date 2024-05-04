@@ -19,17 +19,6 @@ class Gender(Enum):
     WOMEN = 'Woman'
 
 
-class PatientValidation():
-    @classmethod
-    def validate_nid(cls, data: Self):
-        if not check_nid(data.nid):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'NID with value {data.nid} is invalid'
-            )
-        return data
-
-
 class Patient(BaseMongo):
     id: UUID4
     name: str
@@ -51,7 +40,7 @@ class Patient(BaseMongo):
         return calculate_age(self.birth_date)
 
 
-class PatientCreate(BaseModel, PatientValidation):
+class PatientCreate(BaseModel):
     name: str
     first_surname: str
     second_surname: Optional[str] = None
@@ -68,12 +57,16 @@ class PatientCreate(BaseModel, PatientValidation):
 
     @model_validator(mode='after')
     @classmethod
-    def validate_patient_create(cls, data: Self):
-        cls.validate_nid(data)
+    def validate_nid(cls, data: Self):
+        if not check_nid(data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'NID with value {data.nid} is invalid'
+            )
         return data
 
 
-class PatientUpdate(BaseModel, PatientValidation):
+class PatientUpdate(BaseModel):
     name: Optional[str] = None
     first_surname: Optional[str] = None
     second_surname: Optional[str] = None
@@ -92,8 +85,12 @@ class PatientUpdate(BaseModel, PatientValidation):
 
     @model_validator(mode='after')
     @classmethod
-    def validate_patient_update(cls, data: Self):
-        cls.validate_nid(data)
+    def validate_nid(cls, data: Self):
+        if data.nid is not None and not check_nid(data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'NID with value {data.nid} is invalid'
+            )
         return data
 
 
