@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
@@ -51,6 +51,19 @@ async def create_family(db: DataBaseDep, family: model.FamilyCreate):
     information includes the family's name and other relevant details.
     """
     return await controller.create_family_controller(db, family)
+
+
+@router.post(
+    '/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Families in excel created successfully"},
+        400: {"description": "The data was incorrect"},
+    }
+)
+async def upload_excel_families(db: DataBaseDep, families: UploadFile):
+    return await controller.upload_excel_families_controller(db, families)
 
 
 @router.get('/{family_id}',
