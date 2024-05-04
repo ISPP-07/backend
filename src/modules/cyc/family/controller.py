@@ -49,7 +49,11 @@ async def create_family_controller(db: DataBaseDep, family: model.FamilyCreate) 
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f'There is already a person with this NID: {m.nid}',
                 )
-    mongo_insert = await service.create_family_service(db, family)
+    # TENGO QUE ELIMINAR PASSPORT FIELD DE PERSON
+    new_family = family.model_dump()
+    for member in new_family['members']:
+        del member['passport']
+    mongo_insert = await service.create_family_service(db, new_family)
     result = await service.get_family_service(db, query={'id': mongo_insert.inserted_id})
     return result
 
@@ -65,23 +69,28 @@ async def get_family_details_controller(db: DataBaseDep, family_id: int) -> mode
 
 
 async def update_family_controller(db: DataBaseDep, family_id: UUID4, family: model.FamilyUpdate) -> model.Family:
-    if family.members is not None:
-        persons = await service.get_members_service(db)
-        for m in family.members:
-            if m.nid is not None and any(
-                    person.nid == m.nid for person in persons):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f'There is already a person with this NID: {m.nid}',
-                )
+    # if family.members is not None:
+    #     persons = await service.get_members_service(db)
+    #     for m in family.members:
+    #         if m.nid is not None and any(
+    #                 person.nid == m.nid for person in persons):
+    #             raise HTTPException(
+    #                 status_code=status.HTTP_400_BAD_REQUEST,
+    #                 detail=f'There is already a person with this NID: {m.nid}',
+    #             )
     request_none_fields = [
         field for field in model.FAMILY_NONE_FIELDS
         if field in family.update_fields_to_none
     ]
-    update_data = family.model_dump(exclude='update_fields_to_none')
+    update_data = family.model_dump(
+        exclude=['update_fields_to_none']
+    )
     for field in update_data.copy():
         if field in request_none_fields:
             continue
+        if field == 'members' and update_data[field] is not None:
+            for member in update_data[field]:
+                del member['passport']
         if update_data[field] is None:
             update_data.pop(field)
     result = await service.update_family_service(db, family_id=family_id, family_update=update_data)
@@ -117,7 +126,9 @@ async def update_person_controller(db: DataBaseDep, family_id: UUID4, person_nid
         field for field in model.PERSON_NONE_FIELDS
         if field in person.update_fields_to_none
     ]
-    update_data = person.model_dump(exclude=['update_fields_to_none'])
+    update_data = person.model_dump(
+        exclude=['passport', 'update_fields_to_none']
+    )
     old_person_data = old_person.model_dump()
     for field in old_person_data:
         if field in request_none_fields:

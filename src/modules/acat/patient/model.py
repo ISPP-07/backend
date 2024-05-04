@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import Optional, Self
 from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel, UUID4, PastDate, NonNegativeInt
+from pydantic import BaseModel, UUID4, PastDate, NonNegativeInt, model_validator
+from fastapi import HTTPException, status
 
 from src.core.database.base_crud import BaseMongo
-from src.core.utils.helpers import calculate_age
+from src.core.utils.helpers import calculate_age, check_nid
 
 PATIENT_NONE_FIELDS = [
     'second_surname', 'gender', 'address',
@@ -54,6 +55,16 @@ class PatientCreate(BaseModel):
     first_technician: Optional[str] = None
     observation: Optional[str] = None
 
+    @model_validator(mode='after')
+    @classmethod
+    def validate_nid(cls, data: Self):
+        if not check_nid(data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'NID with value {data.nid} is invalid'
+            )
+        return data
+
 
 class PatientUpdate(BaseModel):
     name: Optional[str] = None
@@ -71,6 +82,16 @@ class PatientUpdate(BaseModel):
     registration_date: Optional[date] = None
     observation: Optional[str] = None
     update_fields_to_none: list[str] = []
+
+    @model_validator(mode='after')
+    @classmethod
+    def validate_nid(cls, data: Self):
+        if data.nid is not None and not check_nid(data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'NID with value {data.nid} is invalid'
+            )
+        return data
 
 
 class PatientOut(BaseModel):

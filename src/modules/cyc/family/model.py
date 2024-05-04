@@ -63,55 +63,13 @@ class Person(BaseModel):
     type: Optional[PersonType] = None
     name: Optional[str] = None
     surname: Optional[str] = None
-    nationality: Optional[str] = None
+    nationality: str = None
     nid: Optional[str] = None
     family_head: bool = False
-    gender: Optional[Gender] = None
+    gender: Gender = None
     functional_diversity: Optional[bool] = False
     food_intolerances: list[str] = []
     homeless: Optional[bool] = False
-
-    @model_validator(mode='after')
-    @classmethod
-    def validate_person(cls, data: Self):
-        if calculate_age(data.date_birth) < 18:
-            data.type = PersonType.CHILD
-        else:
-            data.type = PersonType.ADULT
-        if data.type == PersonType.ADULT:
-            if any(
-                data.model_dump()[field] is None
-                for field in ['name', 'surname', 'nid']
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='Name, surname and nid are mandatory for adults'
-                )
-            if not check_nid(data.nid):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={'field': 'nid', 'msg': 'Invalid NID'}
-                )
-            return data
-        else:
-            if data.nid is not None:
-                if not check_nid(data.nid):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail={
-                            'field': 'nid',
-                            'msg': 'Invalid NID'
-                        }
-                    )
-            if data.family_head:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        'field': 'family_head',
-                        'msg': 'A child cannot be the family head'
-                    }
-                )
-            return data
 
     def age(self) -> int:
         return calculate_age(self.date_birth)
@@ -131,7 +89,19 @@ class PersonUpdate(BaseModel):
     functional_diversity: Optional[bool] = None
     food_intolerances: Optional[list[str]] = None
     homeless: Optional[bool] = None
+    passport: bool = False
     update_fields_to_none: list[str] = []
+
+    @model_validator(mode='after')
+    @classmethod
+    def validate_nid(cls, data: Self):
+        if not data.passport and data.nid is not None and not check_nid(
+                data.nid):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={'field': 'nid', 'msg': 'Invalid NID'}
+            )
+        return data
 
 
 class FamilyValidator:
@@ -154,7 +124,7 @@ class FamilyValidator:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     'field': 'members',
-                    'msg': 'A family can only have one head of household'
+                    'msg': 'A family must have one head of household'
                 }
             )
 
@@ -174,10 +144,56 @@ class Family(BaseMongo, FamilyValidator):
 
     @model_validator(mode='after')
     @classmethod
-    def validate_family(cls, data: 'Self'):
+    def validate_family(cls, data: Self):
         cls.validate_family_members(data.members)
         data.number_of_people = len(data.members)
         return data
+
+
+class PersonCreate(Person):
+    passport: bool = False
+
+    @model_validator(mode='after')
+    @classmethod
+    def validate_person_fields(cls, data: Self):
+        if calculate_age(data.date_birth) < 18:
+            data.type = PersonType.CHILD
+        else:
+            data.type = PersonType.ADULT
+        if data.type == PersonType.ADULT:
+            if any(
+                data.model_dump()[field] is None
+                for field in ['name', 'surname', 'nid']
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Name, surname and nid are mandatory for adults'
+                )
+            if not data.passport and not check_nid(data.nid):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={'field': 'nid', 'msg': 'Invalid NID'}
+                )
+            return data
+        else:
+            if data.nid is not None:
+                if not data.passport and not check_nid(data.nid):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            'field': 'nid',
+                            'msg': 'Invalid NID'
+                        }
+                    )
+            if data.family_head:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        'field': 'family_head',
+                        'msg': 'A child cannot be the family head'
+                    }
+                )
+            return data
 
 
 class FamilyCreate(BaseModel):
@@ -187,7 +203,7 @@ class FamilyCreate(BaseModel):
     referred_organization: Optional[str] = None
     next_renewal_date: Optional[FutureDate] = None
     observation: Optional[str] = None
-    members: list[Person]
+    members: list[PersonCreate]
 
 
 class FamilyUpdate(BaseModel, FamilyValidator):
@@ -200,18 +216,16 @@ class FamilyUpdate(BaseModel, FamilyValidator):
     observation: Optional[str] = None
     number_of_people: Optional[PositiveInt] = None
     informed: Optional[bool] = None
-    members: Optional[list[Person]] = None
+    members: Optional[list[PersonCreate]] = None
     update_fields_to_none: list[str] = []
 
     @model_validator(mode='after')
     @classmethod
-    def validate_family_update(cls, data: 'Self'):
+    def validate_family_update(cls, data: Self):
         if data.members is not None:
             cls.validate_family_members(data.members)
             data.number_of_people = len(data.members)
         return data
-    observation: Optional[str] = None
-    members: Optional[list[Person]] = None
 
 
 class GetFamilies(BaseModel):
