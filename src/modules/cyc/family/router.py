@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from typing import Optional
+
+from fastapi import APIRouter, status, UploadFile
 from pydantic import UUID4
 
 from src.core.deps import DataBaseDep
@@ -16,14 +18,21 @@ router = APIRouter(tags=['Family'], dependencies=dependencies)
                 200: {"description": "Successful Response"},
                 500: {"description": "Internal Server Error"}
             })
-async def get_families(db: DataBaseDep, limit: int = 100, offset: int = 0):
+async def get_families(
+    db: DataBaseDep,
+    state: Optional[model.DerecognitionStatus] = None,
+    referred_organization: Optional[str] = None,
+    name: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+):
     """
     **Retrieve a list of all families.**
 
     Queries the database and returns a list of all families. Each family includes
     details such as the family ID, name, and related information.
     """
-    return await controller.get_families_controller(db, limit, offset)
+    return await controller.get_families_controller(db, state, referred_organization, name, limit, offset)
 
 
 @router.post('',
@@ -42,6 +51,19 @@ async def create_family(db: DataBaseDep, family: model.FamilyCreate):
     information includes the family's name and other relevant details.
     """
     return await controller.create_family_controller(db, family)
+
+
+@router.post(
+    '/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Families in excel created successfully"},
+        400: {"description": "The data was incorrect"},
+    }
+)
+async def upload_excel_families(db: DataBaseDep, families: UploadFile):
+    return await controller.upload_excel_families_controller(db, families)
 
 
 @router.get('/{family_id}',

@@ -18,7 +18,7 @@ async def get_products_controller(db: DataBaseDep, limit: int = 100, offset: int
     result = products[offset:offset + limit]
     return model.GetProducts(
         elements=result,
-        total_elements=len(result)
+        total_elements=await service.count_products_service(db, query={})
     )
 
 
@@ -129,9 +129,27 @@ async def create_warehouse_controller(
     return result
 
 
+async def update_warehouse_controller(
+    db: DataBaseDep,
+    warehouse_id: UUID4,
+    update_warehouse: model.WarehouseUpdate
+) -> model.Warehouse:
+    update_data = update_warehouse.model_dump()
+    for field in update_data.copy():
+        if update_data[field] is None:
+            update_data.pop(field)
+    result = await service.update_warehouse_service(db, warehouse_id, update_data)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Warehouse with id {warehouse_id} not found'
+        )
+    return result
+
+
 async def update_product_controller(
-        db: DataBaseDep,
-        update_products: model.ProductUpdate
+    db: DataBaseDep,
+    update_products: model.ProductUpdate
 ) -> list[model.ProductOut]:
     result = []
     warehouses_id = [p.warehouse_id for p in update_products.products]
@@ -140,7 +158,7 @@ async def update_product_controller(
     product_ids_count = Counter(p.product_id for p in update_products.products)
     if any(value > 1 for value in product_ids_count.values()):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='There cannot be duplicated products'
         )
     for product in update_products.products:

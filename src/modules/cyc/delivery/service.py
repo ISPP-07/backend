@@ -3,14 +3,29 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.modules.cyc.delivery import model
 from src.core.database.mongo_types import InsertOneResultMongo
-from src.modules.cyc.warehouse import service as warehouse_service
-from src.modules.cyc.warehouse import model as warehouse_model
+from src.core.utils.helpers import get_all_combinations
+from src.modules.cyc.delivery import model
+from src.modules.cyc.warehouse import service as warehouse_service, model as warehouse_model
 
 
-async def get_deliveries_service(db: DataBaseDep, **kwargs: Any) -> list[model.Delivery]:
-    return await model.Delivery.get_multi(db, query=None, **kwargs)
+async def get_deliveries_service(
+    db: DataBaseDep,
+    *args: Any,
+    **kwargs: Any
+) -> list[model.Delivery]:
+    query_combinations = get_all_combinations(args)
+    query: dict = None
+    for combination in query_combinations:
+        if any(c[1] is None for c in combination):
+            continue
+        query = {c[0]: c[1] for c in combination}
+        date_queries = [c for c in combination if c[0] == 'date']
+        if len(date_queries) == 2:
+            query['date'] = dict(
+                date_queries[0][1], **date_queries[1][1]
+            )
+    return await model.Delivery.get_multi(db, query=query, **kwargs)
 
 
 async def get_delivery_service(db: DataBaseDep, query: dict) -> model.Delivery | None:
@@ -97,3 +112,7 @@ async def delete_delivery_service(db: DataBaseDep, query: dict) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='DB error during deletion'
         )
+
+
+async def count_deliveries_service(db: DataBaseDep, query: dict) -> int:
+    return await model.Delivery.count(db, query)

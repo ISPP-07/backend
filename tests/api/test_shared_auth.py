@@ -18,7 +18,8 @@ def create_user_auth(mongo_db: Database):
         '_id': uuid4(),
         'username': 'Pepe',
         'password': get_hashed_password(password),
-        'email': 'pepe@test.com'
+        'email': 'pepe@test.com',
+        'master': False,
     }
     mongo_db['User'].insert_one(user)
     yield {
@@ -27,6 +28,7 @@ def create_user_auth(mongo_db: Database):
         'hashed_password': user['password'],
         'password': password,
         'email': user['email'],
+        'master': user['master'],
     }
 
 
@@ -69,13 +71,29 @@ def test_refresh_token(app_client: TestClient, login_user):
 
 
 @pytest.mark.dependency(depends=['test_login'])
-def test_access_token(app_client: TestClient, login_user, create_user_auth):
+def test_get_secret_and_qr(
+        app_client: TestClient,
+        login_user,
+        create_user_auth):
     access_token = login_user['access_token']
-    headers = {'authorization': f'Bearer {access_token}'}
-    url = f'{URL_AUTH}test-token/'
-    response: Response = app_client.post(url=url, headers=headers)
+    headers = {'Authorization': f'Bearer {access_token}'}
+    print(headers)
+    url = f'{URL_AUTH}recovery-qr-code/'
+    data = {'email': create_user_auth['email']}
+    response: Response = app_client.post(url=url, json=data, headers=headers)
     assert response.status_code == 200
     result = response.json()
-    assert result['id'] == create_user_auth['id']
-    assert result['username'] == create_user_auth['username']
+    assert 'qr_code' in result
+    assert 'email' in result
     assert result['email'] == create_user_auth['email']
+
+
+@pytest.mark.dependency(depends=['test_login'])
+def test_is_master(app_client: TestClient, login_user):
+    access_token = login_user['access_token']
+    headers = {'Authorization': f'Bearer {access_token}'}
+    url = f'{URL_AUTH}master/'
+    response: Response = app_client.get(url=url, headers=headers)
+    assert response.status_code == 200
+    result = response.json()
+    assert result['is_master'] == False

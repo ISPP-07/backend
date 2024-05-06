@@ -1,8 +1,9 @@
+import secrets
 from pathlib import Path
 from typing import Any, List, Optional, Union
-import secrets
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import AnyHttpUrl, MongoDsn, ValidationInfo, field_validator
+
 from fastapi.responses import JSONResponse
 
 
@@ -48,12 +49,12 @@ class Settings(BaseSettings):
             return v
         raise ValueError(f"Invalid input for BACKEND_CORS_ORIGINS: {v}")
 
-    MONGO_HOST: str
-    MONGO_USER: str
-    MONGO_PASSWORD: str
+    MONGO_HOST: str | None = None
+    MONGO_USER: str | None = None
+    MONGO_PASSWORD: str | None = None
+    MONGO_PORT: int | None = None
     MONGO_DB: str
-    MONGO_PORT: int
-    MONGO_DATABASE_URI: Optional[MongoDsn] = None
+    MONGO_DATABASE_URI: Optional[MongoDsn] | str = None
 
     @field_validator("MONGO_DATABASE_URI", mode="before")
     @classmethod
@@ -97,8 +98,8 @@ class Settings(BaseSettings):
             )
         return fastapi_kwargs
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file='.env', env_file_encoding='utf-8')
 
 
 settings = Settings()

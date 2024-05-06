@@ -17,6 +17,21 @@ class BackupEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+def convert_ids_to_uuid(document: Dict[str, Any]) -> None:
+    for key, value in document.items():
+        if isinstance(value, dict):
+            convert_ids_to_uuid(value)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    convert_ids_to_uuid(item)
+        elif key.endswith('id') or key.endswith('_id'):
+            try:
+                document[key] = uuid.UUID(value)
+            except (TypeError, ValueError):
+                pass
+
+
 async def get_database_session() -> AsyncIOMotorClient:
     client = AsyncIOMotorClient(
         str(settings.MONGO_DATABASE_URI),
@@ -30,6 +45,8 @@ async def populate_from_json(db: AsyncIOMotorDatabase, data: Dict[str, List[Dict
     for collection, collection_data in data.items():
         await db[collection].delete_many({})
         if collection_data:
+            for document in collection_data:
+                convert_ids_to_uuid(document)
             await db[collection].insert_many(collection_data)
 
 

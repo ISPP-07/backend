@@ -1,4 +1,6 @@
 import argparse
+import re
+from itertools import combinations
 from typing import Any
 from datetime import date
 from enum import Enum
@@ -53,11 +55,17 @@ def get_valid_mongo_obj(data: dict) -> dict:
     return data
 
 
-def check_nid(nid: str):
-    if len(nid) != 9 or not nid[:7].isdigit():
+def check_nid(data: str):
+    nif_pattern = re.compile('^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$')
+    nie_pattern = re.compile('^[XYZ][0-9]{7}[TRWAGMYFPDXBNJZSQVHLCKE]$')
+    if not nif_pattern.match(data) and not nie_pattern.match(data):
         return False
-    mod = int(nid[:8]) % 23
-    if nid[-1] != NID_LETERS[mod]:
+    nie = re.sub(
+        '^[X]', '0',
+        re.sub('^[Y]', '1', re.sub('^[Z]', '2', data))
+    )
+    mod = int(nie[:8]) % 23
+    if data[-1] != NID_LETERS[mod]:
         return False
     return True
 
@@ -111,4 +119,11 @@ def parse_validation_error(errors: list[dict]):
             f'error "{error["msg"]}", '
             f'with input "{error["input"]}"\n'
         )
+    return result
+
+
+def get_all_combinations(data: list):
+    result = list()
+    for n in range(1, len(data) + 1):
+        result += list(combinations(data, n))
     return result
