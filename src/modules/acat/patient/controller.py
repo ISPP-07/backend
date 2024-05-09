@@ -106,6 +106,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
         'direccion',
         'telefono',
         'numero expediente',
+        'rehabilitado',
         'tecnico',
         'observacion']
     wb = openpyxl.load_workbook(patients.file)
@@ -114,7 +115,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
         ws.cell(row=1, column=i).value
         for i in range(1, len(fields_excel) + 1)
     ]
-    if len(first_row) != len(fields_excel) and not all(
+    if not all(
             field in fields_excel for field in first_row):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -124,7 +125,7 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
     for row in ws.iter_rows(
             min_row=2,
             min_col=1,
-            max_col=11,
+            max_col=12,
             values_only=True):
         if all(value is None for value in row):
             continue
@@ -152,8 +153,9 @@ async def upload_excel_patients_controller(db: DataBaseDep, patients: UploadFile
                 address=row[6],
                 contact_phone=str(row[7]),
                 dossier_number=row[8],
-                first_technician=row[9],
-                observation=row[10],
+                is_rehabilitated=True if row[9] == 'X' else False,
+                first_technician=row[10],
+                observation=row[11],
             )
         except ValidationError as e:
             raise HTTPException(

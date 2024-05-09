@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import date
 
 from pydantic import UUID4
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 
 from src.core.deps import DataBaseDep
 from src.server import dependencies
@@ -46,14 +46,16 @@ async def get_interventions(
     )
 
 
-@router.get('/{intervention_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=model.Intervention,
-            responses={
-                200: {"description": "Successful Response"},
-                404: {"description": "Intervention not found"},
-                500: {"description": "Internal Server Error"}
-            })
+@router.get(
+    '/{intervention_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=model.Intervention,
+    responses={
+        200: {"description": "Successful Response"},
+        404: {"description": "Intervention not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def get_intervention(db: DataBaseDep, intervention_id: UUID4):
     """
     **Get detailed information about a specific intervention.**
@@ -65,14 +67,16 @@ async def get_intervention(db: DataBaseDep, intervention_id: UUID4):
     return await controller.get_intervention_details_controller(db, intervention_id)
 
 
-@router.post('',
-             status_code=status.HTTP_201_CREATED,
-             response_model=model.Intervention,
-             responses={
-                 201: {"description": "Intervention created successfully"},
-                 404: {"description": "Patient not found"},
-                 500: {"description": "Internal Server Error"}
-             })
+@router.post(
+    '',
+    status_code=status.HTTP_201_CREATED,
+    response_model=model.Intervention,
+    responses={
+        201: {"description": "Intervention created successfully"},
+        404: {"description": "Patient not found"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 async def create_intervention(db: DataBaseDep, intervention: model.InterventionCreate):
     """
     **Create a new intervention.**
@@ -83,6 +87,20 @@ async def create_intervention(db: DataBaseDep, intervention: model.InterventionC
     any observations.
     """
     return await controller.create_intervention_controller(db, intervention)
+
+
+@router.post(
+    '/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Patients in excel created successfully"},
+        400: {"description": "The data was incorrect"},
+        404: {"description": "Patient not found"},
+    }
+)
+async def upload_excel_intervention(db: DataBaseDep, interventions: UploadFile):
+    return await controller.upload_excel_interventions_controller(db, interventions)
 
 
 @router.patch(
