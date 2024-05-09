@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 from datetime import datetime
+import pytz
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -36,7 +37,7 @@ async def get_current_user(db: DataBaseDep, token: TokenDep) -> user_model.User:
         )
         token_data = auth_model.TokenPayload(**payload)
 
-        if datetime.fromtimestamp(token_data.exp) < datetime.now():
+        if datetime.fromtimestamp(token_data.exp) < datetime.now(tz=pytz.utc):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expired",

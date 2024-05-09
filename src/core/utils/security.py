@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pytz
 import json
 import os
 from typing import Union, Any
@@ -17,10 +18,10 @@ def create_access_token(
     expires_delta: int = None
 ) -> str:
     if expires_delta is not None:
-        expires_delta = datetime.utcnow() + expires_delta
+        expires_delta = datetime.now(pytz.utc) + expires_delta
     else:
-        expires_delta = datetime.utcnow() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        expires_delta = datetime.now(pytz.utc) + timedelta(
+            seconds=settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
     to_encode = {"exp": expires_delta, "sub": str(subject), "type": "access"}
     encoded_jwt = jwt.encode(
@@ -36,10 +37,10 @@ def create_refresh_token(
     expires_delta: int = None
 ) -> str:
     if expires_delta is not None:
-        expires_delta = datetime.utcnow() + expires_delta
+        expires_delta = datetime.now(pytz.utc) + expires_delta
     else:
-        expires_delta = datetime.utcnow() + timedelta(
-            minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES
+        expires_delta = datetime.now(pytz.utc) + timedelta(
+            seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS
         )
 
     to_encode = {"exp": expires_delta, "sub": str(subject), "type": "refresh"}

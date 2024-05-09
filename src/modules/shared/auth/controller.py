@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+import pytz
 from pydantic import ValidationError
 from jose import jwt, JWTError
 
@@ -18,9 +20,17 @@ async def login_controller(db: DataBaseDep, form_data: OAuth2PasswordRequestForm
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
         )
+
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
+
+    rotation_token = model.RefreshTokenCreate(user_id=user.id, refresh_token=refresh_token, expires_at=datetime.now(
+        pytz.utc) + timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+    await service.store_refresh_token(db, rotation_token)
+
     return {
-        "access_token": create_access_token(user.id),
-        "refresh_token": create_refresh_token(user.id),
+        "access_token": access_token,
+        "refresh_token": refresh_token,
     }
 
 
@@ -34,20 +44,41 @@ async def refresh_controller(db: DataBaseDep, refresh_token: str) -> model.Token
         token_data = model.TokenPayload(**payload)
     except (JWTError, ValidationError) as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
-    user = await user_service.get_user_service(db, {'id': token_data.sub})
-    if not user:
+
+    stored_token = await service.get_refresh_token(db, token_data.sub, refresh_token)
+    if stored_token:
+        if not stored_token.is_valid() or stored_token.used:
+            await service.delete_refresh_token(db, token_data.sub)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        stored_token.used = True
+        await service.update_refresh_token(db, stored_token)
+
+        access_token = create_access_token(token_data.sub)
+        refresh_token = create_refresh_token(token_data.sub)
+
+        rotation_token = model.RefreshTokenCreate(user_id=token_data.sub, refresh_token=refresh_token, expires_at=datetime.now(
+            pytz.utc) + timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+        await service.store_refresh_token(db, rotation_token)
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+        }
+    else:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invalid token for user",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    return {
-        "access_token": create_access_token(user.id),
-        "refresh_token": create_refresh_token(user.id),
-    }
 
 
 async def get_secret_and_qr(db, email) -> model.UserSecretOut:

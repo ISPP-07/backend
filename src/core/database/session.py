@@ -1,9 +1,10 @@
 import asyncio
 import sys
 
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
 from src.core.config import settings
+from src.modules.shared.auth.model import RefreshToken
 from src.modules.shared.user import model
 from src.core.utils.security import get_hashed_password
 
@@ -22,6 +23,7 @@ async def connect_and_init_db():
             uuidRepresentation='standard',
         )
         await create_superuser(_client_db)
+        await create_ttl_index(_client_db, RefreshToken, "expires_at", 0)
     except Exception as e:
         raise e
 
@@ -49,3 +51,9 @@ async def create_superuser(client: AsyncIOMotorClient) -> None:
             'email': settings.FIRST_SUPERUSER_EMAIL
         }
         await model.User.create(db, first_superuser)
+
+
+async def create_ttl_index(client: AsyncIOMotorClient, collection: model, field_name: str, expire_after_seconds: int):
+    db = client.get_database(settings.MONGO_DB)
+    collection: AsyncIOMotorCollection = db[collection._get_collection_name()]
+    await collection.create_index([(field_name, 1)], expireAfterSeconds=expire_after_seconds)
