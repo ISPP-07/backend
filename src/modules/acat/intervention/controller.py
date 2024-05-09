@@ -1,14 +1,18 @@
 import re
+import os
 from typing import Optional
 from datetime import date
+from uuid import uuid4
 
-from pydantic import UUID4
-from fastapi import HTTPException, status
+import openpyxl
+from pydantic import UUID4, ValidationError
+from fastapi import HTTPException, status, UploadFile
 
 from src.core.deps import DataBaseDep
-from src.modules.acat.intervention import service
-from src.modules.acat.intervention import model
-from src.modules.acat.patient import service as patient_service
+from src.core.database.base_crud import BulkOperation
+from src.core.utils.helpers import parse_validation_error
+from src.modules.acat.intervention import service, model
+from src.modules.acat.patient import service as patient_service, model as patient_model
 
 
 async def get_interventions_controller(
@@ -114,3 +118,81 @@ async def update_intervention_controller(
 
 async def delete_intervention_controller(db: DataBaseDep, intervention_id: UUID4):
     await service.delete_intervention_service(db, query={'id': intervention_id})
+
+
+async def upload_excel_interventions_controller(db: DataBaseDep, patients: UploadFile) -> None:
+    [_, extension] = os.path.splitext(patients.filename)
+    if extension[1:] not in ['xlsx', 'xlsm']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'The files with extension ',
+                f'"{extension[1:]}" are not supported.'
+            )
+        )
+    fields_excel = [
+        'fecha',
+        'motivo',
+        'tipo',
+        'observacion',
+        'tecnico',
+        'dni beneficiario'
+    ]
+    wb = openpyxl.load_workbook(patients.file)
+    ws = wb.active
+    first_row = [
+        ws.cell(row=1, column=i).value
+        for i in range(1, len(fields_excel) + 1)
+    ]
+    if not all(
+        field in fields_excel for field in first_row
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='The excel file is incorrect'
+        )
+    interventions_excel: list[model.Intervention] = []
+    for row in ws.iter_rows(
+        min_row=2,
+        min_col=1,
+        max_col=6,
+        values_only=True
+    ):
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[4] is None or row[5] is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        patient = await patient_service.get_patient_service(db, {'nid': row[5]})
+        if patient is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Patient with nid {row[5]} not found'
+            )
+        try:
+            new_intervention = model.Intervention(
+                id=uuid4(),
+                date=row[0],
+                reason=row[1],
+                typology=row[2],
+                observations=row[3],
+                technician=row[4],
+                patient=patient_model.Patient(**patient.model_dump())
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        interventions_excel.append(new_intervention)
+    intervention_operations = [
+        BulkOperation(
+            bulk_type='InsertOne',
+            data=intervention.mongo()
+        )
+        for intervention in interventions_excel
+    ]
+    if len(intervention_operations) > 0:
+        await service.bulk_service(db, operations=intervention_operations, ordered=False)
