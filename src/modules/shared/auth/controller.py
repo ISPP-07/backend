@@ -24,8 +24,13 @@ async def login_controller(db: DataBaseDep, form_data: OAuth2PasswordRequestForm
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
 
-    rotation_token = model.RefreshTokenCreate(user_id=user.id, refresh_token=refresh_token, expires_at=datetime.now(
-        pytz.utc) + timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+    rotation_token = model.RefreshTokenCreate(
+        user_id=user.id,
+        refresh_token=refresh_token,
+        expires_at=datetime.now(
+            pytz.utc) +
+        timedelta(
+            seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
     await service.store_refresh_token(db, rotation_token)
 
     return {
@@ -65,8 +70,13 @@ async def refresh_controller(db: DataBaseDep, refresh_token: str) -> model.Token
         access_token = create_access_token(token_data.sub)
         refresh_token = create_refresh_token(token_data.sub)
 
-        rotation_token = model.RefreshTokenCreate(user_id=token_data.sub, refresh_token=refresh_token, expires_at=datetime.now(
-            pytz.utc) + timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+        rotation_token = model.RefreshTokenCreate(
+            user_id=token_data.sub,
+            refresh_token=refresh_token,
+            expires_at=datetime.now(
+                pytz.utc) +
+            timedelta(
+                seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
         await service.store_refresh_token(db, rotation_token)
 
         return {
