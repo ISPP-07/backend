@@ -353,7 +353,8 @@ async def upload_excel_deliveries_controller(db: DataBaseDep, deliveries: Upload
     ):
         if all(value is None for value in row):
             continue
-        if row[0] is None or row[1] is None or row[2] is None or row[3] is None or not isinstance(row[3], int):
+        if row[0] is None or row[1] is None or row[2] is None or row[3] is None or not isinstance(
+                row[3], int):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='The excel file is incorrect'
@@ -376,7 +377,8 @@ async def upload_excel_deliveries_controller(db: DataBaseDep, deliveries: Upload
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f'Product with name {row[2]} not found'
             )
-        if row[0] in lines_excel and product.id in [l.product_id for l in lines_excel[row[0]]]:
+        if row[0] in lines_excel and product.id in [
+                l.product_id for l in lines_excel[row[0]]]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'Product {product.name} is twice in the delivery'
