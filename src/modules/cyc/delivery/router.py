@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import date
 
 from pydantic import UUID4
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile
 
 from src.core.deps import DataBaseDep
 from src.server import dependencies
@@ -86,6 +86,20 @@ async def create_delivery(db: DataBaseDep, delivery: model.DeliveryCreate):
     and the associated family ID.
     """
     return await controller.create_delivery_controller(db, delivery)
+
+
+@router.post(
+    '/excel',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    responses={
+        200: {"description": "Deliveries in excel created successfully"},
+        400: {"description": "The data was incorrect"},
+        404: {"description": "Not found"},
+    }
+)
+async def upload_excel_delivery(db: DataBaseDep, deliveries: UploadFile):
+    return await controller.upload_excel_deliveries_controller(db, deliveries)
 
 
 @router.get('/family/{family_id}',
