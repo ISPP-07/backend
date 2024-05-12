@@ -47,16 +47,19 @@ async def get_deliveries_controller(
         skip=offset
     )
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
     }
     deliveries_out = []
     for delivery in deliveries:
         updated_lines = []
         for line in delivery.lines:
-            product_name = product_to_name.get(line.product_id)
+            product_info = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.model_dump(), name=product_name
+                **line.model_dump(),
+                name=product_info[0],
+                warehouse=product_info[1]
             )
             updated_lines.append(updated_line)
         out = model.DeliveryOut(
@@ -82,14 +85,18 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
             detail='Delivery not found',
         )
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products}
-
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
+    }
     updated_lines = []
     for line in result.lines:
-        product_name = product_to_name.get(line.product_id)
+        product_info = product_to_name.get(line.product_id)
         updated_line = model.DeliveryLineOut(
-            **line.model_dump(), name=product_name)
+            **line.model_dump(),
+            name=product_info[0],
+            warehouse=product_info[1]
+        )
         updated_lines.append(updated_line)
     salida = model.DeliveryOut(id=result.id,
                                date=result.date,
@@ -281,27 +288,36 @@ async def delete_delivery_controller(db: DataBaseDep, delivery_id: UUID4):
 
 async def get_family_deliveries_controller(db: DataBaseDep, family_id: int) -> list[model.DeliveryOut]:
     deliveries = await service.get_deliveries_service(db)
-    result = [
-        delivery for delivery in deliveries if delivery.family_id == family_id]
+    family_deliveries = [
+        delivery for delivery
+        in deliveries if delivery.family_id == family_id
+    ]
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products}
-    result_final = []
-    for delivery in result:
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
+    }
+    result = []
+    for delivery in family_deliveries:
         updated_lines = []
         for line in delivery.lines:
-            product_name = product_to_name.get(line.product_id)
+            product_info = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.model_dump(), name=product_name)
+                **line.model_dump(),
+                name=product_info[0],
+                warehouse=product_info[1]
+            )
             updated_lines.append(updated_line)
-        salida = model.DeliveryOut(id=delivery.id,
-                                   date=delivery.date,
-                                   months=delivery.months,
-                                   state=delivery.state,
-                                   lines=updated_lines,
-                                   family_id=delivery.family_id)
-        result_final.append(salida)
-    return result_final
+        out = model.DeliveryOut(
+            id=delivery.id,
+            date=delivery.date,
+            months=delivery.months,
+            state=delivery.state,
+            lines=updated_lines,
+            family_id=delivery.family_id
+        )
+        result.append(out)
+    return result
 
 
 async def upload_excel_deliveries_controller(db: DataBaseDep, deliveries: UploadFile) -> None:
