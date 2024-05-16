@@ -27,7 +27,9 @@ If you have followed the above steps, you are ready to start developing.
 
 ### Docker
 
-To launch the backend locally with Docker you must change the Dockerfile environment variables: `MONGO_USER`, `MONGO_PASSWORD` and `MONGO_DB`. Then run command: `docker-compose up`. With this you can browse to localhost:8000/docs to see the swagger
+To launch the backend locally with Docker you must change the Dockerfile environment variables: `MONGO_USER`, `MONGO_PASSWORD` and `MONGO_DB`. Then run command: `docker-compose up`. With this you can browse to localhost:8000/docs to see the swagger.
+
+Remember to have mongo launched.
 
 ## An overview of the api
 
