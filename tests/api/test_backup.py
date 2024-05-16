@@ -22,3 +22,15 @@ async def test_generate_backup_controller_success(mock_db, mock_file):
 
     assert result == "backup_generated"
     service.generate_backup_service.assert_called_once_with(mock_db, "password")
+
+@pytest.mark.asyncio
+async def test_generate_backup_controller_error(mock_db, mock_file):
+    # Mock the generate_backup_service function to raise an exception
+    service.generate_backup_service = AsyncMock(side_effect=Exception("Something went wrong"))
+
+    with pytest.raises(HTTPException) as exc_info:
+        await generate_backup_controller(mock_db, "password")
+
+    assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert str(exc_info.value.detail) == "Internal Server Error Something went wrong"
+    service.generate_backup_service.assert_called_once_with(mock_db, "password")
