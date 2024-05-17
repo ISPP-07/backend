@@ -58,8 +58,8 @@ async def get_deliveries_controller(
             product_info = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
                 **line.model_dump(),
-                name=product_info[0],
-                warehouse=product_info[1]
+                name=product_info[0] if product_info else "",
+                warehouse=product_info[1] if product_info else ""
             )
             updated_lines.append(updated_line)
         out = model.DeliveryOut(
@@ -94,8 +94,8 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
         product_info = product_to_name.get(line.product_id)
         updated_line = model.DeliveryLineOut(
             **line.model_dump(),
-            name=product_info[0],
-            warehouse=product_info[1]
+            name=product_info[0] if product_info else "",
+            warehouse=product_info[1] if product_info else ""
         )
         updated_lines.append(updated_line)
     salida = model.DeliveryOut(id=result.id,
