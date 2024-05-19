@@ -25,32 +25,26 @@ def check_all_keys(data: dict, key: Any) -> bool:
     return result
 
 
-def change_invalid_types_mongo(data: dict) -> None:
-    for key, value in data.items():
-        if isinstance(value, date):
-            data[key] = value.isoformat()
-        if isinstance(value, Enum):
-            data[key] = value.value
-        if isinstance(value, list):
-            if any(isinstance(v, date) for v in value):
-                value = [
-                    item.isoformat()
-                    if isinstance(item, date) else item
-                    for item in value
-                ]
-            if any(isinstance(v, Enum) for v in value):
-                value = [
-                    item.value if isinstance(item, Enum) else item
-                    for item in value
-                ]
-            for v in value:
-                if isinstance(v, dict):
-                    change_invalid_types_mongo(v)
-        if isinstance(value, dict):
-            change_invalid_types_mongo(value)
+def change_invalid_types_mongo(data: dict | list) -> None:
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, date):
+                item = item.isoformat()
+            if isinstance(item, Enum):
+                item = item.value
+            if isinstance(item, dict) or isinstance(item, list):
+                change_invalid_types_mongo(item)
+    else:
+        for key, value in data.items():
+            if isinstance(value, date):
+                data[key] = value.isoformat()
+            if isinstance(value, Enum):
+                data[key] = value.value
+            if isinstance(value, dict) or isinstance(value, list):
+                change_invalid_types_mongo(value)
 
 
-def get_valid_mongo_obj(data: dict) -> dict:
+def get_valid_mongo_obj(data: dict | list) -> dict | list:
     change_invalid_types_mongo(data)
     return data
 

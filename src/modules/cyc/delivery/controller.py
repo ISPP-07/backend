@@ -1,11 +1,16 @@
+import os
 from collections import Counter
+from uuid import uuid4
 from typing import Dict, Optional
 from datetime import date
 
-from pydantic import UUID4
-from fastapi import HTTPException, status
+import openpyxl
+from pydantic import UUID4, ValidationError
+from fastapi import HTTPException, status, UploadFile
 
 from src.core.deps import DataBaseDep
+from src.core.database.base_crud import BulkOperation
+from src.core.utils.helpers import parse_validation_error, get_valid_mongo_obj
 from src.modules.cyc.delivery import model, service
 from src.modules.cyc.family import service as family_service
 from src.modules.cyc.warehouse import service as product_service, model as product_model
@@ -42,16 +47,19 @@ async def get_deliveries_controller(
         skip=offset
     )
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
     }
     deliveries_out = []
     for delivery in deliveries:
         updated_lines = []
         for line in delivery.lines:
-            product_name = product_to_name.get(line.product_id)
+            product_info = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.model_dump(), name=product_name
+                **line.model_dump(),
+                name=product_info[0] if product_info else "",
+                warehouse=product_info[1] if product_info else ""
             )
             updated_lines.append(updated_line)
         out = model.DeliveryOut(
@@ -77,14 +85,18 @@ async def get_delivery_details_controller(db: DataBaseDep, delivery_id: int) -> 
             detail='Delivery not found',
         )
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products}
-
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
+    }
     updated_lines = []
     for line in result.lines:
-        product_name = product_to_name.get(line.product_id)
+        product_info = product_to_name.get(line.product_id)
         updated_line = model.DeliveryLineOut(
-            **line.model_dump(), name=product_name)
+            **line.model_dump(),
+            name=product_info[0] if product_info else "",
+            warehouse=product_info[1] if product_info else ""
+        )
         updated_lines.append(updated_line)
     salida = model.DeliveryOut(id=result.id,
                                date=result.date,
@@ -276,24 +288,227 @@ async def delete_delivery_controller(db: DataBaseDep, delivery_id: UUID4):
 
 async def get_family_deliveries_controller(db: DataBaseDep, family_id: int) -> list[model.DeliveryOut]:
     deliveries = await service.get_deliveries_service(db)
-    result = [
-        delivery for delivery in deliveries if delivery.family_id == family_id]
+    family_deliveries = [
+        delivery for delivery
+        in deliveries if delivery.family_id == family_id
+    ]
     warehouses = await product_service.get_warehouses_service(db, query=None)
-    product_to_name = {
-        product.id: product.name for warehouse in warehouses for product in warehouse.products}
-    result_final = []
-    for delivery in result:
+    product_to_name: dict[UUID4, tuple[str, str]] = {
+        product.id: (product.name, warehouse.name)
+        for warehouse in warehouses for product in warehouse.products
+    }
+    result = []
+    for delivery in family_deliveries:
         updated_lines = []
         for line in delivery.lines:
-            product_name = product_to_name.get(line.product_id)
+            product_info = product_to_name.get(line.product_id)
             updated_line = model.DeliveryLineOut(
-                **line.model_dump(), name=product_name)
+                **line.model_dump(),
+                name=product_info[0],
+                warehouse=product_info[1]
+            )
             updated_lines.append(updated_line)
-        salida = model.DeliveryOut(id=delivery.id,
-                                   date=delivery.date,
-                                   months=delivery.months,
-                                   state=delivery.state,
-                                   lines=updated_lines,
-                                   family_id=delivery.family_id)
-        result_final.append(salida)
-    return result_final
+        out = model.DeliveryOut(
+            id=delivery.id,
+            date=delivery.date,
+            months=delivery.months,
+            state=delivery.state,
+            lines=updated_lines,
+            family_id=delivery.family_id
+        )
+        result.append(out)
+    return result
+
+
+async def upload_excel_deliveries_controller(db: DataBaseDep, deliveries: UploadFile) -> None:
+    [_, extension] = os.path.splitext(deliveries.filename)
+    if extension[1:] not in ['xlsx', 'xlsm']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'The files with extension ',
+                f'"{extension[1:]}" are not supported.'
+            )
+        )
+    fields_delivery_excel = [
+        'numero entrega', 'fecha', 'meses',
+        'estado', 'documento identidad cabeza familia'
+    ]
+    fields_line_excel = [
+        'numero entrega', 'almacen producto',
+        'nombre producto', 'cantidad', 'estado'
+    ]
+    wb = openpyxl.load_workbook(deliveries.file)
+    ws = wb.active
+    first_row_delivery = [
+        ws.cell(row=1, column=i).value
+        for i in range(1, len(fields_delivery_excel) + 1)
+    ]
+    first_row_line = [
+        ws.cell(row=1, column=i).value
+        for i in range(7, 6 + len(fields_line_excel) + 1)
+    ]
+    if not all(
+        field in fields_delivery_excel for field in first_row_delivery
+    ) and not all(
+        field in fields_line_excel for field in first_row_line
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='The excel file is incorrect'
+        )
+    lines_excel: dict[int, list[model.DeliveryLine]] = {}
+    deliveries_excel: list[model.Delivery] = []
+    warehouses = await product_service.get_warehouses_service(db)
+    updated_products: dict[UUID4, list[product_model.Product]] = {}
+    for row in ws.iter_rows(
+        min_row=2,
+        min_col=7,
+        max_col=11,
+        values_only=True
+    ):
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[1] is None or row[2] is None or row[3] is None or not isinstance(
+                row[3], int):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        warehouse = next(
+            (w for w in warehouses if w.name == str(row[1])),
+            None
+        )
+        if warehouse is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Warehouse with name {row[1]} not found'
+            )
+        product = next(
+            (p for p in warehouse.products if p.name == row[2]),
+            None
+        )
+        if product is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f'Product with name {row[2]} not found'
+            )
+        if row[0] in lines_excel and product.id in [
+                l.product_id for l in lines_excel[row[0]]]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'Product {product.name} is twice in the delivery'
+            )
+        if product.quantity - row[3] < 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "There aren't enough products"
+                    f"{product.name} for the delivery"
+                )
+            )
+        updated_product = product_model.Product(
+            **product.model_dump(exclude=['quantity']),
+            quantity=product.quantity - row[3]
+        )
+        if (warehouse.id not in updated_products):
+            products = warehouse.products.copy()
+            products.pop(products.index(product))
+            updated_products[warehouse.id] = products + [updated_product]
+        else:
+            updated_products[warehouse.id].pop(
+                updated_products[warehouse.id].index(product)
+            )
+            updated_products[warehouse.id].append(updated_product)
+        try:
+            new_line = model.DeliveryLine(
+                product_id=product.id,
+                quantity=row[3],
+                state=row[4]
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        if (row[0] not in lines_excel):
+            lines_excel[row[0]] = [new_line]
+        else:
+            lines_excel[row[0]].append(new_line)
+    families = await family_service.get_families_service(db)
+    for row in ws.iter_rows(
+        min_row=2,
+        min_col=1,
+        max_col=5,
+        values_only=True
+    ):
+        if all(value is None for value in row):
+            continue
+        if row[0] is None or row[1] is None or row[2] is None or row[3] is None or row[4] is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        state_value = None
+        if row[3] not in ['Espera', 'Notificado', 'Entregado']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The excel file is incorrect'
+            )
+        else:
+            if row[3] == 'Espera':
+                state_value = model.State.NEXT
+            elif row[3] == 'Notificado':
+                state_value = model.State.NOTIFIED
+            else:
+                state_value = model.State.DELIVERED
+        family = next(
+            (f for f in families if row[4] in [m.nid for m in f.members]),
+            None
+        )
+        if family is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    "Family with family's head"
+                    f"identifer {row[4]} not found"
+                )
+            )
+        try:
+            new_delivery = model.Delivery(
+                id=uuid4(),
+                date=row[1],
+                months=row[2],
+                state=state_value,
+                lines=lines_excel[row[0]],
+                family_id=family.id
+            )
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=parse_validation_error(e.errors())
+            )
+        deliveries_excel.append(new_delivery)
+    warehouse_operations = [
+        BulkOperation(
+            bulk_type='UpdateOne',
+            data={'$set': {
+                'products': get_valid_mongo_obj([p.model_dump() for p in u_products])
+            }},
+            query=product_model.Warehouse.prepare_query(
+                {'id': w_id}
+            )
+        )
+        for w_id, u_products in updated_products.items()
+    ]
+    deliveries_operations = [
+        BulkOperation(
+            bulk_type='InsertOne',
+            data=d.mongo()
+        )
+        for d in deliveries_excel
+    ]
+    if len(deliveries_operations) > 0:
+        await service.bulk_service(db, operations=deliveries_operations, ordered=False)
+    if len(warehouse_operations) > 0:
+        await product_service.bulk_service(db, operations=warehouse_operations, ordered=False)
