@@ -25,6 +25,12 @@ To be able to work with databases in development, you must launch your own insta
 
 If you have followed the above steps, you are ready to start developing.
 
+### Docker
+
+To launch the backend locally with Docker you must change the Dockerfile environment variables: `MONGO_USER`, `MONGO_PASSWORD` and `MONGO_DB`. Then run command: `docker-compose up`. With this you can browse to localhost:8000/docs to see the swagger.
+
+Remember to have mongo launched.
+
 ## An overview of the api
 
 You can see documentation of all the endpoints available in the api, as well as test them manually by accessing the following path once the development server is deployed:
