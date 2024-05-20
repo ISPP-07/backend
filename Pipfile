@@ -19,6 +19,7 @@ gunicorn = "*"
 motor = "*"
 pydantic = {extras = ["email"], version = "*"}
 openpyxl = "*"
+pytz = "*"
 
 [dev-packages]
 pytest = "*"

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+import pytz
 from pydantic import BaseModel, UUID4, EmailStr
 
 from src.core.database.base_crud import BaseMongo
@@ -43,3 +45,21 @@ class RefreshTokenBody(BaseModel):
 class UserIsMaster(BaseModel):
     id: UUID4
     is_master: bool
+
+
+class RefreshToken(BaseMongo):
+    id: UUID4
+    user_id: UUID4
+    refresh_token: str
+    expires_at: datetime
+    used: bool = False
+
+    def is_valid(self):
+        return self.expires_at > datetime.now(timezone.utc) and not self.used
+
+
+class RefreshTokenCreate(BaseModel):
+    user_id: UUID4
+    refresh_token: str
+    expires_at: datetime
+    used: bool = False

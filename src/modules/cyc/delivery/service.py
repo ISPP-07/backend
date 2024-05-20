@@ -3,7 +3,8 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from src.core.deps import DataBaseDep
-from src.core.database.mongo_types import InsertOneResultMongo
+from src.core.database.base_crud import BulkOperation
+from src.core.database.mongo_types import InsertOneResultMongo, BulkWriteResult
 from src.core.utils.helpers import get_all_combinations
 from src.modules.cyc.delivery import model
 from src.modules.cyc.warehouse import service as warehouse_service, model as warehouse_model
@@ -116,3 +117,17 @@ async def delete_delivery_service(db: DataBaseDep, query: dict) -> None:
 
 async def count_deliveries_service(db: DataBaseDep, query: dict) -> int:
     return await model.Delivery.count(db, query)
+
+
+async def bulk_service(db: DataBaseDep, operations: list[BulkOperation], **kwargs: Any):
+    result: BulkWriteResult = await model.Delivery.bulk_operation(
+        db,
+        [o.operation() for o in operations],
+        **kwargs
+    )
+    if not result.acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='DB error'
+        )
+    return result
