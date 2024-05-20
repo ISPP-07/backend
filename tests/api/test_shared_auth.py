@@ -72,9 +72,10 @@ def test_refresh_token(app_client: TestClient, login_user):
 
 @pytest.mark.dependency(depends=['test_login'])
 def test_get_secret_and_qr(
-        app_client: TestClient,
-        login_user,
-        create_user_auth):
+    app_client: TestClient,
+    login_user,
+    create_user_auth
+):
     access_token = login_user['access_token']
     headers = {'Authorization': f'Bearer {access_token}'}
     print(headers)
