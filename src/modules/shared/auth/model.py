@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import pytz
 from pydantic import BaseModel, UUID4, EmailStr
 
@@ -55,7 +55,7 @@ class RefreshToken(BaseMongo):
     used: bool = False
 
     def is_valid(self):
-        return self.expires_at > datetime.now(pytz.utc) and not self.used
+        return self.expires_at > datetime.now(timezone.utc) and not self.used
 
 
 class RefreshTokenCreate(BaseModel):

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 from pydantic import ValidationError
 from jose import jwt, JWTError
@@ -27,10 +27,10 @@ async def login_controller(db: DataBaseDep, form_data: OAuth2PasswordRequestForm
     rotation_token = model.RefreshTokenCreate(
         user_id=user.id,
         refresh_token=refresh_token,
-        expires_at=datetime.now(
-            pytz.utc) +
-        timedelta(
-            seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+        expires_at=datetime.now(timezone.utc) + timedelta(
+            seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS
+        )
+    )
     await service.store_refresh_token(db, rotation_token)
 
     return {
@@ -73,10 +73,10 @@ async def refresh_controller(db: DataBaseDep, refresh_token: str) -> model.Token
         rotation_token = model.RefreshTokenCreate(
             user_id=token_data.sub,
             refresh_token=refresh_token,
-            expires_at=datetime.now(
-                pytz.utc) +
-            timedelta(
-                seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS))
+            expires_at=datetime.now(timezone.utc) + timedelta(
+                seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS
+            )
+        )
         await service.store_refresh_token(db, rotation_token)
 
         return {
