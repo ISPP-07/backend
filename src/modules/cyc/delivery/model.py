@@ -20,6 +20,7 @@ class DeliveryLine(BaseModel):
 
 class DeliveryLineOut(DeliveryLine):
     name: Optional[str]
+    warehouse: str
 
 
 class Delivery(BaseMongo):
